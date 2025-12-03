@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía de Búsqueda - MinJusticia</title>
+    <!-- Fuentes y Estilos -->
+    <link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: { 'gov-blue': '#3366CC', 'gov-dark-blue': '#004884', 'gov-bg': '#F7F9FC' },
+                    fontFamily: { sans: ['Nunito Sans', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Nunito Sans', sans-serif; background-color: #F2F2F2; color: #333; }
+        
+        /* Botones Estilo GOV.CO */
+        .btn-gov {
+            background-color: white; color: #3366CC; border: 2px solid #3366CC; border-radius: 25px; 
+            padding: 12px 24px; font-weight: 700; transition: all 0.2s; width: 100%; text-align: left; 
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+        }
+        .btn-gov:hover, .btn-gov.selected { background-color: #3366CC; color: white; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(51, 102, 204, 0.2); }
+        
+        /* Checkbox Cards */
+        .checkbox-card { 
+            cursor: pointer; border: 1px solid #d1d5db; background: white; transition: all 0.2s; 
+            border-radius: 8px; padding: 16px; display: flex; align-items: center;
+        }
+        .checkbox-card:hover { border-color: #3366CC; background-color: #F8FBFF; }
+        .checkbox-card.selected { border-color: #3366CC; background-color: #EFF6FF; ring: 1px solid #3366CC; }
+        .checkbox-mark { width: 20px; height: 20px; border: 2px solid #9CA3AF; border-radius: 4px; margin-right: 12px; display: flex; align-items: center; justify-content: center; background: white; }
+        .checkbox-card.selected .checkbox-mark { border-color: #3366CC; background-color: #3366CC; }
+        
+        /* Acordeones */
+        details > summary { list-style: none; cursor: pointer; transition: all 0.3s; }
+        details > summary::-webkit-details-marker { display: none; }
+        details[open] > summary { background-color: #EFF6FF; border-bottom: 1px solid #E5E7EB; }
+        .chevron { transition: transform 0.3s; }
+        details[open] .chevron { transform: rotate(180deg); }
+        
+        /* Loader */
+        #loader { position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 50; display: flex; justify-content: center; align-items: center; flex-direction: column; }
+    </style>
+</head>
+<body>
+
+    <!-- Pantalla de Carga -->
+    <div id="loader">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-4 border-gov-blue mb-4"></div>
+        <p class="text-gov-blue font-bold text-lg">Cargando Guía Interactiva...</p>
+        <p id="loaderStatus" class="text-sm text-gray-500 mt-2 font-mono">Conectando a Google Sheets...</p>
+        <div id="errorMsg" class="hidden mt-4 text-center max-w-md p-4 bg-red-50 border border-red-200 rounded text-red-700 text-sm"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="bg-gov-blue text-white py-4 shadow-md sticky top-0 z-40">
+        <div class="container mx-auto px-4 flex items-center">
+            <div class="font-extrabold text-2xl tracking-wider mr-4 border-r border-blue-400 pr-4">GOV.CO</div>
+            <div class="text-sm font-light leading-tight">Guía de Búsqueda de Personas<br><span class="font-bold">Ministerio de Justicia y del Derecho</span></div>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main class="container mx-auto px-4 py-8 max-w-4xl">
+        <!-- Barra de Progreso -->
+        <div class="mb-8 max-w-3xl mx-auto">
+            <div class="flex justify-between text-xs text-gray-500 mb-2 font-bold uppercase tracking-wider">
+                <span>Perfil</span><span>Tiempo</span><span>Lugar</span><span>Indicios</span>
+            </div>
+            <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                <div id="progressBar" class="h-full bg-gov-blue transition-all duration-500 ease-out" style="width: 10%"></div>
+            </div>
+        </div>
+
+        <!-- Contenedor de Vistas -->
+        <div id="viewContainer" class="bg-white rounded-xl shadow-lg border border-gray-100 p-6 md:p-8 min-h-[400px]">
+            <!-- El contenido dinámico va aquí -->
+        </div>
+
+        <!-- Botones Navegación -->
+        <div class="mt-8 flex justify-between max-w-3xl mx-auto" id="navButtons">
+            <button onclick="goBack()" id="backBtn" class="text-gov-blue font-bold hover:underline flex items-center px-4 py-2 invisible">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg> Atrás
+            </button>
+            <button id="nextBtn" onclick="goNext()" class="bg-gov-blue text-white px-8 py-3 rounded-full font-bold shadow-lg hover:bg-gov-dark-blue hidden flex items-center transition-all">
+                Continuar <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+            </button>
+        </div>
+    </main>
+
+    <script>
+        // --- 1. CONFIGURACIÓN DE DATOS (MÉTODO GVIZ) ---
+        const SHEET_ID = '13Cgrx89VqcTnLDLkxQjSS3ETKSjYLXFTiD3EdAt1FUk';
+        
+        // GIDs Configurados
+        const GIDS = {
+            ACCIONES: '885518893',  // CATALOGO DE ACCIONES
+            REGLAS: '1063279104',   // REGLAS
+            CONTACTOS: '150812843'  // CONTACTOS
+        };
+
+        // URLs usando GVIZ
+        const SHEETS_CONFIG = {
+            ACCIONES: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GIDS.ACCIONES}`,
+            REGLAS: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GIDS.REGLAS}`,
+            CONTACTOS: `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&gid=${GIDS.CONTACTOS}`
+        };
+
+        // Bases de Datos en Memoria
+        let DB_ACCIONES = {}; // Mapa: ID -> Objeto Acción
+        let DB_REGLAS = {};   // Mapa: Trigger -> Array [Acciones]
+        let DB_CONTACTOS = []; // Array de Contactos
+
+        // --- 2. ESTADO DE LA APP ---
+        const state = {
+            currentStep: 'p4', // INICIO EN PERFIL
+            history: [],
+            answers: {
+                p1: null, p1_sub: null, // Contexto (Indicios)
+                p2: null, p2_sub: null, // Tiempo
+                p3_type: null, p3_detail: null, p3_characteristics: [], // Lugar
+                p4_profile: [] // Perfil
+            }
+        };
+
+        // --- 3. DEFINICIÓN DE PASOS (UI) ---
+        // Flujo: P4 (Perfil) -> P2 (Tiempo) -> P3 (Lugar) -> P1 (Contexto)
+        const steps = {
+            // PASO 1: PERFIL (P4)
+            'p4': { 
+                progress: '20%', 
+                title: '¿Quién es la persona desaparecida?', 
+                description: 'Seleccione todas las condiciones que apliquen. Esto define la prioridad de la búsqueda.',
+                type: 'multi-choice', 
+                options: [
+                    { id: '4.1', label: 'Niño/a o adolescente (< 18 años)' },
+                    { id: '4.2', label: 'Líder social, político o periodista' },
+                    { id: '4.3', label: 'Miembro de la Fuerza Pública' },
+                    { id: '4.4', label: 'Excombatiente / Reincorporado' },
+                    { id: '4.5', label: 'Persona con Discapacidad o Adulto Mayor' },
+                    { id: '4.6', label: 'Migrante / Extranjero' },
+                    { id: '4.7', label: 'Mujer (Riesgo violencia género)' },
+                    { id: '4.8', label: 'Comunidad indígena o NARP' },
+                    { id: '4.9', label: 'Población LGBTIQ+' },
+                    { id: '4.10', label: 'Desaparición colectiva' },
+                    { id: '4.11', label: 'Ninguna de las anteriores' }
+                ]
+            },
+            // PASO 2: TIEMPO (P2)
+            'p2': { 
+                progress: '40%', 
+                title: '¿Hace cuánto tiempo ocurrió?', 
+                description: 'Esto determina si la búsqueda es operativa (urgente) o investigativa (histórica).',
+                type: 'single-choice', 
+                options: [
+                    { id: '2.1', label: 'Hace unas horas' },
+                    { id: '2.2', label: 'Hace unos días' },
+                    { id: '2.3', label: 'Hace unos meses' },
+                    { id: '2.4', label: 'Hace unos años' }
+                ]
+            },
+            // PASO 3: LUGAR (P3)
+            'p3_type': { 
+                progress: '60%', 
+                title: '¿Dónde ocurrió o fue vista por última vez?', 
+                type: 'single-choice', 
+                options: [
+                    { id: '3.1', label: 'Capital o ciudad principal' },
+                    { id: '3.2', label: 'Municipio pequeño o zona rural' },
+                    { id: '3.3', label: 'En otro país' }
+                ]
+            },
+            'p3.1': { progress: '65%', title: 'Seleccione la ciudad', type: 'dropdown', data: ['Bogotá D.C.', 'Medellín', 'Cali', 'Barranquilla', 'Cúcuta', 'Otro'] },
+            'p3.2': { progress: '65%', title: 'Seleccione el municipio', type: 'dropdown', data: ['Apartadó', 'Tumaco', 'Quibdó', 'Otro'] },
+            'p3.3': { progress: '65%', title: 'Seleccione el país', type: 'dropdown', data: ['Venezuela', 'Ecuador', 'Panamá', 'España', 'Estados Unidos', 'Otro'] },
+            
+            'p3.4': { 
+                progress: '75%', 
+                title: 'Características del lugar', 
+                description: 'Marque si el lugar tiene alguna condición especial.',
+                type: 'multi-choice', 
+                options: [
+                    { id: '3.4.1', label: 'En agua (Mar, río, costa)' },
+                    { id: '3.4.2', label: 'Cerca de una frontera' },
+                    { id: '3.4.3', label: 'Resguardo o territorio indígena' },
+                    { id: '3.4.4', label: 'Parque Nacional Natural' },
+                    { id: '3.4.5', label: 'Montaña/Selva (Difícil acceso)' },
+                    { id: '3.4.6', label: 'Zona minera o petrolera' },
+                    { id: '3.4.7', label: 'Zona de conflicto armado' },
+                    { id: '3.4.8', label: 'Base militar o policial' },
+                    { id: '3.4.9', label: 'Ninguna de estas' }
+                ]
+            },
+            // PASO 4: CONTEXTO / INDICIOS (P1 - Flujo Inverso)
+            'p1': { 
+                progress: '90%', 
+                title: '¿Tiene alguna sospecha de lo que ocurrió?', 
+                description: 'Esta información nos ayuda a dirigirlo a la entidad especializada.',
+                type: 'single-choice', 
+                options: [
+                    { id: '1.6', label: 'No tengo sospechas claras (Simplemente no aparece)' },
+                    { id: '1.1', label: 'Creo que es Conflicto Armado / Violencia Política' },
+                    { id: '1.2', label: 'Creo que es un Crimen (Robo, Secuestro, etc.)' },
+                    { id: '1.3', label: 'Creo que se perdió o se accidentó (Sin violencia)' },
+                    { id: '1.4', label: 'Fue durante un desastre natural' },
+                    { id: '1.5', label: 'Tiene que ver con Migración o viaje al exterior' }
+                ]
+            },
+            'p1.2': { 
+                progress: '95%', 
+                title: 'Especifique el tipo de crimen', 
+                alert: '⚠️ Si piden dinero por liberación, no pague y llame al 165 GAULA.', 
+                type: 'single-choice', 
+                options: [
+                    { id: '1.2.1', label: 'Narcotráfico/Crimen organizado' },
+                    { id: '1.2.2', label: 'Trata de personas' },
+                    { id: '1.2.3', label: 'Violencia intrafamiliar' },
+                    { id: '1.2.4', label: 'Secuestro' },
+                    { id: '1.2.5', label: 'Extorsión' },
+                    { id: '1.2.6', label: 'Otro crimen' },
+                    { id: '1.2.7', label: 'No sé específicamente' }
+                ]
+            },
+            'p1.5': { progress: '95%', title: 'Detalle migratorio', type: 'single-choice', options: [
+                { id: '1.5.1', label: 'Desapareció en el camino (Ruta)' },
+                { id: '1.5.2', label: 'Ya estaba en otro país' },
+                { id: '1.5.3', label: 'Fue forzada a salir (Trata)' },
+                { id: '1.5.4', label: 'Otra situación' }
+            ]},
+            'p2.4_conflict': { progress: '95%', title: 'Fecha del hecho', type: 'single-choice', options: [
+                { id: '2.4.1', label: 'Antes de Dic 2016' },
+                { id: '2.4.2', label: 'Después de Dic 2016' }
+            ]},
+            
+            'p_narrative': {
+                progress: '98%',
+                title: 'Detalles Adicionales',
+                description: 'Escriba brevemente: ¿Cómo vestía? ¿Tenía señales particulares? Esto generará un guion para su denuncia.',
+                type: 'textarea',
+                next: 'results'
+            },
+
+            'results': { progress: '100%', title: 'Ruta de Acción', type: 'results' }
+        };
+
+        // --- 4. CARGA DE DATOS ---
+        async function loadData() {
+            const status = document.getElementById('loaderStatus');
+            const errorMsg = document.getElementById('errorMsg');
+            
+            try {
+                // Función helper para cargar un CSV
+                const loadSheet = async (url) => {
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
+                    const text = await res.text();
+                    return Papa.parse(text, { header: true, skipEmptyLines: true }).data;
+                };
+
+                // 1. Cargar Acciones
+                status.innerText = "Descargando Catálogo de Acciones...";
+                const accionesRaw = await loadSheet(SHEETS_CONFIG.ACCIONES);
+                accionesRaw.forEach(row => {
+                    if (row.ID_ACCION) {
+                        DB_ACCIONES[row.ID_ACCION.trim()] = {
+                            grupo: row.GRUPO_ID ? row.GRUPO_ID.trim() : null,
+                            prioridad: parseInt(row.PRIORIDAD) || 0,
+                            fase: parseInt(row.FASE) || 99,
+                            titulo: row.TITULO || "Acción",
+                            txt: {
+                                '2.1': row.TXT_2_1,
+                                '2.2': row.TXT_2_2,
+                                '2.3': row.TXT_2_3,
+                                '2.4': row.TXT_2_4,
+                                '2.4.1': row.TXT_2_4_1,
+                                '2.4.2': row.TXT_2_4_2
+                            }
+                        };
+                    }
+                });
+
+                // 2. Cargar Reglas
+                status.innerText = "Descargando Reglas...";
+                const reglasRaw = await loadSheet(SHEETS_CONFIG.REGLAS);
+                reglasRaw.forEach(row => {
+                    if (row.ID_TRIGGER) {
+                        const trigger = row.ID_TRIGGER.trim();
+                        const actions = row.ACCIONES_ACTIVAR ? row.ACCIONES_ACTIVAR.split(',').map(s => s.trim()) : [];
+                        DB_REGLAS[trigger] = actions;
+                    }
+                });
+
+                // 3. Cargar Contactos
+                status.innerText = "Descargando Directorio...";
+                DB_CONTACTOS = await loadSheet(SHEETS_CONFIG.CONTACTOS);
+
+                console.log("DB Cargada", { 
+                    Acciones: Object.keys(DB_ACCIONES).length, 
+                    Reglas: Object.keys(DB_REGLAS).length, 
+                    Contactos: DB_CONTACTOS.length 
+                });
+                
+                document.getElementById('loader').style.display = 'none';
+                renderView('p4'); 
+
+            } catch (e) {
+                console.error(e);
+                status.innerText = "Error de conexión";
+                status.classList.add("text-red-600", "font-bold");
+                errorMsg.classList.remove('hidden');
+                errorMsg.innerHTML = `<strong>No se pudo acceder a la Base de Datos.</strong><br><br>
+                1. Ve a tu Google Sheet.<br>
+                2. Clic en "Compartir" (Share).<br>
+                3. Asegúrate que esté en <strong>"Cualquiera con el enlace"</strong> (Anyone with the link).`;
+            }
+        }
+
+        // --- 5. RENDERIZADO UI ---
+        function renderView(stepId) {
+            state.currentStep = stepId;
+            const config = steps[stepId];
+            const container = document.getElementById('viewContainer');
+            
+            document.getElementById('progressBar').style.width = config.progress;
+            
+            const nextBtn = document.getElementById('nextBtn');
+            const backBtn = document.getElementById('backBtn');
+            backBtn.classList.toggle('invisible', stepId === 'p4');
+            nextBtn.classList.add('hidden');
+
+            let html = `
+                <h2 class="text-2xl font-bold text-gov-blue mb-3">${config.title}</h2>
+                ${config.description ? `<p class="text-gray-600 mb-6 text-lg">${config.description}</p>` : ''}
+                ${config.alert ? `<div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 text-red-700 font-bold rounded-r">${config.alert}</div>` : ''}
+            `;
+
+            if (config.type === 'single-choice') {
+                html += '<div class="space-y-3">';
+                config.options.forEach(opt => {
+                    html += `
+                    <button onclick="handleChoice('${opt.id}')" class="btn-gov group">
+                        <span class="text-lg">${opt.label}</span>
+                        <svg class="w-6 h-6 text-blue-200 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>`;
+                });
+                html += '</div>';
+            }
+            else if (config.type === 'multi-choice') {
+                nextBtn.classList.remove('hidden');
+                html += '<div class="grid md:grid-cols-2 gap-4 mb-6">';
+                config.options.forEach(opt => {
+                    let collection = stepId === 'p3.4' ? state.answers.p3_characteristics : state.answers.p4_profile;
+                    const isSelected = collection.includes(opt.id);
+                    html += `
+                    <div onclick="toggleMulti(this, '${opt.id}', '${stepId}')" class="checkbox-card ${isSelected ? 'selected' : ''}">
+                        <div class="checkbox-mark">
+                            ${isSelected ? '<svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>' : ''}
+                        </div>
+                        <span class="text-gray-700 font-semibold">${opt.label}</span>
+                    </div>`;
+                });
+                html += '</div>';
+            }
+            else if (config.type === 'dropdown') {
+                nextBtn.classList.remove('hidden');
+                html += `<div class="mb-6"><select id="selectInput" class="w-full p-4 border border-gray-300 rounded-lg text-lg outline-none focus:ring-2 focus:ring-gov-blue"><option value="">Seleccione una opción...</option>${config.data.map(i => `<option value="${i}">${i}</option>`).join('')}</select></div>`;
+            }
+            else if (config.type === 'textarea') {
+                nextBtn.classList.remove('hidden');
+                html += `<textarea id="narrativeInput" class="w-full p-4 border border-gray-300 rounded-lg h-40 outline-none focus:border-gov-blue text-lg" placeholder="Ej: Vestía jean azul, camisa roja. Tiene una cicatriz en la ceja..."></textarea>`;
+            }
+            else if (config.type === 'results') {
+                html += generateResultsEngine(); 
+                document.getElementById('navButtons').classList.add('hidden');
+            }
+
+            container.innerHTML = html;
+        }
+
+        // --- 6. LOGICA DE NAVEGACIÓN ---
+        function handleChoice(val) {
+            const cur = state.currentStep;
+            
+            // Guardar respuestas
+            if (cur === 'p2') state.answers.p2 = val;
+            if (cur === 'p2.4_conflict') state.answers.p2_sub = val;
+            if (cur === 'p3_type') state.answers.p3_type = val;
+            if (cur === 'p1') state.answers.p1 = val;
+            if (cur === 'p1.2' || cur === 'p1.5') state.answers.p1_sub = val;
+
+            state.history.push(cur);
+
+            // Router Lógica Inversa
+            let next = '';
+            if (cur === 'p2') next = 'p3_type';
+            else if (cur === 'p3_type') {
+                if(val === '3.1') next = 'p3.1'; else if(val === '3.2') next = 'p3.2'; else next = 'p3.3';
+            }
+            else if (cur === 'p1') {
+                if(val === '1.2') next = 'p1.2';
+                else if(val === '1.5') next = 'p1.5';
+                else if(val === '1.1' && state.answers.p2 === '2.4') next = 'p2.4_conflict';
+                else next = 'p_narrative';
+            }
+            else if (['p1.2', 'p1.5', 'p2.4_conflict'].includes(cur)) next = 'p_narrative';
+
+            renderView(next);
+        }
+
+        function toggleMulti(el, val, step) {
+            el.classList.toggle('selected');
+            const mark = el.querySelector('.checkbox-mark');
+            const isSelected = el.classList.contains('selected');
+            mark.style.backgroundColor = isSelected ? '#3366CC' : 'white';
+            mark.style.borderColor = isSelected ? '#3366CC' : '#9CA3AF';
+            mark.innerHTML = isSelected ? '<svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>' : '';
+
+            let arr = step === 'p3.4' ? state.answers.p3_characteristics : state.answers.p4_profile;
+            if(arr.includes(val)) arr.splice(arr.indexOf(val), 1); else arr.push(val);
+        }
+
+function goNext() {
+    const cur = state.currentStep;
+    if (steps[cur].type === 'dropdown') state.answers.p3_detail = document.getElementById('selectInput').value;
+    
+    state.history.push(cur);
+    let next = '';
+
+    // NAVEGACIÓN SECUENCIAL (CORREGIDA)
+    if (cur === 'p4') next = 'p2'; // Perfil -> Tiempo
+    else if (['p3.1', 'p3.2', 'p3.3'].includes(cur)) next = 'p3.4'; // Detalles de lugar -> Características
+    else if (cur === 'p3.4') next = 'p1'; // Características -> Indicios
+    else if (cur === 'p_narrative') next = 'results'; // Narrativa -> Resultados
+
+    renderView(next);
+}
+
+        function goBack() {
+            if(state.history.length > 0) renderView(state.history.pop());
+        }
+
+        // --- 7. EL MOTOR DE LÓGICA (ALGORITMO DE ABSORCIÓN) ---
+        function generateResultsEngine() {
+            // A. Recolectar Triggers (Contexto, Perfil, Lugar)
+            const contextID = state.answers.p1_sub || state.answers.p1;
+            const profileIDs = state.answers.p4_profile;
+            const placeIDs = state.answers.p3_characteristics;
+            const triggers = [contextID, ...profileIDs, ...placeIDs];
+
+            // B. Recolectar Acciones Crudas desde REGLAS
+            let rawActionIDs = [];
+            triggers.forEach(t => {
+                if (DB_REGLAS[t]) rawActionIDs.push(...DB_REGLAS[t]);
+            });
+            // Eliminar duplicados
+            rawActionIDs = [...new Set(rawActionIDs)];
+
+            // C. Competencia y Absorción (Lógica de Prioridad)
+            let finalActions = [];
+            let groupsSeen = {}; 
+
+            rawActionIDs.forEach(id => {
+                const actionData = DB_ACCIONES[id];
+                if (!actionData) return;
+
+                if (actionData.grupo) {
+                    if (groupsSeen[actionData.grupo]) {
+                        // Si ya existe una acción del grupo, gana la de mayor prioridad
+                        if (actionData.prioridad > groupsSeen[actionData.grupo].prioridad) {
+                            groupsSeen[actionData.grupo] = { id: id, prioridad: actionData.prioridad, data: actionData };
+                        }
+                    } else {
+                        groupsSeen[actionData.grupo] = { id: id, prioridad: actionData.prioridad, data: actionData };
+                    }
+                } else {
+                    finalActions.push(actionData);
+                }
+            });
+
+            // Agregar los ganadores de los grupos
+            Object.values(groupsSeen).forEach(item => finalActions.push(item.data));
+
+            // D. Selección de Texto por Tiempo (Polimorfismo)
+            let timeKey = state.answers.p2_sub || state.answers.p2; 
+            
+            // E. Ordenar por Fase (1: Vital, 2: Legal, 3: Búsqueda)
+            finalActions.sort((a, b) => a.fase - b.fase);
+
+            // F. Generar HTML de Pasos
+            let htmlSteps = finalActions.map((action, idx) => {
+                let displayText = action.txt[timeKey];
+                
+                // Fallback: Si no hay texto específico, busca en la acción base del grupo (Prioridad 0)
+                if (!displayText && action.grupo) {
+                    for (const key in DB_ACCIONES) {
+                        const a = DB_ACCIONES[key];
+                        if (a.grupo === action.grupo && a.prioridad === 0) {
+                            displayText = a.txt[timeKey];
+                            break;
+                        }
+                    }
+                }
+                
+                if (!displayText) displayText = "Consulte a la autoridad competente.";
+
+                return `
+                <details class="group bg-white border border-gray-200 rounded-lg mb-3 shadow-sm hover:shadow-md transition-all">
+                    <summary class="flex items-center p-4 cursor-pointer select-none">
+                        <div class="flex items-center flex-1">
+                            <span class="bg-blue-100 text-gov-blue text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-200 min-w-[24px] text-center">${idx + 1}</span>
+                            <span class="font-bold text-gov-dark-blue text-lg">${action.titulo}</span>
+                        </div>
+                        <svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </summary>
+                    <div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-gray-100 bg-gray-50 text-base">
+                        ${displayText}
+                    </div>
+                </details>`;
+            }).join('');
+
+            // G. Contactos (Filtrado por Ciudad)
+            let contactsHTML = '';
+            let city = state.answers.p3_detail;
+            
+            if(DB_CONTACTOS.length > 0) {
+                // Filtro: Ciudad seleccionada OR Nacional
+                let localContacts = DB_CONTACTOS.filter(c => 
+                    (c.Ciudad === city || c.Cobertura === 'NACIONAL') && c.Activa === 'SI'
+                );
+                
+                let listItems = localContacts.map(c => `
+                    <li class="bg-white p-4 rounded border border-blue-100 shadow-sm mb-2">
+                        <strong class="block text-gov-blue text-lg">${c.Nombre_Corto || c.Nombre_Largo}</strong>
+                        <span class="block text-sm text-gray-700 mt-1">${c.Que_Hace_Resumen || ''}</span>
+                        <div class="mt-2 text-sm">
+                            <div class="flex items-center text-gray-600 mb-1">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>
+                                <span>${c.Telefono_Principal || c.Linea_Gratuita}</span>
+                            </div>
+                            <div class="flex items-center text-gray-500">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                <span>${c.Direccion || 'Nacional'}</span>
+                            </div>
+                        </div>
+                    </li>
+                `).join('');
+
+                if (listItems) {
+                    contactsHTML = `
+                        <div class="mt-8 bg-blue-50 p-6 rounded-lg border border-blue-100">
+                            <h3 class="font-bold text-gov-dark-blue mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                                Directorio de Entidades (${city || 'Nacional'})
+                            </h3>
+                            <ul class="space-y-0">${listItems}</ul>
+                        </div>
+                    `;
+                }
+            }
+
+            // H. Guion
+            const narrative = document.getElementById('narrativeInput') ? document.getElementById('narrativeInput').value : '';
+            const scriptHTML = narrative ? `
+                <div class="bg-gray-100 p-6 rounded-lg mb-8 border-l-4 border-gray-500 shadow-sm print:border-black">
+                    <h4 class="font-bold text-gray-700 text-xs uppercase mb-2 tracking-wider">Guion para su denuncia (Leer al funcionario)</h4>
+                    <p class="text-gray-800 italic text-lg font-serif">"Vengo a reportar la desaparición de una persona con perfil: ${getProfiles()}. ${narrative}. Hechos ocurridos en ${state.answers.p3_detail || 'la zona'} hace ${state.answers.p2}."</p>
+                </div>
+            ` : '';
+
+            if (!htmlSteps) htmlSteps = '<div class="p-6 bg-yellow-50 text-yellow-800 rounded-lg text-center border border-yellow-200">No se encontraron acciones específicas para esta combinación. Por favor acuda directamente a la Fiscalía.</div>';
+
+            return `
+                <div class="text-center mb-8">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-1">Ruta de Acción Personalizada</h3>
+                    <p class="text-gray-500">Guía de orientación generada automáticamente</p>
+                </div>
+                
+                ${scriptHTML}
+
+                <div class="space-y-2">
+                    ${htmlSteps}
+                </div>
+
+                ${contactsHTML}
+
+                <div class="mt-12 text-center print:hidden">
+                    <button onclick="window.print()" class="bg-white text-gov-blue border-2 border-gov-blue px-8 py-3 rounded-full font-bold hover:bg-blue-50 transition mr-4">
+                        Descargar Guía (PDF)
+                    </button>
+                    <button onclick="location.reload()" class="bg-gray-200 text-gray-700 px-8 py-3 rounded-full font-bold hover:bg-gray-300 transition">
+                        Nueva Consulta
+                    </button>
+                </div>
+            `;
+        }
+
+        function getProfiles() {
+            // Muestra nombres de perfiles seleccionados
+            const map = {
+                '4.1': 'Menor de edad', '4.2': 'Líder Social', '4.3': 'Fuerza Pública',
+                '4.4': 'Excombatiente', '4.5': 'Discapacidad/Mayor', '4.6': 'Extranjero',
+                '4.7': 'Mujer en Riesgo', '4.8': 'Comunidad Étnica', '4.9': 'LGBTIQ+',
+                '4.10': 'Colectivo'
+            };
+            return state.answers.p4_profile.map(id => map[id] || id).join(', ') || "General";
+        }
+
+        loadData();
+
+    </script>
+</body>
+</html>
