@@ -27,8 +27,11 @@
             background-color: white; color: #3366CC; border: 2px solid #3366CC; border-radius: 25px; 
             padding: 12px 24px; font-weight: 700; transition: all 0.2s; width: 100%; text-align: left; 
             display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;
+            cursor: pointer;
         }
         .btn-gov:hover, .btn-gov.selected { background-color: #3366CC; color: white; transform: translateY(-2px); box-shadow: 0 4px 6px rgba(51, 102, 204, 0.2); }
+        /* Ajuste para que el texto de ayuda no cambie de color al hover del padre si no se quiere, 
+           pero aquí permitiremos que se integre. */
         
         /* Checkbox Cards */
         .checkbox-card { 
@@ -38,7 +41,7 @@
         .checkbox-card:hover { border-color: #3366CC; background-color: #F8FBFF; }
         .checkbox-card.selected { border-color: #3366CC; background-color: #EFF6FF; ring: 1px solid #3366CC; }
         
-        /* CAMBIO: flex-shrink-0 para evitar deformación */
+        /* flex-shrink-0 para evitar deformación */
         .checkbox-mark { 
             width: 20px; height: 20px; flex-shrink: 0; 
             border: 2px solid #9CA3AF; border-radius: 4px; margin-right: 12px; 
@@ -334,44 +337,60 @@
                 description: 'Esta información nos ayuda a dirigirlo a la entidad especializada.',
                 type: 'single-choice', 
                 options: [
-                    { id: '1.6', label: 'No tengo sospechas claras (Simplemente no aparece)' },
-                    { id: '1.1', label: 'Creo que es Conflicto Armado / Violencia Política' },
-                    { id: '1.2', label: 'Creo que es un Crimen (Robo, Secuestro, etc.)' },
-                    { id: '1.3', label: 'Creo que se perdió o se accidentó (Sin violencia)' },
-                    { id: '1.4', label: 'Fue durante un desastre natural' },
-                    { id: '1.5', label: 'Tiene que ver con Migración o viaje al exterior' }
+                    { id: '4.1', label: 'En un contexto de conflicto armado o violencia política', help: 'Sospecha de Guerrilla, Paramilitares, "Falsos Positivos", Grupos Armados, violencia en protestas, muerto en combate.' },
+                    { id: '4.2', label: 'A causa de un crimen o acto de delincuencia común', help: 'Sospecha de secuestro, extorsión, robo, "gota a gota", bandas, trata de personas, violencia de pareja.' },
+                    { id: '4.3', label: 'Se perdió o se ausentó (sin violencia aparente)', help: 'Salió de casa y no regresó, puede estar desorientado/a, se fue por voluntad propia, se perdió en un lugar concurrido.' },
+                    { id: '4.4', label: 'Durante un accidente o desastre natural', help: 'Desapareció en un río, en el mar, en una montaña (senderismo) o durante una avalancha, derrumbe, etc.' },
+                    { id: '4.5', label: 'En un contexto de migración o estando en el exterior', help: 'Estaba en una ruta migratoria (ej. Darién) o vivía/viajaba en otro país.' },
+                    { id: '4.6', label: 'No tengo sospechas claras de lo que pudo pasar', help: 'Simplemente no he vuelto a saber de él/ella y no tengo pistas para empezar.' }
                 ]
             },
-            'p1.2': { 
+            // SUB-PANTALLA CONFLICTO (4.1)
+            'p1_conflict': { 
                 progress: '95%', 
-                title: 'Especifique el tipo de crimen', 
-                alert: '⚠️ Si piden dinero por liberación, no pague y llame al 165 GAULA.', 
+                title: 'Detalles del Conflicto', 
+                description: 'Especifique la situación para activar rutas de búsqueda humanitaria.',
                 type: 'single-choice', 
                 options: [
-                    { id: '1.2.1', label: 'Narcotráfico/Crimen organizado' },
-                    { id: '1.2.2', label: 'Trata de personas' },
-                    { id: '1.2.3', label: 'Violencia intrafamiliar' },
-                    { id: '1.2.4', label: 'Secuestro' },
-                    { id: '1.2.5', label: 'Extorsión' },
-                    { id: '1.2.6', label: 'Otro crimen' },
-                    { id: '1.2.7', label: 'No sé específicamente' }
+                    { id: '4.1.1', label: 'Involucra grupos armados al margen de la ley', help: 'Guerrilla, BACRIM, disidencias, grupos multicrimen.' },
+                    { id: '4.1.2', label: 'Sospecha de participación de agentes del Estado', help: 'Policía, Ejército o Servidores Públicos.' },
+                    { id: '4.1.3', label: 'Relacionado con reclutamiento forzado de menores' },
+                    { id: '4.1.4', label: 'Muerto en combate o acto de hostilidades' },
+                    { id: '4.1.5', label: 'Otra situación / No sé específicamente' }
                 ]
             },
-            'p1.5': { progress: '95%', title: 'Detalle migratorio', type: 'single-choice', options: [
-                { id: '1.5.1', label: 'Desapareció en el camino (Ruta)' },
-                { id: '1.5.2', label: 'Ya estaba en otro país' },
-                { id: '1.5.3', label: 'Fue forzada a salir (Trata)' },
-                { id: '1.5.4', label: 'Otra situación' }
-            ]},
-            'p2.4_conflict': { progress: '95%', title: 'Fecha del hecho', type: 'single-choice', options: [
-                { id: '2.4.1', label: 'Antes de Dic 2016' },
-                { id: '2.4.2', label: 'Después de Dic 2016' }
-            ]},
+            // SUB-PANTALLA CRIMEN (4.2)
+            'p1_crime': { 
+                progress: '95%', 
+                title: 'Especifique el tipo de crimen', 
+                alert: '⚠️ IMPORTANTE: Si en algún momento lo contactan para pedirle dinero por la liberación de su ser querido, no haga nada más y llame INMEDIATAMENTE a la línea 165 del GAULA.', 
+                type: 'single-choice', 
+                options: [
+                    { id: '4.2.1', label: 'Narcotráfico o crimen organizado' },
+                    { id: '4.2.2', label: 'Trata de personas o explotación sexual' },
+                    { id: '4.2.3', label: 'Violencia intrafamiliar o de pareja' },
+                    { id: '4.2.4', label: 'Secuestro' },
+                    { id: '4.2.5', label: 'Extorsión', help: 'Lo han llamado para cobrarle dinero por el rescate o información.' },
+                    { id: '4.2.6', label: 'Otro tipo de crimen / No sé específicamente' }
+                ]
+            },
+            // SUB-PANTALLA MIGRACIÓN (4.5)
+            'p1_migration': { 
+                progress: '95%', 
+                title: 'Detalle migratorio', 
+                type: 'single-choice', 
+                options: [
+                    { id: '4.5.1', label: 'Planeaba migrar y desapareció en el camino' },
+                    { id: '4.5.2', label: 'Ya estaba en otro país y perdimos contacto' },
+                    { id: '4.5.3', label: 'Fue forzada a salir del país (posible trata)' },
+                    { id: '4.5.4', label: 'Otra situación' }
+                ]
+            },
             
             'p_narrative': {
                 progress: '98%',
-                title: 'Detalles Adicionales',
-                description: 'Escriba brevemente: ¿Cómo vestía? ¿Tenía señales particulares? Esto generará un guion para su denuncia.',
+                title: 'Detalles Adicionales (Opcional)',
+                description: 'Escriba brevemente: ¿Cómo vestía? ¿Tenía señales particulares?', // CAMBIO: Texto reducido
                 type: 'textarea',
                 next: 'results'
             },
@@ -514,10 +533,20 @@
                     html += '<div class="space-y-3">';
                     config.options.forEach(opt => {
                         html += `
-                        <button onclick="handleChoice('${opt.id}')" class="btn-gov group">
-                            <span class="text-lg">${opt.label}</span>
-                            <svg class="w-6 h-6 text-blue-200 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                        </button>`;
+                        <div class="mb-3">
+                            <div class="relative flex items-center">
+                                <button onclick="handleChoice('${opt.id}')" class="btn-gov group !mb-0 pr-12">
+                                    <span class="text-lg text-left">${opt.label}</span>
+                                    <svg class="w-6 h-6 text-blue-200 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                                </button>
+                                ${opt.help ? `
+                                <button onclick="event.stopPropagation(); toggleHelp('help-${opt.id}')" class="absolute right-12 text-gov-blue hover:text-gov-dark-blue p-2 z-10" title="Ver ayuda">
+                                    <svg class="w-6 h-6 bg-white rounded-full border border-gov-blue text-gov-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                </button>
+                                ` : ''}
+                            </div>
+                            ${opt.help ? `<div id="help-${opt.id}" class="hidden mt-2 mx-4 text-sm text-gov-dark-blue bg-blue-50 p-3 rounded-b-lg border-x border-b border-blue-100">${opt.help}</div>` : ''}
+                        </div>`;
                     });
                     html += '</div>';
                 }
@@ -546,7 +575,8 @@
                 }
                 else if (config.type === 'dropdown') {
                     nextBtn.classList.remove('hidden');
-                    html += `<div class="mb-6"><select id="selectInput" class="w-full p-4 border border-gray-300 rounded-lg text-lg outline-none focus:ring-2 focus:ring-gov-blue"><option value="">Seleccione una opción...</option>${config.data.map(i => `<option value="${i}">${i}</option>`).join('')}</select></div>`;
+                    // CAMBIO: onchange para remover el error visual cuando el usuario selecciona algo
+                    html += `<div class="mb-6"><select id="selectInput" onchange="this.classList.remove('border-red-500', 'ring-2', 'ring-red-200')" class="w-full p-4 border border-gray-300 rounded-lg text-lg outline-none focus:ring-2 focus:ring-gov-blue"><option value="">Seleccione una opción...</option>${config.data.map(i => `<option value="${i}">${i}</option>`).join('')}</select></div>`;
                 }
                 // NUEVO TIPO: MUNICIPIO + CIUDAD (P3.2)
                 else if (config.type === 'municipality-city') {
@@ -555,7 +585,7 @@
                     <div class="space-y-6">
                         <div>
                             <label class="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wide">Municipio</label>
-                            <select id="municipalityInput" class="w-full p-4 border border-gray-300 rounded-lg text-lg outline-none focus:ring-2 focus:ring-gov-blue">
+                            <select id="municipalityInput" onchange="this.classList.remove('border-red-500', 'ring-2', 'ring-red-200')" class="w-full p-4 border border-gray-300 rounded-lg text-lg outline-none focus:ring-2 focus:ring-gov-blue">
                                 ${config.municipalityData.map(i => `<option value="${i}">${i}</option>`).join('')}
                             </select>
                         </div>
@@ -565,7 +595,7 @@
                                 Ciudad Principal más cercana
                             </label>
                             <p class="text-xs text-gray-500 mb-2">Seleccione dónde le quedaría más fácil recibir atención presencial.</p>
-                            <select id="cityInput" class="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-gov-blue">
+                            <select id="cityInput" onchange="this.classList.remove('border-red-500', 'ring-2', 'ring-red-200')" class="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-gov-blue">
                                 <option value="">Seleccione...</option>
                                 ${config.cityData.map(i => `<option value="${i}">${i}</option>`).join('')}
                             </select>
@@ -616,10 +646,10 @@
             
             // Guardar respuestas
             if (cur === 'p2') state.answers.p2 = val;
-            if (cur === 'p2.4_conflict') state.answers.p2_sub = val;
+            if (cur === 'p2.4_conflict') state.answers.p2_sub = val; // Mantengo legacy por si acaso
             if (cur === 'p3_type') state.answers.p3_type = val;
             if (cur === 'p1') state.answers.p1 = val;
-            if (cur === 'p1.2' || cur === 'p1.5') state.answers.p1_sub = val;
+            if (['p1_conflict', 'p1_crime', 'p1_migration'].includes(cur)) state.answers.p1_sub = val;
 
             state.history.push(cur);
 
@@ -634,12 +664,15 @@
                 if(val === '3.1') next = 'p3.1'; else if(val === '3.2') next = 'p3.2'; else next = 'p3.3';
             }
             else if (cur === 'p1') {
-                if(val === '1.2') next = 'p1.2';
-                else if(val === '1.5') next = 'p1.5';
-                else if(val === '1.1' && state.answers.p2 === '2.4') next = 'p2.4_conflict';
-                else next = 'p_narrative';
+                // Lógica de Indicios actualizada con los códigos 4.x
+                if(val === '4.1') next = 'p1_conflict';
+                else if(val === '4.2') next = 'p1_crime';
+                else if(val === '4.5') next = 'p1_migration';
+                else next = 'p_narrative'; // 4.3, 4.4, 4.6 van directo
             }
-            else if (['p1.2', 'p1.5', 'p2.4_conflict'].includes(cur)) next = 'p_narrative';
+            else if (['p1_conflict', 'p1_crime', 'p1_migration'].includes(cur)) {
+                next = 'p_narrative';
+            }
 
             renderView(next);
         }
@@ -658,7 +691,40 @@
 
         function goNext() {
             const cur = state.currentStep;
+            const currentConfig = steps[cur];
             
+            // --- CAMBIO: VALIDACIÓN DE DROPDOWNS (Punto 2) ---
+            if (currentConfig && currentConfig.type === 'dropdown') {
+                const select = document.getElementById('selectInput');
+                if (!select.value) {
+                    select.classList.add('border-red-500', 'ring-2', 'ring-red-200'); // Resaltar en rojo
+                    select.focus();
+                    return; // Detener avance
+                }
+                state.answers.p3_detail = select.value;
+            }
+
+            // --- CAMBIO: VALIDACIÓN MUNICIPIO/CIUDAD (Punto 2) ---
+            if (currentConfig && currentConfig.type === 'municipality-city') {
+                const muniSelect = document.getElementById('municipalityInput');
+                const citySelect = document.getElementById('cityInput');
+                let valid = true;
+
+                if (!muniSelect.value) {
+                    muniSelect.classList.add('border-red-500', 'ring-2', 'ring-red-200');
+                    valid = false;
+                }
+                if (!citySelect.value) {
+                    citySelect.classList.add('border-red-500', 'ring-2', 'ring-red-200');
+                    valid = false;
+                }
+                
+                if (!valid) return; // Detener si falta alguno
+
+                state.answers.p3_sub_detail = muniSelect.value;
+                state.answers.p3_detail = citySelect.value || muniSelect.value;
+            }
+
             // Validación Fecha
             if (cur === 'p2_date') {
                 const month = document.getElementById('monthInput').value;
@@ -673,18 +739,18 @@
                 state.answers.p2_date_year = year;
             }
 
-            // Guardar datos Dropdown Simple
-            if (steps[cur] && steps[cur].type === 'dropdown') state.answers.p3_detail = document.getElementById('selectInput').value;
+            // --- CAMBIO: LÓGICA POR DEFECTO PERFIL (Punto 1) ---
+            if (cur === 'p4') {
+                if (state.answers.p4_profile.length === 0) {
+                    state.answers.p4_profile.push('1.11'); // 1.11 = Ninguna de las anteriores
+                }
+            }
 
-            // Guardar datos Municipio-Ciudad
-            if (steps[cur] && steps[cur].type === 'municipality-city') {
-                const muni = document.getElementById('municipalityInput').value;
-                const city = document.getElementById('cityInput').value;
-                
-                // IMPORTANTE: Guardamos el municipio específico para el registro
-                state.answers.p3_sub_detail = muni;
-                // Y guardamos la CIUDAD CERCANA como 'detail' principal para que el filtro de contactos funcione
-                state.answers.p3_detail = city || muni; // Fallback al municipio si no selecciona ciudad (aunque debería)
+            // --- CAMBIO: LÓGICA POR DEFECTO LUGAR (Punto 3) ---
+            if (cur === 'p3.4') {
+                if (state.answers.p3_characteristics.length === 0) {
+                    state.answers.p3_characteristics.push('3.4.10'); // 3.4.10 = Ninguna de estas
+                }
             }
             
             state.history.push(cur);
