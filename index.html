@@ -97,7 +97,7 @@
         .a11y-menu {
             position: fixed; right: 0; top: 50%; transform: translateY(-50%); z-index: 60;
             display: flex; flex-direction: column; gap: 2px;
-            align-items: flex-end; /* FIX: Alinea los items a la derecha para que crezcan hacia la izquierda */
+            align-items: flex-end; 
         }
         .a11y-btn {
             background-color: #004884; color: white; border: none; padding: 10px; width: 44px; height: 44px;
@@ -131,15 +131,72 @@
         body.high-contrast footer { background-color: #111 !important; border-top: 1px solid #FFFF00; }
         body.high-contrast img { filter: grayscale(100%) contrast(120%); }
 
-        /* FIXES ALTO CONTRASTE ESPECÍFICOS */
         body.high-contrast #loader { background-color: #000 !important; }
         body.high-contrast select, body.high-contrast input, body.high-contrast textarea { background-color: #000 !important; color: #FFFF00 !important; border: 1px solid #FFFF00 !important; }
         body.high-contrast .bg-blue-100 { background-color: #000 !important; color: #FFFF00 !important; border: 1px solid #FFFF00 !important; }
         body.high-contrast details[open] > summary { background-color: #1a1a1a !important; border-bottom: 1px solid #FFFF00 !important; }
         body.high-contrast .bg-gray-200 { background-color: #000 !important; color: #FFFF00 !important; border: 1px solid #FFFF00 !important; }
         body.high-contrast details .p-5 { background-color: #000 !important; color: #FFF !important; }
-        /* FIX BLOCKQUOTE ALTO CONTRASTE */
         body.high-contrast .md-content blockquote { background-color: #000 !important; color: #FFF !important; border-left: 4px solid #FFFF00 !important; border: 1px solid #FFFF00; }
+
+        /* --- ESTILOS DE IMPRESIÓN (MEJORADO) --- */
+        @media print {
+            @page { margin: 1cm; size: auto; }
+            body { background: white !important; color: black !important; font-size: 11pt; -webkit-print-color-adjust: exact; }
+            
+            /* Ocultar Elementos UI Web */
+            header, footer, .a11y-menu, #navButtons, .tab-btn, .print\:hidden, #loader, button { display: none !important; }
+            
+            /* Contenedor Web General Oculto */
+            #viewContainer > div:not(#print-area) { display: none !important; }
+
+            /* Mostrar Contenedor de Impresión */
+            #print-area { display: block !important; }
+            
+            /* Estilos de Bloques Impresos */
+            .print-section { margin-bottom: 1.5rem; } 
+            .print-item { margin-bottom: 1rem; border-bottom: 1px solid #eee; padding-bottom: 0.5rem; } 
+            
+            /* Título de Item (Resaltado) */
+            .print-title { 
+                background-color: #f0f9ff; /* Fondo Azul Claro */
+                color: #004884; 
+                font-size: 12pt; 
+                font-weight: 800; 
+                padding: 8px 12px;
+                border-radius: 6px;
+                border: 1px solid #bfdbfe;
+                margin-bottom: 0.5rem; 
+                break-after: avoid;
+            }
+            
+            .print-content { font-size: 11pt; line-height: 1.3; text-align: justify; padding-left: 4px; }
+            
+            /* Encabezados de Sección */
+            h1.print-header { font-size: 18pt; color: #3366CC; margin-bottom: 1rem; border-bottom: 2px solid #3366CC; font-weight: 800; }
+            
+            h2.print-subheader { 
+                font-size: 16pt; 
+                color: white; 
+                background-color: #004884;
+                margin-top: 2rem; 
+                margin-bottom: 1rem; 
+                padding: 10px 15px; 
+                font-weight: 800; 
+                border-radius: 4px;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                break-after: avoid;
+            }
+            
+            /* Markdown en Impresión */
+            .md-content p { margin-bottom: 0.5em; }
+            .md-content h3 { font-size: 12pt; font-weight: bold; color: #333; margin-top: 1em; }
+            .md-content ul, .md-content ol { padding-left: 1.5em; }
+            
+            /* Asegurar Logos */
+            img { max-width: 100% !important; }
+        }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -209,7 +266,6 @@
     <!-- Footer -->
     <footer class="bg-gov-blue py-4 mt-auto transition-colors duration-300">
         <div class="container mx-auto px-4">
-            <!-- CAMBIO: Se eliminó border-t y border-blue-400/30 para limpiar el footer -->
             <div class="pt-4 flex items-center">
                 <img src="logoGovCO.png" alt="GOV.CO" class="h-6 w-auto opacity-90 brightness-0 invert">
             </div>
@@ -244,7 +300,6 @@
             CONTACTOS: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=871607364&single=true&output=csv'
         };
 
-        // Mapa de rutas maestras según opción de P1
         const ROUTES_MAP = {
             '4.1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=545298463&single=true&output=csv',
             '4.2': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=1342244385&single=true&output=csv',
@@ -254,10 +309,9 @@
             '4.6': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=1764372827&single=true&output=csv'
         };
 
-        // Bases de Datos en Memoria
         let DB_ACCIONES = []; 
         let DB_CONTACTOS = []; 
-        let CURRENT_ROUTE_DATA = []; // Datos de la ruta maestra seleccionada
+        let CURRENT_ROUTE_DATA = []; 
 
         // --- 2. ESTADO DE LA APP ---
         const state = {
@@ -268,32 +322,24 @@
                 p2: null, p2_sub: null, p2_date_month: null, p2_date_year: null,
                 p3_type: null, p3_detail: null, p3_sub_detail: null, p3_characteristics: [], 
                 p4_profile: [],
-                narrative: '' // Guardamos la narrativa aquí
+                narrative: ''
             }
         };
 
-        // CONSTANTES GEOGRÁFICAS INICIALES (Se sobrescribirán con datos reales)
         let COUNTRIES_LIST = ['Colombia'];
         let CITIES_LIST = ['Bogotá D.C.'];
         let MUNICIPALITIES_LIST = ['Bogotá D.C.'];
         
         // --- 3. DEFINICIÓN DE PASOS (UI) ---
         const steps = {
-            // PASO 0: INTRODUCCIÓN
             'intro': {
-                progress: '0%',
-                title: 'Bienvenido',
-                type: 'intro',
+                progress: '0%', title: 'Bienvenido', type: 'intro',
                 description: 'Esta es una herramienta de orientación para la búsqueda de personas dadas por desaparecidas. Le guiaremos paso a paso para identificar la ruta de acción más efectiva según su caso.',
                 disclaimer: 'Su privacidad es fundamental. Esta guía es anónima: no almacenamos, registramos ni compartimos ningún dato personal que ingrese durante la consulta.',
                 btnLabel: 'Comenzar Consulta'
             },
-            // PASO 1: PERFIL (P4)
             'p4': { 
-                progress: '20%', 
-                title: '¿Quién es la persona desaparecida?', 
-                description: 'Seleccione todas las condiciones que apliquen. Esto define la prioridad de la búsqueda.',
-                type: 'multi-choice', 
+                progress: '20%', title: '¿Quién es la persona desaparecida?', description: 'Seleccione todas las condiciones que apliquen. Esto define la prioridad de la búsqueda.', type: 'multi-choice', 
                 options: [
                     { id: '1.1', label: 'Es un/a niño/a o adolescente', help: 'Menor de 18 años al momento de desaparecer.' },
                     { id: '1.2', label: 'Es una persona con un rol público o de alto riesgo', help: 'Líder, defensor/a, periodista, sindicalista, político.' },
@@ -308,54 +354,23 @@
                     { id: '1.11', label: 'Ninguna de las anteriores' }
                 ]
             },
-            // PASO 2: TIEMPO (P2)
             'p2': { 
-                progress: '40%', 
-                title: '¿Hace cuánto tiempo ocurrió?', 
-                description: 'Esto determina si la búsqueda es operativa (urgente) o investigativa (histórica).',
-                type: 'single-choice', 
-                options: [
-                    { id: '2.1', label: 'Ocurrió hace poco (horas, días o semanas)' },
-                    { id: '2.2', label: 'Ocurrió hace más de un año' }
-                ]
+                progress: '40%', title: '¿Hace cuánto tiempo ocurrió?', description: 'Esto determina si la búsqueda es operativa (urgente) o investigativa (histórica).', type: 'single-choice', 
+                options: [ { id: '2.1', label: 'Ocurrió hace poco (horas, días o semanas)' }, { id: '2.2', label: 'Ocurrió hace más de un año' } ]
             },
-            // PASO 2.1: FECHA DETALLADA (Solo si es > 1 año)
-            'p2_date': {
-                progress: '45%',
-                title: 'Fecha aproximada de los hechos',
-                description: 'Por favor indique el mes y año aproximado en que ocurrió la desaparición.',
-                type: 'date-year-picker'
-            },
-            // PASO 3: LUGAR (P3)
+            'p2_date': { progress: '45%', title: 'Fecha aproximada de los hechos', description: 'Por favor indique el mes y año aproximado en que ocurrió la desaparición.', type: 'date-year-picker' },
             'p3_type': { 
-                progress: '60%', 
-                title: '¿Dónde ocurrió o fue vista por última vez?', 
-                type: 'single-choice', 
-                options: [
-                    { id: '3.1', label: 'Capital o ciudad principal' },
-                    { id: '3.2', label: 'Municipio pequeño o zona rural' },
-                    { id: '3.3', label: 'En otro país' }
-                ]
+                progress: '60%', title: '¿Dónde ocurrió o fue vista por última vez?', type: 'single-choice', 
+                options: [ { id: '3.1', label: 'Capital o ciudad principal' }, { id: '3.2', label: 'Municipio pequeño o zona rural' }, { id: '3.3', label: 'En otro país' } ]
             },
             'p3.1': { progress: '65%', title: 'Seleccione la ciudad', type: 'dropdown', data: CITIES_LIST },
-            
-            // CAMBIO: NUEVO TIPO PARA MUNICIPIO + CIUDAD
             'p3.2': { 
-                progress: '65%', 
-                title: 'Ubicación en Municipio', 
-                type: 'municipality-city', 
-                municipalityData: ['Otro'], // Según instrucciones
-                cityData: CITIES_LIST, // Para sugerir la ciudad cercana
+                progress: '65%', title: 'Ubicación en Municipio', type: 'municipality-city', municipalityData: ['Otro'], cityData: CITIES_LIST, 
                 description: 'Seleccione el municipio y la ciudad principal más cercana para ubicar las entidades de apoyo.' 
             },
-            
             'p3.3': { progress: '65%', title: 'Seleccione el país', type: 'dropdown', data: ['España', 'Estados Unidos', 'México', 'Ecuador', 'Chile', 'Otro'] },
-            
             'p3.4': { 
-                progress: '75%', 
-                title: 'Características del lugar', 
-                description: 'Marque si el lugar tiene alguna condición especial.',
-                type: 'multi-choice', 
+                progress: '75%', title: 'Características del lugar', description: 'Marque si el lugar tiene alguna condición especial.', type: 'multi-choice', 
                 options: [
                     { id: '3.4.1', label: 'En el agua o cerca de ella', help: 'Mar, río, costa, puerto, represa' },
                     { id: '3.4.2', label: 'Cerca de una frontera con otro país', help: 'Límite con Venezuela, Ecuador, Panamá, etc.' },
@@ -365,59 +380,44 @@
                     { id: '3.4.6', label: 'En una zona de minería, petróleo u otra explotación de recursos', help: 'Cerca de una mina, un campo petrolero, zona de tala' },
                     { id: '3.4.7', label: 'En una zona de conflicto armado o con grupos ilegales', help: 'Presencia de guerrilla, paramilitares, bandas criminales' },
                     { id: '3.4.8', label: 'Dentro o cerca de una base militar, de policía o entidad del Estado', help: 'Batallón, estación de policía, CAI, instalaciones oficiales' },
-                    { id: '3.4.9', label: 'Dentro o cerca de un cementerio o morgue', help: 'Fosas comunes, osarios, depósitos de cuerpos no identificados, fosa clandestina o enterramiento ilegal' },
+                    { id: '3.4.9', label: 'Dentro o cerca de un cementerio o morgue', help: 'Fosas comunes, osarios, depósitos de cuerpos no identificados' },
                     { id: '3.4.10', label: 'Ninguna de estas' }
                 ]
             },
-            // PASO 4: CONTEXTO / INDICIOS (P1 - Flujo Inverso)
             'p1': { 
-                progress: '90%', 
-                title: '¿Tiene alguna sospecha de lo que ocurrió?', 
-                description: 'Esta información nos ayuda a dirigirlo a la entidad especializada.',
-                type: 'single-choice', 
+                progress: '90%', title: '¿Tiene alguna sospecha de lo que ocurrió?', description: 'Esta información nos ayuda a dirigirlo a la entidad especializada.', type: 'single-choice', 
                 options: [
-                    { id: '4.1', label: 'En un contexto de conflicto armado o violencia política', help: 'Sospecha de Guerrilla, Paramilitares, "Falsos Positivos", Grupos Armados, violencia en protestas, muerto en combate.' },
-                    { id: '4.2', label: 'A causa de un crimen o acto de delincuencia común', help: 'Sospecha de secuestro, extorsión, robo, "gota a gota", bandas, trata de personas, violencia de pareja.' },
-                    { id: '4.3', label: 'Se perdió o se ausentó (sin violencia aparente)', help: 'Salió de casa y no regresó, puede estar desorientado/a, se fue por voluntad propia, se perdió en un lugar concurrido.' },
-                    { id: '4.4', label: 'Durante un accidente o desastre natural', help: 'Desapareció en un río, en el mar, en una montaña (senderismo) o durante una avalancha, derrumbe, etc.' },
+                    { id: '4.1', label: 'En un contexto de conflicto armado o violencia política', help: 'Sospecha de Guerrilla, Paramilitares, "Falsos Positivos", Grupos Armados.' },
+                    { id: '4.2', label: 'A causa de un crimen o acto de delincuencia común', help: 'Sospecha de secuestro, extorsión, robo, "gota a gota", bandas, trata de personas.' },
+                    { id: '4.3', label: 'Se perdió o se ausentó (sin violencia aparente)', help: 'Salió de casa y no regresó, puede estar desorientado/a, se fue por voluntad propia.' },
+                    { id: '4.4', label: 'Durante un accidente o desastre natural', help: 'Desapareció en un río, en el mar, en una montaña o durante una avalancha.' },
                     { id: '4.5', label: 'En un contexto de migración o estando en el exterior', help: 'Estaba en una ruta migratoria (ej. Darién) o vivía/viajaba en otro país.' },
-                    { id: '4.6', label: 'No tengo sospechas claras de lo que pudo pasar', help: 'Simplemente no he vuelto a saber de él/ella y no tengo pistas para empezar.' }
+                    { id: '4.6', label: 'No tengo sospechas claras de lo que pudo pasar', help: 'Simplemente no he vuelto a saber de él/ella.' }
                 ]
             },
-            // SUB-PANTALLA CONFLICTO (4.1)
             'p1_conflict': { 
-                progress: '95%', 
-                title: 'Detalles del Conflicto', 
-                description: 'Especifique la situación para activar rutas de búsqueda humanitaria.',
-                type: 'single-choice', 
+                progress: '95%', title: 'Detalles del Conflicto', description: 'Especifique la situación para activar rutas de búsqueda humanitaria.', type: 'single-choice', 
                 options: [
-                    { id: '4.1.1', label: 'Involucra grupos armados al margen de la ley', help: 'Guerrilla, BACRIM, disidencias, grupos multicrimen.' },
-                    { id: '4.1.2', label: 'Sospecha de participación de agentes del Estado', help: 'Policía, Ejército o Servidores Públicos.' },
+                    { id: '4.1.1', label: 'Involucra grupos armados al margen de la ley' },
+                    { id: '4.1.2', label: 'Sospecha de participación de agentes del Estado' },
                     { id: '4.1.3', label: 'Relacionado con reclutamiento forzado de menores' },
                     { id: '4.1.4', label: 'Muerto en combate o acto de hostilidades' },
                     { id: '4.1.5', label: 'Otra situación / No sé específicamente' }
                 ]
             },
-            // SUB-PANTALLA CRIMEN (4.2)
             'p1_crime': { 
-                progress: '95%', 
-                title: 'Especifique el tipo de crimen', 
-                alert: '⚠️ IMPORTANTE: Si en algún momento lo contactan para pedirle dinero por la liberación de su ser querido, no haga nada más y llame INMEDIATAMENTE a la línea 165 del GAULA.', 
-                type: 'single-choice', 
+                progress: '95%', title: 'Especifique el tipo de crimen', alert: '⚠️ IMPORTANTE: Si en algún momento lo contactan para pedirle dinero por la liberación de su ser querido, no haga nada más y llame INMEDIATAMENTE a la línea 165 del GAULA.', type: 'single-choice', 
                 options: [
                     { id: '4.2.1', label: 'Narcotráfico o crimen organizado' },
                     { id: '4.2.2', label: 'Trata de personas o explotación sexual' },
                     { id: '4.2.3', label: 'Violencia intrafamiliar o de pareja' },
                     { id: '4.2.4', label: 'Secuestro' },
-                    { id: '4.2.5', label: 'Extorsión', help: 'Lo han llamado para cobrarle dinero por el rescate o información.' },
+                    { id: '4.2.5', label: 'Extorsión' },
                     { id: '4.2.6', label: 'Otro tipo de crimen / No sé específicamente' }
                 ]
             },
-            // SUB-PANTALLA MIGRACIÓN (4.5)
             'p1_migration': { 
-                progress: '95%', 
-                title: 'Detalle migratorio', 
-                type: 'single-choice', 
+                progress: '95%', title: 'Detalle migratorio', type: 'single-choice', 
                 options: [
                     { id: '4.5.1', label: 'Planeaba migrar y desapareció en el camino' },
                     { id: '4.5.2', label: 'Ya estaba en otro país y perdimos contacto' },
@@ -425,15 +425,9 @@
                     { id: '4.5.4', label: 'Otra situación' }
                 ]
             },
-            
             'p_narrative': {
-                progress: '98%',
-                title: 'Detalles Adicionales (Opcional)',
-                description: 'Escriba brevemente: ¿Cómo vestía? ¿Tenía señales particulares?', 
-                type: 'textarea',
-                next: 'results'
+                progress: '98%', title: 'Detalles Adicionales (Opcional)', description: 'Escriba brevemente: ¿Cómo vestía? ¿Tenía señales particulares?', type: 'textarea', next: 'results'
             },
-
             'results': { progress: '100%', title: 'Ruta de Acción', type: 'results' }
         };
 
@@ -447,18 +441,12 @@
                     const res = await fetch(url);
                     if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
                     const text = await res.text();
-                    return Papa.parse(text, { 
-                        header: true, 
-                        skipEmptyLines: true,
-                        transformHeader: h => h.trim() // IMPORTANTE: Limpia espacios en nombres de columnas
-                    }).data;
+                    return Papa.parse(text, { header: true, skipEmptyLines: true, transformHeader: h => h.trim() }).data;
                 };
 
                 status.innerText = "Descargando Directorio...";
                 DB_CONTACTOS = await loadSheet(SHEETS_CONFIG.CONTACTOS);
 
-                // --- PROCESAMIENTO LISTAS DINÁMICAS ---
-                // Helper para obtener únicos, ordenar y agregar 'Otro'
                 const getUniqueSorted = (data, key) => {
                     const unique = [...new Set(data.map(item => item[key]?.trim()).filter(Boolean))].sort();
                     if (!unique.includes('Otro')) unique.push('Otro');
@@ -469,7 +457,6 @@
                 CITIES_LIST = getUniqueSorted(DB_CONTACTOS, 'CIUDAD');
                 MUNICIPALITIES_LIST = getUniqueSorted(DB_CONTACTOS, 'MUNICIPIO');
 
-                // Actualizar configuración de pasos con datos reales
                 steps['p3.1'].data = CITIES_LIST;
                 steps['p3.2'].municipalityData = MUNICIPALITIES_LIST;
                 steps['p3.2'].cityData = CITIES_LIST;
@@ -481,7 +468,6 @@
                 DB_ACCIONES = accionesRaw.map(row => ({
                     id: row.ID_ACCION ? row.ID_ACCION.trim() : '',
                     categoria: row.CATEGORIA ? row.CATEGORIA.trim().toUpperCase() : '',
-                    // Aseguramos mayúsculas y limpieza en CASO y UBICACION
                     caso: row.CASO ? row.CASO.split(',').map(s => s.trim()) : [],
                     ubicacion: row.PERFIL_UBICACION ? row.PERFIL_UBICACION.split(',').map(s => s.trim()) : [],
                     temporalidad: row.LOGICA_TEMPORAL ? row.LOGICA_TEMPORAL.split(',').map(s => s.trim().toUpperCase()) : [],
@@ -490,9 +476,8 @@
                     titulo: row.TITULO_VISIBLE || "Acción",
                     contenido: row.CONTENIDO_MD || "",
                     contactos: row.CONTACTOS ? row.CONTACTOS.split(',') : []
-                })).filter(a => a.id); // Filtrar filas vacías
+                })).filter(a => a.id);
 
-                console.log("DB Cargada y Procesada:", { Acciones: DB_ACCIONES.length, Contactos: DB_CONTACTOS.length, Countries: COUNTRIES_LIST.length });
                 document.getElementById('loader').style.display = 'none';
                 renderView('intro');
 
@@ -505,7 +490,6 @@
             }
         }
 
-        // --- NUEVA FUNCIÓN: CARGAR RUTA ESPECÍFICA ---
         async function loadRouteData() {
             const loader = document.getElementById('loader');
             const status = document.getElementById('loaderStatus');
@@ -525,7 +509,6 @@
                 const res = await fetch(url);
                 const text = await res.text();
                 const data = Papa.parse(text, { header: true, skipEmptyLines: true }).data;
-                // Normalizar datos de ruta
                 CURRENT_ROUTE_DATA = data.map(row => ({
                     paso: row.PASO ? row.PASO.trim() : '',
                     titulo: row.TITULO || '',
@@ -593,7 +576,6 @@
                 document.getElementById('navButtons').classList.add('hidden');
             }
             else {
-                // Renderizado Genérico
                 html += `<h2 class="text-2xl font-bold text-gov-blue mb-3">${config.title}</h2>
                     ${config.description ? `<p class="text-gray-600 mb-6 text-lg">${config.description}</p>` : ''}
                     ${config.alert ? `<div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 text-red-700 font-bold rounded-r">${config.alert}</div>` : ''}`;
@@ -694,13 +676,8 @@
                 if (!muniSelect.value) { muniSelect.classList.add('border-red-500', 'ring-2', 'ring-red-200'); valid = false; }
                 if (!citySelect.value) { citySelect.classList.add('border-red-500', 'ring-2', 'ring-red-200'); valid = false; }
                 if (!valid) return;
-                
-                const muniVal = muniSelect.value;
-                const cityVal = citySelect.value;
-
-                // CAMBIO: Si el municipio es "Otro", se guarda vacío para no romper la lógica de búsqueda
-                state.answers.p3_sub_detail = (muniVal === 'Otro') ? '' : muniVal;
-                state.answers.p3_detail = (cityVal === 'Otro') ? 'Bogotá D.C.' : cityVal;
+                state.answers.p3_sub_detail = (muniSelect.value === 'Otro') ? '' : muniSelect.value;
+                state.answers.p3_detail = (citySelect.value === 'Otro') ? 'Bogotá D.C.' : citySelect.value;
             }
 
             if (currentConfig && currentConfig.type === 'textarea') {
@@ -727,7 +704,6 @@
             else if (cur === 'p3.4') next = 'p1';
             else if (cur === 'p_narrative') next = 'results';
 
-            // --- CARGAR RUTA SI VAMOS A RESULTADOS ---
             if (next === 'results') {
                 await loadRouteData();
             }
@@ -738,32 +714,26 @@
 
         // --- 7. EL MOTOR DE LÓGICA (ACTUALIZADO) ---
         function generateResultsEngine() {
-            // 1. Contexto Temporal
             const isReciente = state.answers.p2 === '2.1';
             const temporalContext = isReciente ? 'URGENTE' : 'HISTORICO';
 
-            // 2. Contexto Fecha Conflicto
             let conflictDateContext = null;
             if (!isReciente && (state.answers.p1 === '4.1' || state.answers.p1_sub?.startsWith('4.1'))) {
                 const year = parseInt(state.answers.p2_date_year);
                 const monthName = state.answers.p2_date_month;
                 const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
                 const monthIndex = months.indexOf(monthName);
-                
                 const dateCutoff = new Date(2016, 11, 1); 
                 const dateUser = new Date(year, monthIndex, 1);
-                
                 conflictDateContext = (dateUser < dateCutoff) ? 'PRE_2016' : 'POST_2016';
             }
 
-            // 3. Recolectar Tags del Usuario
             const userTags = new Set();
             if (state.answers.p1) userTags.add(state.answers.p1);
             if (state.answers.p1_sub) userTags.add(state.answers.p1_sub);
             state.answers.p4_profile.forEach(t => userTags.add(t));
             state.answers.p3_characteristics.forEach(t => userTags.add(t));
 
-            // 4. Filtrado Maestro Acciones
             let matchedActions = DB_ACCIONES.filter(action => {
                 const casoMatch = action.caso.includes('TODOS') || action.caso.some(c => userTags.has(c));
                 const ubiMatch = action.ubicacion.includes('TODOS') || action.ubicacion.some(u => userTags.has(u));
@@ -786,78 +756,46 @@
             const finalActions = Array.from(uniqueMap.values());
             finalActions.sort((a, b) => a.etapa - b.etapa);
 
-            // === CLASIFICACIÓN POR PESTAÑAS ===
             const legalActions = finalActions.filter(a => a.categoria === 'ACCION LEGAL');
             const ownActions = finalActions.filter(a => a.categoria === 'ACCION PROPIA');
             const supportActions = finalActions.filter(a => a.categoria === 'APOYO EXTRA');
             const narrative = state.answers.narrative || '';
 
-            // --- RENDERIZADO ACCIONES ---
-            const renderActionList = (actions, groupName = 'default') => {
+            // --- FUNCIÓN DE PROCESAMIENTO DE CONTENIDO ---
+            const processActionContent = (action) => {
+                let rawContent = action.contenido;
+                if (rawContent.includes('&INFORMACION_ADICIONAL&')) {
+                    const infoText = narrative ? `**${narrative}**` : '';
+                    rawContent = rawContent.replace(/&INFORMACION_ADICIONAL&/g, infoText);
+                }
+                if (rawContent.includes('&CONTACTO&')) {
+                    const contactIds = action.contactos; 
+                    const contactDetails = contactIds.map(id => {
+                        const cleanId = id.trim();
+                        const candidates = DB_CONTACTOS.filter(c => c.ID_ENTIDAD === cleanId);
+                        if (candidates.length === 0) return '';
+
+                        const userMuni = state.answers.p3_sub_detail || '';
+                        const userCity = state.answers.p3_detail || '';
+                        let bestMatch = null;
+                        if (userMuni) bestMatch = candidates.find(c => c.MUNICIPIO === userMuni);
+                        if (!bestMatch && userCity) bestMatch = candidates.find(c => c.CIUDAD === userCity);
+                        if (!bestMatch) bestMatch = candidates.find(c => c.PAIS === 'Colombia' && c.CIUDAD === 'Nacional' && (!c.MUNICIPIO || c.MUNICIPIO.trim() === ''));
+                        if (!bestMatch) bestMatch = candidates.find(c => c.PAIS === 'Colombia' && c.CIUDAD && c.CIUDAD.toLowerCase().startsWith('bogo') && (!c.MUNICIPIO || c.MUNICIPIO.trim() === ''));
+
+                        if (!bestMatch) return '';
+                        return `<div class="bg-blue-50 border-l-4 border-gov-blue p-4 my-3 rounded-r-lg shadow-sm text-sm">${marked.parse(bestMatch.CONTENIDO_MD)}</div>`;
+                    }).join('');
+                    rawContent = rawContent.replace(/&CONTACTO&/g, contactDetails);
+                }
+                return marked.parse(rawContent);
+            };
+
+            // --- RENDERIZADO ACCIONES (WEB: Acordeones) ---
+            const renderActionList = (actions) => {
                 if (actions.length === 0) return '<div class="p-6 bg-gray-50 text-gray-500 rounded-lg text-center border border-gray-200">No hay acciones específicas para este criterio.</div>';
-                return actions.map((action, idx) => {
-                    let rawContent = action.contenido;
-                    
-                    // REEMPLAZO INFORMACIÓN ADICIONAL
-                    if (rawContent.includes('&INFORMACION_ADICIONAL&')) {
-                        const infoText = narrative ? `**${narrative}**` : '';
-                        rawContent = rawContent.replace(/&INFORMACION_ADICIONAL&/g, infoText);
-                    }
-
-                    // LÓGICA DE REEMPLAZO DE CONTACTOS MEJORADA
-                    if (rawContent.includes('&CONTACTO&')) {
-                        const contactIds = action.contactos; 
-                        
-                        const contactDetails = contactIds.map(id => {
-                            const cleanId = id.trim();
-                            // Filtrar todos los candidatos con ese ID
-                            const candidates = DB_CONTACTOS.filter(c => c.ID_ENTIDAD === cleanId);
-                            if (candidates.length === 0) return '';
-
-                            // Variables de contexto del usuario
-                            const userMuni = state.answers.p3_sub_detail || ''; // Vacío si es 'Otro'
-                            const userCity = state.answers.p3_detail || '';
-
-                            let bestMatch = null;
-
-                            // 1. Coincidencia exacta de Municipio (si el usuario eligió uno específico)
-                            if (userMuni) {
-                                bestMatch = candidates.find(c => c.MUNICIPIO === userMuni);
-                            }
-
-                            // 2. Coincidencia de Ciudad (si no hubo municipio exacto)
-                            if (!bestMatch && userCity) {
-                                bestMatch = candidates.find(c => c.CIUDAD === userCity);
-                            }
-
-                            // 3. Fallback Nacional (Colombia / Nacional / Municipio Vacio)
-                            if (!bestMatch) {
-                                bestMatch = candidates.find(c => 
-                                    c.PAIS === 'Colombia' && 
-                                    c.CIUDAD === 'Nacional' && 
-                                    (!c.MUNICIPIO || c.MUNICIPIO.trim() === '')
-                                );
-                            }
-                            
-                            // 4. Fallback Bogotá (Colombia / Bogotá... / Municipio Vacio) - NUEVO
-                            if (!bestMatch) {
-                                bestMatch = candidates.find(c => 
-                                    c.PAIS === 'Colombia' && 
-                                    c.CIUDAD && c.CIUDAD.toLowerCase().startsWith('bogo') &&
-                                    (!c.MUNICIPIO || c.MUNICIPIO.trim() === '')
-                                );
-                            }
-
-                            if (!bestMatch) return ''; // Si no hay match ni default, no mostrar nada
-
-                            const contactHtml = marked.parse(bestMatch.CONTENIDO_MD);
-                            return `<div class="bg-blue-50 border-l-4 border-gov-blue p-4 my-3 rounded-r-lg shadow-sm text-sm">${contactHtml}</div>`;
-                        }).join('');
-                        
-                        rawContent = rawContent.replace(/&CONTACTO&/g, contactDetails);
-                    }
-
-                    const htmlContent = marked.parse(rawContent);
+                return actions.map(action => {
+                    const htmlContent = processActionContent(action);
                     return `
                     <details name="guide-accordion" class="group bg-white border border-gray-200 rounded-lg mb-3 shadow-sm hover:shadow-md transition-all">
                         <summary class="flex items-center p-4 cursor-pointer select-none">
@@ -867,172 +805,191 @@
                             </div>
                             <svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </summary>
-                        <div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-gray-100 bg-gray-50 text-base md-content">
-                            ${htmlContent}
-                        </div>
+                        <div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-gray-100 bg-gray-50 text-base md-content">${htmlContent}</div>
                     </details>`;
                 }).join('');
             };
 
-            // --- RENDERIZADO RUTA MAESTRA (RECURSIVO) ---
-            const renderRouteMaster = () => {
-                if (!CURRENT_ROUTE_DATA || CURRENT_ROUTE_DATA.length === 0) {
-                    return '<div class="p-6 bg-gray-50 text-gray-500 rounded-lg text-center border border-gray-200">Cargando ruta...</div>';
-                }
-
-                // 1. Preparar Nodos y Mapa de BIFs
-                const nodes = CURRENT_ROUTE_DATA.map(row => ({
-                    ...row,
-                    cleanId: row.paso.replace('BIF', '').trim(),
-                    isBif: row.paso.startsWith('BIF'),
-                    children: []
-                }));
-
-                const bifMap = {};
-                nodes.filter(n => n.isBif).forEach(n => {
-                    bifMap[n.cleanId] = n;
-                });
-
-                // 2. Construir Árbol (Asignar cada nodo a su padre más específico)
-                const root = [];
-                nodes.forEach(node => {
-                    if (node.paso === 'SEPARADOR') {
-                        root.push(node);
-                        return;
-                    }
-
-                    let bestParent = null;
-                    let maxLen = 0;
-
-                    // Buscar el padre más adecuado (BIF cuyo prefijo coincida con el inicio del ID del nodo)
-                    Object.keys(bifMap).forEach(prefix => {
-                        // El nodo debe empezar con el prefijo, NO ser el mismo BIF, y ser el match más largo encontrado
-                        const isChild = node.cleanId.startsWith(prefix) && node.cleanId !== prefix;
-                        
-                        if (isChild && prefix.length > maxLen) {
-                            // Verificación adicional para asegurar límites correctos (ej: "6.A" vs "6.A.1")
-                            // Asumimos que la estructura es consistente con puntos o letras
-                            maxLen = prefix.length;
-                            bestParent = bifMap[prefix];
-                        }
-                    });
-
-                    if (bestParent) {
-                        bestParent.children.push(node);
-                    } else {
-                        root.push(node);
-                    }
-                });
-
-                // 3. Renderizado Recursivo
-                const renderRecursive = (nodeList, groupName = 'guide-accordion') => {
-                    return nodeList.map(node => {
-                        // Usar CONTENIDO_MD en lugar de DESCRIPCION para el separador
-                        const mdContent = marked.parse(node.contenido || '');
-                        
-                        if (node.paso === 'SEPARADOR') {
-                            return `
-                            <div class="mt-8 mb-4 bg-gov-dark-blue text-white p-4 rounded-lg shadow-md">
-                                <h4 class="font-bold text-lg">${node.titulo}</h4>
-                                <div class="text-sm opacity-90 mt-1 md-content">${mdContent}</div>
-                            </div>`;
-                        }
-
-                        if (node.isBif) {
-                            // Render BIF (Padre Recursivo)
-                            // CAMBIO: Asignar un grupo diferente a los hijos
-                            const childrenHtml = renderRecursive(node.children, `guide-accordion-${node.cleanId}`);
-                            return `
-                            <details name="${groupName}" class="group bg-blue-50 border border-blue-200 rounded-lg mb-3 shadow-sm hover:shadow-md transition-all ml-0">
-                                <summary class="flex items-center p-4 cursor-pointer select-none">
-                                    <div class="flex items-center flex-1">
-                                        <span class="bg-gov-dark-blue text-white text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-900 min-w-[24px] text-center">Opc</span>
-                                        <span class="font-bold text-gov-dark-blue text-lg">${node.titulo}</span>
-                                    </div>
-                                    <svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                                </summary>
-                                <div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-blue-100 bg-white text-base md-content">
-                                    ${mdContent}
-                                    ${childrenHtml ? `<div class="mt-4 pt-4 border-t border-gray-100 pl-4 border-l-2 border-blue-100 space-y-2">${childrenHtml}</div>` : ''}
-                                </div>
-                            </details>`;
-                        } else {
-                            // Render Paso (Hoja)
-                            return `
-                            <details name="${groupName}" class="group bg-white border border-gray-200 rounded-lg mb-2 shadow-sm hover:shadow-md transition-all">
-                                <summary class="flex items-center p-4 cursor-pointer select-none">
-                                    <div class="flex items-center flex-1">
-                                        <span class="bg-blue-100 text-gov-blue text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-200 min-w-[24px] text-center">${node.paso}</span>
-                                        <span class="font-bold text-gov-dark-blue text-lg">${node.titulo}</span>
-                                    </div>
-                                    <svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                                </summary>
-                                <div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-gray-100 bg-gray-50 text-base md-content">
-                                    ${mdContent}
-                                </div>
-                            </details>`;
-                        }
-                    }).join('');
-                };
-
-                return renderRecursive(root);
+            // --- RENDERIZADO ACCIONES (IMPRESIÓN: Bloques expandidos) ---
+            const renderActionListPrint = (actions) => {
+                if (actions.length === 0) return '<div class="print-item text-gray-500 italic">No aplica para este caso.</div>';
+                return actions.map(action => {
+                    const htmlContent = processActionContent(action);
+                    return `
+                    <div class="print-item">
+                        <div class="print-title">${action.etapa}. ${action.titulo}</div>
+                        <div class="print-content md-content">${htmlContent}</div>
+                    </div>`;
+                }).join('');
             };
 
-            // HTML de Contactos
+            // --- PROCESAMIENTO NODOS RUTA ---
+            const processRouteNodes = () => {
+                if (!CURRENT_ROUTE_DATA || CURRENT_ROUTE_DATA.length === 0) return [];
+                const nodes = CURRENT_ROUTE_DATA.map(row => ({ ...row, cleanId: row.paso.replace('BIF', '').trim(), isBif: row.paso.startsWith('BIF'), children: [] }));
+                const bifMap = {};
+                nodes.filter(n => n.isBif).forEach(n => { bifMap[n.cleanId] = n; });
+                const root = [];
+                nodes.forEach(node => {
+                    if (node.paso === 'SEPARADOR') { root.push(node); return; }
+                    let bestParent = null, maxLen = 0;
+                    Object.keys(bifMap).forEach(prefix => {
+                        const isChild = node.cleanId.startsWith(prefix) && node.cleanId !== prefix;
+                        if (isChild && prefix.length > maxLen) { maxLen = prefix.length; bestParent = bifMap[prefix]; }
+                    });
+                    if (bestParent) bestParent.children.push(node); else root.push(node);
+                });
+                return root;
+            };
+
+            const routeNodes = processRouteNodes();
+
+            // --- RENDER RUTA (WEB) ---
+            const renderRouteRecursive = (nodeList, groupName = 'guide-accordion') => {
+                if(!nodeList || nodeList.length === 0) return '';
+                return nodeList.map(node => {
+                    const mdContent = marked.parse(node.contenido || '');
+                    if (node.paso === 'SEPARADOR') {
+                        return `<div class="mt-8 mb-4 bg-gov-dark-blue text-white p-4 rounded-lg shadow-md"><h4 class="font-bold text-lg">${node.titulo}</h4><div class="text-sm opacity-90 mt-1 md-content">${mdContent}</div></div>`;
+                    }
+                    if (node.isBif) {
+                        const childrenHtml = renderRouteRecursive(node.children, `guide-accordion-${node.cleanId}`);
+                        return `<details name="${groupName}" class="group bg-blue-50 border border-blue-200 rounded-lg mb-3 shadow-sm hover:shadow-md transition-all ml-0"><summary class="flex items-center p-4 cursor-pointer select-none"><div class="flex items-center flex-1"><span class="bg-gov-dark-blue text-white text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-900 min-w-[24px] text-center">Opc</span><span class="font-bold text-gov-dark-blue text-lg">${node.titulo}</span></div><svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></summary><div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-blue-100 bg-white text-base md-content">${mdContent}${childrenHtml ? `<div class="mt-4 pt-4 border-t border-gray-100 pl-4 border-l-2 border-blue-100 space-y-2">${childrenHtml}</div>` : ''}</div></details>`;
+                    } else {
+                        return `<details name="${groupName}" class="group bg-white border border-gray-200 rounded-lg mb-2 shadow-sm hover:shadow-md transition-all"><summary class="flex items-center p-4 cursor-pointer select-none"><div class="flex items-center flex-1"><span class="bg-blue-100 text-gov-blue text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-200 min-w-[24px] text-center">${node.paso}</span><span class="font-bold text-gov-dark-blue text-lg">${node.titulo}</span></div><svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></summary><div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-gray-100 bg-gray-50 text-base md-content">${mdContent}</div></details>`;
+                    }
+                }).join('');
+            };
+
+            // --- RENDER RUTA (IMPRESIÓN) ---
+            const renderRouteRecursivePrint = (nodeList, depth = 0) => {
+                if(!nodeList || nodeList.length === 0) return '';
+                return nodeList.map(node => {
+                    const mdContent = marked.parse(node.contenido || '');
+                    if (node.paso === 'SEPARADOR') {
+                        return `<div class="mt-4 mb-2 bg-gray-100 p-2 border-b-2 border-gov-dark-blue"><h4 class="font-bold text-lg text-gov-dark-blue">${node.titulo}</h4><div class="text-xs text-gray-600 md-content">${mdContent}</div></div>`;
+                    }
+                    
+                    const indentClass = depth > 0 ? 'ml-4 border-l-2 border-gray-300 pl-4' : '';
+                    const titlePrefix = node.isBif ? 'OPCIÓN' : node.paso;
+                    
+                    let childrenHtml = '';
+                    if (node.isBif && node.children.length > 0) {
+                        childrenHtml = renderRouteRecursivePrint(node.children, depth + 1);
+                    }
+
+                    return `
+                    <div class="print-item ${indentClass}">
+                        <div class="print-title text-sm"><span class="bg-gray-200 px-1 rounded text-xs mr-2 font-mono">${titlePrefix}</span> ${node.titulo}</div>
+                        <div class="print-content md-content text-sm mb-2">${mdContent}</div>
+                        ${childrenHtml}
+                    </div>`;
+                }).join('');
+            };
+
+            // HTML Contactos Web
             let contactsHTML = '';
+            let contactsHTMLPrint = '';
             if(DB_CONTACTOS.length > 0) {
-                let localContacts = DB_CONTACTOS.filter(c => 
-                    (c.Ciudad === state.answers.p3_detail || c.Cobertura === 'NACIONAL') && c.Activa === 'SI'
-                );
+                let localContacts = DB_CONTACTOS.filter(c => (c.Ciudad === state.answers.p3_detail || c.Cobertura === 'NACIONAL') && c.Activa === 'SI');
+                // Web HTML
                 contactsHTML = localContacts.map(c => `
                     <li class="bg-white p-4 rounded border border-blue-100 shadow-sm mb-2">
                         <strong class="block text-gov-blue text-lg">${c.Nombre_Corto || c.Nombre_Largo}</strong>
                         <span class="block text-sm text-gray-700 mt-1">${c.Que_Hace_Resumen || ''}</span>
-                        <div class="mt-2 text-sm text-gray-600">
-                            📞 ${c.Telefono_Principal || c.Linea_Gratuita} <br>
-                            📍 ${c.Direccion || 'Nacional'}
-                        </div>
+                        <div class="mt-2 text-sm text-gray-600">📞 ${c.Telefono_Principal || c.Linea_Gratuita} <br>📍 ${c.Direccion || 'Nacional'}</div>
                     </li>`).join('');
-                
                 if(contactsHTML) contactsHTML = `<div class="mt-4 bg-blue-50 p-6 rounded-lg border border-blue-100"><ul class="space-y-0">${contactsHTML}</ul></div>`;
+                
+                // Print HTML
+                contactsHTMLPrint = localContacts.map(c => `
+                    <div class="mb-2 pb-2 border-b border-gray-100">
+                        <strong class="block text-gov-blue">${c.Nombre_Corto || c.Nombre_Largo}</strong>
+                        <div class="text-xs text-gray-600">📞 ${c.Telefono_Principal || c.Linea_Gratuita} | 📍 ${c.Direccion || 'Nacional'}</div>
+                    </div>`).join('');
+                if(contactsHTMLPrint) contactsHTMLPrint = `<div class="mt-4 p-4 border border-gray-300 rounded"><h3 class="font-bold text-sm mb-2">Directorio de Apoyo Local</h3>${contactsHTMLPrint}</div>`;
             }
 
-            // const narrative = ... (eliminado por redundancia, ya tenemos state.answers.narrative)
-            const lugarTexto = state.answers.p3_sub_detail ? `${state.answers.p3_sub_detail}` : (state.answers.p3_detail || 'la zona');
-            // Ya no generamos scriptHTML aquí porque los guiones están integrados en las acciones
+            const lugarTexto = state.answers.p3_sub_detail ? `${state.answers.p3_sub_detail}, ${state.answers.p3_detail}` : (state.answers.p3_detail || 'Nacional');
+            const fechaTexto = isReciente ? "Reciente" : (state.answers.p2_date_year ? `${state.answers.p2_date_month} ${state.answers.p2_date_year}` : "Histórico");
 
-            // Contenidos Tabs
+            // --- CONSTRUCCIÓN HTML FINAL ---
+            // 1. Contenido Web
             const contentLegal = `<div class="space-y-2">${renderActionList(legalActions)}</div>`;
             const contentOwn = `<div class="space-y-2">${renderActionList(ownActions)}</div>`;
-            // Apoyos: Acciones de Apoyo (sin titulo directorio)
-            const contentSupport = `
-                <div class="space-y-2 mb-8">${renderActionList(supportActions)}</div>
-                ${contactsHTML}
-            `;
-            const contentMaster = `
-                <div class="space-y-2">${renderRouteMaster()}</div>
-            `;
+            const contentSupport = `<div class="space-y-2 mb-8">${renderActionList(supportActions)}</div>${contactsHTML}`;
+            const contentMaster = `<div class="space-y-2">${renderRouteRecursive(routeNodes)}</div>`;
 
-            return `
-                <div class="text-center mb-6">
-                    <h3 class="text-2xl font-bold text-gray-800 mb-1">Ruta de Acción Personalizada</h3>
-                    <p class="text-gray-500">Guía de orientación generada automáticamente</p>
+            // 2. Contenido Impresión
+            const printHTML = `
+            <div id="print-area" class="hidden">
+                <div class="mb-8 border-b-2 border-gov-blue pb-4">
+                    <img src="logoGovCO.png" class="h-12 mb-4" alt="Logo MinJusticia">
+                    <h1 class="print-header">Guía de Búsqueda - Plan de Acción Personalizado</h1>
+                    <p class="text-sm text-gray-600">Generado el: ${new Date().toLocaleDateString()} | Lugar de Búsqueda: ${lugarTexto}</p>
                 </div>
-                <div class="flex flex-wrap gap-2 mb-6">
-                    <button id="btn-legal" onclick="switchTab('legal')" class="tab-btn active">Acciones Legales</button>
-                    <button id="btn-propias" onclick="switchTab('propias')" class="tab-btn">Acciones Propias</button>
-                    <button id="btn-apoyos" onclick="switchTab('apoyos')" class="tab-btn">Apoyos Extra</button>
-                    <button id="btn-maestra" onclick="switchTab('maestra')" class="tab-btn">Ruta Completa de Búsqueda</button>
-                </div>
-                <div id="tab-legal" class="tab-content fade-in">${contentLegal}</div>
-                <div id="tab-propias" class="tab-content hidden fade-in">${contentOwn}</div>
-                <div id="tab-apoyos" class="tab-content hidden fade-in">${contentSupport}</div>
-                <div id="tab-maestra" class="tab-content hidden fade-in">${contentMaster}</div>
                 
-                <div class="mt-12 text-center print:hidden">
-                    <button onclick="window.print()" class="bg-white text-gov-blue border-2 border-gov-blue px-8 py-3 rounded-full font-bold hover:bg-blue-50 transition mr-4">Descargar Guía (PDF)</button>
-                    <button onclick="location.reload()" class="bg-gray-200 text-gray-700 px-8 py-3 rounded-full font-bold hover:bg-gray-300 transition">Nueva Consulta</button>
-                </div>`;
+                <div class="print-section bg-gray-50 p-4 rounded border border-gray-200 mb-6">
+                    <h2 class="font-bold text-lg mb-2 text-gov-dark-blue">Perfil del Caso</h2>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div><strong>Tiempo:</strong> ${fechaTexto}</div>
+                        <div><strong>Ubicación:</strong> ${lugarTexto}</div>
+                        <div><strong>Tipo:</strong> ${getProfiles()}</div>
+                        <div class="col-span-2"><strong>Contexto:</strong> ${matchedActions.length} acciones identificadas.</div>
+                    </div>
+                    ${narrative ? `<div class="mt-2 pt-2 border-t border-gray-200 text-sm"><strong>Notas:</strong> ${narrative}</div>` : ''}
+                </div>
+                
+                <h2 class="print-subheader">1. Acciones Legales</h2>
+                <div class="print-section">${renderActionListPrint(legalActions)}</div>
+                
+                <h2 class="print-subheader">2. Acciones Propias</h2>
+                <div class="print-section">${renderActionListPrint(ownActions)}</div>
+                
+                <h2 class="print-subheader">3. Apoyos Extra</h2>
+                <div class="print-section">
+                    ${renderActionListPrint(supportActions)}
+                    ${contactsHTMLPrint}
+                </div>
+                
+                <h2 class="print-subheader" style="page-break-before: always;">4. Ruta Completa de Búsqueda</h2>
+                <div class="print-section">${renderRouteRecursivePrint(routeNodes)}</div>
+                
+                <div class="mt-8 pt-4 border-t border-gray-300 text-center text-xs text-gray-500">
+                    <p>Ministerio de Justicia y del Derecho - Colombia</p>
+                    <p>Esta guía es informativa y no constituye un documento legal vinculante. Llame siempre a las líneas oficiales.</p>
+                </div>
+            </div>`;
+
+            // Retorno Combinado
+            return `
+                <div class="print:hidden">
+                    <div class="text-center mb-6">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-1">Ruta de Acción Personalizada</h3>
+                        <p class="text-gray-500">Guía de orientación generada automáticamente</p>
+                    </div>
+                    <div class="flex flex-wrap gap-2 mb-6">
+                        <button id="btn-legal" onclick="switchTab('legal')" class="tab-btn active">Acciones Legales</button>
+                        <button id="btn-propias" onclick="switchTab('propias')" class="tab-btn">Acciones Propias</button>
+                        <button id="btn-apoyos" onclick="switchTab('apoyos')" class="tab-btn">Apoyos Extra</button>
+                        <button id="btn-maestra" onclick="switchTab('maestra')" class="tab-btn">Ruta Completa de Búsqueda</button>
+                    </div>
+                    <div id="tab-legal" class="tab-content fade-in">${contentLegal}</div>
+                    <div id="tab-propias" class="tab-content hidden fade-in">${contentOwn}</div>
+                    <div id="tab-apoyos" class="tab-content hidden fade-in">${contentSupport}</div>
+                    <div id="tab-maestra" class="tab-content hidden fade-in">${contentMaster}</div>
+                    
+                    <div class="mt-12 flex flex-col sm:flex-row justify-center items-center gap-4">
+                        <button onclick="window.print()" class="bg-white text-gov-blue border-2 border-gov-blue px-8 py-3 rounded-full font-bold hover:bg-blue-50 transition shadow-md flex items-center justify-center w-full sm:w-auto">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                            Descargar Guía Completa (PDF)
+                        </button>
+                        <button onclick="location.reload()" class="bg-white text-gray-600 border-2 border-gray-300 px-6 py-3 rounded-full font-bold hover:bg-gray-50 transition shadow-sm flex items-center justify-center w-full sm:w-auto">
+                            Nueva Consulta
+                        </button>
+                    </div>
+                </div>
+                ${printHTML}`;
         }
 
         function getProfiles() {
