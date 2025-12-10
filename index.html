@@ -64,7 +64,9 @@
     <!-- Header -->
     <header class="bg-gov-blue text-white py-4 shadow-md sticky top-0 z-40">
         <div class="container mx-auto px-4 flex items-center">
-            <div class="font-extrabold text-2xl tracking-wider mr-4 border-r border-blue-400 pr-4">GOV.CO</div>
+            <a href="https://www.gov.co/" target="_blank" class="mr-4 border-r border-blue-400 pr-4 flex items-center hover:opacity-90 transition-opacity">
+                <img src="logoGovCO.png" alt="GOV.CO" class="h-8 md:h-9 w-auto">
+            </a>
             <div class="text-sm font-light leading-tight">Guía de Búsqueda de Personas<br><span class="font-bold">Ministerio de Justicia y del Derecho</span></div>
         </div>
     </header>
@@ -72,7 +74,7 @@
     <!-- Main -->
     <main class="container mx-auto px-4 py-8 max-w-4xl">
         <!-- Barra de Progreso -->
-        <div class="mb-8 max-w-3xl mx-auto">
+        <div id="progressContainer" class="mb-8 max-w-3xl mx-auto transition-opacity duration-300">
             <div class="flex justify-between text-xs text-gray-500 mb-2 font-bold uppercase tracking-wider">
                 <span>Perfil</span><span>Tiempo</span><span>Lugar</span><span>Indicios</span>
             </div>
@@ -122,7 +124,7 @@
 
         // --- 2. ESTADO DE LA APP ---
         const state = {
-            currentStep: 'p4', // INICIO EN PERFIL
+            currentStep: 'intro', // CAMBIO: INICIO EN INTRO
             history: [],
             answers: {
                 p1: null, p1_sub: null, // Contexto (Indicios)
@@ -133,8 +135,17 @@
         };
 
         // --- 3. DEFINICIÓN DE PASOS (UI) ---
-        // Flujo: P4 (Perfil) -> P2 (Tiempo) -> P3 (Lugar) -> P1 (Contexto)
+        // Flujo: Intro -> P4 (Perfil) -> P2 (Tiempo) -> P3 (Lugar) -> P1 (Contexto)
         const steps = {
+            // PASO 0: INTRODUCCIÓN
+            'intro': {
+                progress: '0%',
+                title: 'Bienvenido',
+                type: 'intro',
+                description: 'Esta es una herramienta de orientación para la búsqueda de personas dadas por desaparecidas. Le guiaremos paso a paso para identificar la ruta de acción más efectiva según su caso.',
+                disclaimer: 'Su privacidad es fundamental. Esta guía es anónima: no almacenamos, registramos ni compartimos ningún dato personal que ingrese durante la consulta.',
+                btnLabel: 'Comenzar Consulta'
+            },
             // PASO 1: PERFIL (P4)
             'p4': { 
                 progress: '20%', 
@@ -310,7 +321,7 @@
                 });
                 
                 document.getElementById('loader').style.display = 'none';
-                renderView('p4'); 
+                renderView('intro'); // Renderizar Intro en lugar de p4 directamente
 
             } catch (e) {
                 console.error(e);
@@ -329,58 +340,102 @@
             state.currentStep = stepId;
             const config = steps[stepId];
             const container = document.getElementById('viewContainer');
+            const progressContainer = document.getElementById('progressContainer');
             
-            document.getElementById('progressBar').style.width = config.progress;
+            // Manejo de la Barra de Progreso
+            if (stepId === 'intro') {
+                progressContainer.classList.add('opacity-0');
+            } else {
+                progressContainer.classList.remove('opacity-0');
+                document.getElementById('progressBar').style.width = config.progress;
+            }
             
             const nextBtn = document.getElementById('nextBtn');
             const backBtn = document.getElementById('backBtn');
-            backBtn.classList.toggle('invisible', stepId === 'p4');
-            nextBtn.classList.add('hidden');
-
-            let html = `
-                <h2 class="text-2xl font-bold text-gov-blue mb-3">${config.title}</h2>
-                ${config.description ? `<p class="text-gray-600 mb-6 text-lg">${config.description}</p>` : ''}
-                ${config.alert ? `<div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 text-red-700 font-bold rounded-r">${config.alert}</div>` : ''}
-            `;
-
-            if (config.type === 'single-choice') {
-                html += '<div class="space-y-3">';
-                config.options.forEach(opt => {
-                    html += `
-                    <button onclick="handleChoice('${opt.id}')" class="btn-gov group">
-                        <span class="text-lg">${opt.label}</span>
-                        <svg class="w-6 h-6 text-blue-200 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
-                    </button>`;
-                });
-                html += '</div>';
-            }
-            else if (config.type === 'multi-choice') {
-                nextBtn.classList.remove('hidden');
-                html += '<div class="grid md:grid-cols-2 gap-4 mb-6">';
-                config.options.forEach(opt => {
-                    let collection = stepId === 'p3.4' ? state.answers.p3_characteristics : state.answers.p4_profile;
-                    const isSelected = collection.includes(opt.id);
-                    html += `
-                    <div onclick="toggleMulti(this, '${opt.id}', '${stepId}')" class="checkbox-card ${isSelected ? 'selected' : ''}">
-                        <div class="checkbox-mark">
-                            ${isSelected ? '<svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>' : ''}
-                        </div>
-                        <span class="text-gray-700 font-semibold">${opt.label}</span>
-                    </div>`;
-                });
-                html += '</div>';
-            }
-            else if (config.type === 'dropdown') {
-                nextBtn.classList.remove('hidden');
-                html += `<div class="mb-6"><select id="selectInput" class="w-full p-4 border border-gray-300 rounded-lg text-lg outline-none focus:ring-2 focus:ring-gov-blue"><option value="">Seleccione una opción...</option>${config.data.map(i => `<option value="${i}">${i}</option>`).join('')}</select></div>`;
-            }
-            else if (config.type === 'textarea') {
-                nextBtn.classList.remove('hidden');
-                html += `<textarea id="narrativeInput" class="w-full p-4 border border-gray-300 rounded-lg h-40 outline-none focus:border-gov-blue text-lg" placeholder="Ej: Vestía jean azul, camisa roja. Tiene una cicatriz en la ceja..."></textarea>`;
-            }
-            else if (config.type === 'results') {
-                html += generateResultsEngine(); 
+            
+            // Ocultar controles de navegación en Intro
+            if (stepId === 'intro' || stepId === 'results') {
                 document.getElementById('navButtons').classList.add('hidden');
+            } else {
+                document.getElementById('navButtons').classList.remove('hidden');
+                backBtn.classList.toggle('invisible', stepId === 'p4');
+                nextBtn.classList.add('hidden');
+            }
+
+            let html = '';
+
+            // VISTA INTRODUCCIÓN (NUEVO)
+            if (config.type === 'intro') {
+                html += `
+                    <div class="text-center py-6">
+                        <div class="bg-blue-50 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6 border border-blue-100">
+                            <svg class="w-12 h-12 text-gov-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        </div>
+                        <h2 class="text-3xl font-bold text-gov-blue mb-4">${config.title}</h2>
+                        <p class="text-gray-600 text-lg mb-8 leading-relaxed max-w-2xl mx-auto">${config.description}</p>
+                        
+                        <div class="bg-gov-bg border border-blue-100 rounded-lg p-5 mb-8 text-sm text-gray-600 flex items-start text-left max-w-2xl mx-auto">
+                            <svg class="w-6 h-6 mr-3 mt-0.5 text-gov-blue flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                            <div>
+                                <span class="font-bold block text-gov-dark-blue mb-1">Protección de Datos</span>
+                                ${config.disclaimer}
+                            </div>
+                        </div>
+
+                        <button onclick="goNext()" class="bg-gov-blue text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg hover:bg-gov-dark-blue transition-all transform hover:scale-105 flex items-center mx-auto">
+                            ${config.btnLabel}
+                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        </button>
+                    </div>
+                `;
+            }
+            else {
+                // VISTAS ESTÁNDAR
+                html += `
+                    <h2 class="text-2xl font-bold text-gov-blue mb-3">${config.title}</h2>
+                    ${config.description ? `<p class="text-gray-600 mb-6 text-lg">${config.description}</p>` : ''}
+                    ${config.alert ? `<div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 text-red-700 font-bold rounded-r">${config.alert}</div>` : ''}
+                `;
+
+                if (config.type === 'single-choice') {
+                    html += '<div class="space-y-3">';
+                    config.options.forEach(opt => {
+                        html += `
+                        <button onclick="handleChoice('${opt.id}')" class="btn-gov group">
+                            <span class="text-lg">${opt.label}</span>
+                            <svg class="w-6 h-6 text-blue-200 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </button>`;
+                    });
+                    html += '</div>';
+                }
+                else if (config.type === 'multi-choice') {
+                    nextBtn.classList.remove('hidden');
+                    html += '<div class="grid md:grid-cols-2 gap-4 mb-6">';
+                    config.options.forEach(opt => {
+                        let collection = stepId === 'p3.4' ? state.answers.p3_characteristics : state.answers.p4_profile;
+                        const isSelected = collection.includes(opt.id);
+                        html += `
+                        <div onclick="toggleMulti(this, '${opt.id}', '${stepId}')" class="checkbox-card ${isSelected ? 'selected' : ''}">
+                            <div class="checkbox-mark">
+                                ${isSelected ? '<svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>' : ''}
+                            </div>
+                            <span class="text-gray-700 font-semibold">${opt.label}</span>
+                        </div>`;
+                    });
+                    html += '</div>';
+                }
+                else if (config.type === 'dropdown') {
+                    nextBtn.classList.remove('hidden');
+                    html += `<div class="mb-6"><select id="selectInput" class="w-full p-4 border border-gray-300 rounded-lg text-lg outline-none focus:ring-2 focus:ring-gov-blue"><option value="">Seleccione una opción...</option>${config.data.map(i => `<option value="${i}">${i}</option>`).join('')}</select></div>`;
+                }
+                else if (config.type === 'textarea') {
+                    nextBtn.classList.remove('hidden');
+                    html += `<textarea id="narrativeInput" class="w-full p-4 border border-gray-300 rounded-lg h-40 outline-none focus:border-gov-blue text-lg" placeholder="Ej: Vestía jean azul, camisa roja. Tiene una cicatriz en la ceja..."></textarea>`;
+                }
+                else if (config.type === 'results') {
+                    html += generateResultsEngine(); 
+                    document.getElementById('navButtons').classList.add('hidden');
+                }
             }
 
             container.innerHTML = html;
@@ -428,21 +483,22 @@
             if(arr.includes(val)) arr.splice(arr.indexOf(val), 1); else arr.push(val);
         }
 
-function goNext() {
-    const cur = state.currentStep;
-    if (steps[cur].type === 'dropdown') state.answers.p3_detail = document.getElementById('selectInput').value;
-    
-    state.history.push(cur);
-    let next = '';
+        function goNext() {
+            const cur = state.currentStep;
+            if (steps[cur] && steps[cur].type === 'dropdown') state.answers.p3_detail = document.getElementById('selectInput').value;
+            
+            state.history.push(cur);
+            let next = '';
 
-    // NAVEGACIÓN SECUENCIAL (CORREGIDA)
-    if (cur === 'p4') next = 'p2'; // Perfil -> Tiempo
-    else if (['p3.1', 'p3.2', 'p3.3'].includes(cur)) next = 'p3.4'; // Detalles de lugar -> Características
-    else if (cur === 'p3.4') next = 'p1'; // Características -> Indicios
-    else if (cur === 'p_narrative') next = 'results'; // Narrativa -> Resultados
+            // NAVEGACIÓN SECUENCIAL (CORREGIDA)
+            if (cur === 'intro') next = 'p4'; // Intro -> Perfil
+            else if (cur === 'p4') next = 'p2'; // Perfil -> Tiempo
+            else if (['p3.1', 'p3.2', 'p3.3'].includes(cur)) next = 'p3.4'; // Detalles de lugar -> Características
+            else if (cur === 'p3.4') next = 'p1'; // Características -> Indicios
+            else if (cur === 'p_narrative') next = 'results'; // Narrativa -> Resultados
 
-    renderView(next);
-}
+            renderView(next);
+        }
 
         function goBack() {
             if(state.history.length > 0) renderView(state.history.pop());
