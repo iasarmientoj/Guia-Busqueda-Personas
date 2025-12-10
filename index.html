@@ -37,7 +37,13 @@
         }
         .checkbox-card:hover { border-color: #3366CC; background-color: #F8FBFF; }
         .checkbox-card.selected { border-color: #3366CC; background-color: #EFF6FF; ring: 1px solid #3366CC; }
-        .checkbox-mark { width: 20px; height: 20px; border: 2px solid #9CA3AF; border-radius: 4px; margin-right: 12px; display: flex; align-items: center; justify-content: center; background: white; }
+        
+        /* CAMBIO: flex-shrink-0 para evitar deformación */
+        .checkbox-mark { 
+            width: 20px; height: 20px; flex-shrink: 0; 
+            border: 2px solid #9CA3AF; border-radius: 4px; margin-right: 12px; 
+            display: flex; align-items: center; justify-content: center; background: white; 
+        }
         .checkbox-card.selected .checkbox-mark { border-color: #3366CC; background-color: #3366CC; }
         
         /* Acordeones */
@@ -58,11 +64,17 @@
         }
         .a11y-btn {
             background-color: #004884; color: white; border: none; padding: 10px; width: 44px; height: 44px;
-            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            display: flex; align-items: center; justify-content: flex-start; 
+            cursor: pointer;
             border-top-left-radius: 4px; border-bottom-left-radius: 4px;
             transition: width 0.3s ease, background-color 0.2s; overflow: hidden; white-space: nowrap;
             box-shadow: -2px 2px 5px rgba(0,0,0,0.2);
         }
+        /* Filtro para asegurar que los iconos sean blancos */
+        .a11y-btn img {
+            filter: brightness(0) invert(1); 
+        }
+
         .a11y-btn:hover { width: 140px; background-color: #3366CC; }
         .a11y-label { opacity: 0; margin-left: 10px; font-size: 14px; font-weight: 600; transition: opacity 0.2s; }
         .a11y-btn:hover .a11y-label { opacity: 1; }
@@ -94,15 +106,15 @@
     <!-- Menú de Accesibilidad -->
     <div class="a11y-menu">
         <button onclick="toggleContrast()" class="a11y-btn" aria-label="Alto Contraste">
-            <svg class="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 100-12 6 6 0 000 12z" clip-rule="evenodd"></path></svg>
+            <img src="icons8-contrast-50.png" class="w-6 h-6 flex-shrink-0" alt="Contraste">
             <span class="a11y-label">Contraste</span>
         </button>
         <button onclick="changeFontSize(-10)" class="a11y-btn" aria-label="Reducir Letra">
-            <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4m0 0l6-6m-6 6l6 6"></path></svg>
+            <img src="icons8-decrease-font-64.png" class="w-6 h-6 flex-shrink-0" alt="Reducir">
             <span class="a11y-label">Reducir Letra</span>
         </button>
         <button onclick="changeFontSize(10)" class="a11y-btn" aria-label="Aumentar Letra">
-            <svg class="w-6 h-6 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+            <img src="icons8-increase-font-64.png" class="w-6 h-6 flex-shrink-0" alt="Aumentar">
             <span class="a11y-label">Aumentar Letra</span>
         </button>
     </div>
@@ -206,14 +218,17 @@
             history: [],
             answers: {
                 p1: null, p1_sub: null, // Contexto (Indicios)
-                p2: null, p2_sub: null, // Tiempo
-                p3_type: null, p3_detail: null, p3_characteristics: [], // Lugar
+                p2: null, p2_sub: null, 
+                p2_date_month: null, p2_date_year: null, // Fechas
+                p3_type: null, p3_detail: null, p3_sub_detail: null, p3_characteristics: [], // Lugar
                 p4_profile: [] // Perfil
             }
         };
 
+        // CONSTANTES GEOGRÁFICAS
+        const CITIES_LIST = ['Bogotá D.C.', 'Medellín', 'Cali', 'Barranquilla', 'Bucaramanga', 'Otro'];
+        
         // --- 3. DEFINICIÓN DE PASOS (UI) ---
-        // Flujo: Intro -> P4 (Perfil) -> P2 (Tiempo) -> P3 (Lugar) -> P1 (Contexto)
         const steps = {
             // PASO 0: INTRODUCCIÓN
             'intro': {
@@ -231,17 +246,17 @@
                 description: 'Seleccione todas las condiciones que apliquen. Esto define la prioridad de la búsqueda.',
                 type: 'multi-choice', 
                 options: [
-                    { id: '4.1', label: 'Niño/a o adolescente (< 18 años)' },
-                    { id: '4.2', label: 'Líder social, político o periodista' },
-                    { id: '4.3', label: 'Miembro de la Fuerza Pública' },
-                    { id: '4.4', label: 'Excombatiente / Reincorporado' },
-                    { id: '4.5', label: 'Persona con Discapacidad o Adulto Mayor' },
-                    { id: '4.6', label: 'Migrante / Extranjero' },
-                    { id: '4.7', label: 'Mujer (Riesgo violencia género)' },
-                    { id: '4.8', label: 'Comunidad indígena o NARP' },
-                    { id: '4.9', label: 'Población LGBTIQ+' },
-                    { id: '4.10', label: 'Desaparición colectiva' },
-                    { id: '4.11', label: 'Ninguna de las anteriores' }
+                    { id: '1.1', label: 'Es un/a niño/a o adolescente (menor de 18 años al momento de desaparecer).' },
+                    { id: '1.2', label: 'Es una persona con un rol público o de alto riesgo (Líder, defensor/a, periodista, sindicalista, político).' },
+                    { id: '1.3', label: 'Es o fue miembro de la Fuerza Pública (Ejército, Policía, etc.).' },
+                    { id: '1.4', label: 'Es o fue integrante de un grupo armado ilegal (guerrilla, AUC, BACRIM, etc.).' },
+                    { id: '1.5', label: 'Es una persona que requiere cuidado o apoyo especial (Adulto mayor, salud mental, discapacidad).' },
+                    { id: '1.6', label: 'Es migrante o de nacionalidad extranjera.' },
+                    { id: '1.7', label: 'Es una mujer y se teme violencia de género.' },
+                    { id: '1.8', label: 'Pertenece a comunidad indígena o NARP.' },
+                    { id: '1.9', label: 'Se identifica como persona LGBTIQ+.' },
+                    { id: '1.10', label: 'Desaparecieron dos o más personas juntas (ej: madre e hijo, hermanos, familia).' },
+                    { id: '1.11', label: 'Ninguna de las anteriores.' }
                 ]
             },
             // PASO 2: TIEMPO (P2)
@@ -251,11 +266,16 @@
                 description: 'Esto determina si la búsqueda es operativa (urgente) o investigativa (histórica).',
                 type: 'single-choice', 
                 options: [
-                    { id: '2.1', label: 'Hace unas horas' },
-                    { id: '2.2', label: 'Hace unos días' },
-                    { id: '2.3', label: 'Hace unos meses' },
-                    { id: '2.4', label: 'Hace unos años' }
+                    { id: '2.1', label: 'Ocurrió hace poco (horas, días o semanas)' },
+                    { id: '2.2', label: 'Ocurrió hace más de un año' }
                 ]
+            },
+            // PASO 2.1: FECHA DETALLADA (Solo si es > 1 año)
+            'p2_date': {
+                progress: '45%',
+                title: 'Fecha aproximada de los hechos',
+                description: 'Por favor indique el mes y año aproximado en que ocurrió la desaparición.',
+                type: 'date-year-picker'
             },
             // PASO 3: LUGAR (P3)
             'p3_type': { 
@@ -268,9 +288,19 @@
                     { id: '3.3', label: 'En otro país' }
                 ]
             },
-            'p3.1': { progress: '65%', title: 'Seleccione la ciudad', type: 'dropdown', data: ['Bogotá D.C.', 'Medellín', 'Cali', 'Barranquilla', 'Cúcuta', 'Otro'] },
-            'p3.2': { progress: '65%', title: 'Seleccione el municipio', type: 'dropdown', data: ['Apartadó', 'Tumaco', 'Quibdó', 'Otro'] },
-            'p3.3': { progress: '65%', title: 'Seleccione el país', type: 'dropdown', data: ['Venezuela', 'Ecuador', 'Panamá', 'España', 'Estados Unidos', 'Otro'] },
+            'p3.1': { progress: '65%', title: 'Seleccione la ciudad', type: 'dropdown', data: CITIES_LIST },
+            
+            // CAMBIO: NUEVO TIPO PARA MUNICIPIO + CIUDAD
+            'p3.2': { 
+                progress: '65%', 
+                title: 'Ubicación en Municipio', 
+                type: 'municipality-city', 
+                municipalityData: ['Otro'], // Según instrucciones
+                cityData: CITIES_LIST, // Para sugerir la ciudad cercana
+                description: 'Seleccione el municipio y la ciudad principal más cercana para ubicar las entidades de apoyo.' 
+            },
+            
+            'p3.3': { progress: '65%', title: 'Seleccione el país', type: 'dropdown', data: ['España', 'Estados Unidos', 'México', 'Ecuador', 'Chile', 'Otro'] },
             
             'p3.4': { 
                 progress: '75%', 
@@ -451,7 +481,6 @@
                         </div>
                         <h2 class="text-3xl font-bold text-gov-blue mb-4">${config.title}</h2>
                         <p class="text-gray-600 text-lg mb-8 leading-relaxed max-w-2xl mx-auto">${config.description}</p>
-                        
                         <div class="bg-gov-bg border border-blue-100 rounded-lg p-5 mb-8 text-sm text-gray-600 flex items-start text-left max-w-2xl mx-auto">
                             <svg class="w-6 h-6 mr-3 mt-0.5 text-gov-blue flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                             <div>
@@ -459,13 +488,11 @@
                                 ${config.disclaimer}
                             </div>
                         </div>
-
                         <button onclick="goNext()" class="bg-gov-blue text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg hover:bg-gov-dark-blue transition-all transform hover:scale-105 flex items-center mx-auto">
                             ${config.btnLabel}
                             <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                         </button>
-                    </div>
-                `;
+                    </div>`;
             }
             else {
                 // VISTAS ESTÁNDAR
@@ -506,6 +533,55 @@
                     nextBtn.classList.remove('hidden');
                     html += `<div class="mb-6"><select id="selectInput" class="w-full p-4 border border-gray-300 rounded-lg text-lg outline-none focus:ring-2 focus:ring-gov-blue"><option value="">Seleccione una opción...</option>${config.data.map(i => `<option value="${i}">${i}</option>`).join('')}</select></div>`;
                 }
+                // NUEVO TIPO: MUNICIPIO + CIUDAD (P3.2)
+                else if (config.type === 'municipality-city') {
+                    nextBtn.classList.remove('hidden');
+                    html += `
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wide">Municipio</label>
+                            <select id="municipalityInput" class="w-full p-4 border border-gray-300 rounded-lg text-lg outline-none focus:ring-2 focus:ring-gov-blue">
+                                ${config.municipalityData.map(i => `<option value="${i}">${i}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div class="bg-blue-50 p-4 rounded border border-blue-100">
+                            <label class="block text-gov-blue font-bold mb-2 text-sm uppercase tracking-wide flex items-center">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                                Ciudad Principal más cercana
+                            </label>
+                            <p class="text-xs text-gray-500 mb-2">Seleccione dónde le quedaría más fácil recibir atención presencial.</p>
+                            <select id="cityInput" class="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-gov-blue">
+                                <option value="">Seleccione...</option>
+                                ${config.cityData.map(i => `<option value="${i}">${i}</option>`).join('')}
+                            </select>
+                        </div>
+                    </div>`;
+                }
+                // TIPO DE VISTA: DATE-YEAR-PICKER
+                else if (config.type === 'date-year-picker') {
+                    nextBtn.classList.remove('hidden');
+                    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+                    html += `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                        <div>
+                            <label class="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wide">Mes</label>
+                            <select id="monthInput" class="w-full p-4 border border-gray-300 rounded-lg text-lg outline-none focus:ring-2 focus:ring-gov-blue appearance-none bg-white">
+                                <option value="">Seleccione...</option>
+                                ${months.map(m => `<option value="${m}">${m}</option>`).join('')}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wide">Año (4 dígitos)</label>
+                            <input type="number" id="yearInput" placeholder="Ej: 2020" min="1900" max="2025" 
+                                class="w-full p-4 border border-gray-300 rounded-lg text-lg outline-none focus:ring-2 focus:ring-gov-blue"
+                                oninput="if(this.value.length > 4) this.value = this.value.slice(0,4);">
+                        </div>
+                    </div>
+                    <div id="dateError" class="text-red-600 font-bold hidden mb-4 bg-red-50 p-3 rounded border border-red-200 text-center">
+                        ⚠️ Por favor ingrese un año válido entre 1900 y 2025 y seleccione el mes.
+                    </div>
+                    `;
+                }
                 else if (config.type === 'textarea') {
                     nextBtn.classList.remove('hidden');
                     html += `<textarea id="narrativeInput" class="w-full p-4 border border-gray-300 rounded-lg h-40 outline-none focus:border-gov-blue text-lg" placeholder="Ej: Vestía jean azul, camisa roja. Tiene una cicatriz en la ceja..."></textarea>`;
@@ -534,7 +610,11 @@
 
             // Router Lógica Inversa
             let next = '';
-            if (cur === 'p2') next = 'p3_type';
+            
+            if (cur === 'p2') {
+                if (val === '2.1') next = 'p3_type'; // Reciente -> Lugar
+                else next = 'p2_date'; // Antiguo -> Detalle Fecha
+            }
             else if (cur === 'p3_type') {
                 if(val === '3.1') next = 'p3.1'; else if(val === '3.2') next = 'p3.2'; else next = 'p3.3';
             }
@@ -563,14 +643,42 @@
 
         function goNext() {
             const cur = state.currentStep;
+            
+            // Validación Fecha
+            if (cur === 'p2_date') {
+                const month = document.getElementById('monthInput').value;
+                const year = document.getElementById('yearInput').value;
+                const yearNum = parseInt(year);
+
+                if (!month || !year || year.length !== 4 || yearNum < 1900 || yearNum > 2025) {
+                    document.getElementById('dateError').classList.remove('hidden');
+                    return; 
+                }
+                state.answers.p2_date_month = month;
+                state.answers.p2_date_year = year;
+            }
+
+            // Guardar datos Dropdown Simple
             if (steps[cur] && steps[cur].type === 'dropdown') state.answers.p3_detail = document.getElementById('selectInput').value;
+
+            // Guardar datos Municipio-Ciudad
+            if (steps[cur] && steps[cur].type === 'municipality-city') {
+                const muni = document.getElementById('municipalityInput').value;
+                const city = document.getElementById('cityInput').value;
+                
+                // IMPORTANTE: Guardamos el municipio específico para el registro
+                state.answers.p3_sub_detail = muni;
+                // Y guardamos la CIUDAD CERCANA como 'detail' principal para que el filtro de contactos funcione
+                state.answers.p3_detail = city || muni; // Fallback al municipio si no selecciona ciudad (aunque debería)
+            }
             
             state.history.push(cur);
             let next = '';
 
-            // NAVEGACIÓN SECUENCIAL (CORREGIDA)
+            // NAVEGACIÓN SECUENCIAL
             if (cur === 'intro') next = 'p4'; // Intro -> Perfil
             else if (cur === 'p4') next = 'p2'; // Perfil -> Tiempo
+            else if (cur === 'p2_date') next = 'p3_type'; // Fecha -> Lugar
             else if (['p3.1', 'p3.2', 'p3.3'].includes(cur)) next = 'p3.4'; // Detalles de lugar -> Características
             else if (cur === 'p3.4') next = 'p1'; // Características -> Indicios
             else if (cur === 'p_narrative') next = 'results'; // Narrativa -> Resultados
@@ -703,10 +811,12 @@
 
             // H. Guion
             const narrative = document.getElementById('narrativeInput') ? document.getElementById('narrativeInput').value : '';
+            const lugarTexto = state.answers.p3_sub_detail ? `${state.answers.p3_sub_detail} (Zona ${state.answers.p3_detail})` : (state.answers.p3_detail || 'la zona');
+            
             const scriptHTML = narrative ? `
                 <div class="bg-gray-100 p-6 rounded-lg mb-8 border-l-4 border-gray-500 shadow-sm print:border-black">
                     <h4 class="font-bold text-gray-700 text-xs uppercase mb-2 tracking-wider">Guion para su denuncia (Leer al funcionario)</h4>
-                    <p class="text-gray-800 italic text-lg font-serif">"Vengo a reportar la desaparición de una persona con perfil: ${getProfiles()}. ${narrative}. Hechos ocurridos en ${state.answers.p3_detail || 'la zona'} hace ${state.answers.p2}."</p>
+                    <p class="text-gray-800 italic text-lg font-serif">"Vengo a reportar la desaparición de una persona con perfil: ${getProfiles()}. ${narrative}. Hechos ocurridos en ${lugarTexto} hace ${state.answers.p2}."</p>
                 </div>
             ` : '';
 
@@ -740,10 +850,10 @@
         function getProfiles() {
             // Muestra nombres de perfiles seleccionados
             const map = {
-                '4.1': 'Menor de edad', '4.2': 'Líder Social', '4.3': 'Fuerza Pública',
-                '4.4': 'Excombatiente', '4.5': 'Discapacidad/Mayor', '4.6': 'Extranjero',
-                '4.7': 'Mujer en Riesgo', '4.8': 'Comunidad Étnica', '4.9': 'LGBTIQ+',
-                '4.10': 'Colectivo'
+                '1.1': 'Menor de edad', '1.2': 'Líder/Rol Público', '1.3': 'Fuerza Pública',
+                '1.4': 'Actor Armado', '1.5': 'Condición Especial/Mayor', '1.6': 'Migrante/Extranjero',
+                '1.7': 'Mujer (Riesgo)', '1.8': 'Comunidad Étnica', '1.9': 'LGBTIQ+',
+                '1.10': 'Desaparición Colectiva'
             };
             return state.answers.p4_profile.map(id => map[id] || id).join(', ') || "General";
         }
