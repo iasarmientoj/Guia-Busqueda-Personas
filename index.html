@@ -685,11 +685,11 @@
 
         // --- 7. EL MOTOR DE LÓGICA (ACTUALIZADO) ---
         function generateResultsEngine() {
-            // 1. Contexto Temporal (URGENTE / HISTORICO)
+            // 1. Contexto Temporal
             const isReciente = state.answers.p2 === '2.1';
             const temporalContext = isReciente ? 'URGENTE' : 'HISTORICO';
 
-            // 2. Contexto Fecha Conflicto (PRE_2016 / POST_2016)
+            // 2. Contexto Fecha Conflicto
             let conflictDateContext = null;
             if (!isReciente && (state.answers.p1 === '4.1' || state.answers.p1_sub?.startsWith('4.1'))) {
                 const year = parseInt(state.answers.p2_date_year);
@@ -759,94 +759,107 @@
                 }).join('');
             };
 
-            // --- RENDERIZADO RUTA MAESTRA (NUEVO) ---
+            // --- RENDERIZADO RUTA MAESTRA (RECURSIVO) ---
             const renderRouteMaster = () => {
                 if (!CURRENT_ROUTE_DATA || CURRENT_ROUTE_DATA.length === 0) {
                     return '<div class="p-6 bg-gray-50 text-gray-500 rounded-lg text-center border border-gray-200">Cargando ruta...</div>';
                 }
 
-                let html = '';
-                // Mapa para agrupar hijos
-                // Estrategia: Iterar. Si es SEPARADOR -> Render. Si es BIF -> Render Accordion Parent e iterar hijos.
-                
-                // Primero identificamos BIFs padres para saber cuáles pasos son hijos y no renderizarlos en el loop principal
-                const bifParents = CURRENT_ROUTE_DATA.filter(row => row.paso.startsWith('BIF'));
-                const childSteps = new Set();
-                bifParents.forEach(bif => {
-                    const prefix = bif.paso.replace('BIF', '').trim(); // ej: "6.A"
-                    CURRENT_ROUTE_DATA.forEach(row => {
-                        if (row.paso.startsWith(prefix) && row.paso !== bif.paso) {
-                            childSteps.add(row.paso);
+                // 1. Preparar Nodos y Mapa de BIFs
+                const nodes = CURRENT_ROUTE_DATA.map(row => ({
+                    ...row,
+                    cleanId: row.paso.replace('BIF', '').trim(),
+                    isBif: row.paso.startsWith('BIF'),
+                    children: []
+                }));
+
+                const bifMap = {};
+                nodes.filter(n => n.isBif).forEach(n => {
+                    bifMap[n.cleanId] = n;
+                });
+
+                // 2. Construir Árbol (Asignar cada nodo a su padre más específico)
+                const root = [];
+                nodes.forEach(node => {
+                    if (node.paso === 'SEPARADOR') {
+                        root.push(node);
+                        return;
+                    }
+
+                    let bestParent = null;
+                    let maxLen = 0;
+
+                    // Buscar el padre más adecuado (BIF cuyo prefijo coincida con el inicio del ID del nodo)
+                    Object.keys(bifMap).forEach(prefix => {
+                        // El nodo debe empezar con el prefijo, NO ser el mismo BIF, y ser el match más largo encontrado
+                        const isChild = node.cleanId.startsWith(prefix) && node.cleanId !== prefix;
+                        
+                        if (isChild && prefix.length > maxLen) {
+                            // Verificación adicional para asegurar límites correctos (ej: "6.A" vs "6.A.1")
+                            // Asumimos que la estructura es consistente con puntos o letras
+                            maxLen = prefix.length;
+                            bestParent = bifMap[prefix];
                         }
                     });
+
+                    if (bestParent) {
+                        bestParent.children.push(node);
+                    } else {
+                        root.push(node);
+                    }
                 });
 
-                CURRENT_ROUTE_DATA.forEach(row => {
-                    if (childSteps.has(row.paso)) return; // Es hijo, se renderiza dentro del padre
-
-                    // TIPO: SEPARADOR
-                    if (row.paso === 'SEPARADOR') {
-                        html += `
-                        <div class="mt-8 mb-4 bg-gov-dark-blue text-white p-4 rounded-lg shadow-md">
-                            <h4 class="font-bold text-lg">${row.titulo}</h4>
-                            <p class="text-sm opacity-90 mt-1">${row.descripcion}</p>
-                        </div>`;
-                        return;
-                    }
-
-                    // TIPO: BIFURCACIÓN (PADRE)
-                    if (row.paso.startsWith('BIF')) {
-                        const prefix = row.paso.replace('BIF', '').trim();
-                        // Encontrar hijos
-                        const children = CURRENT_ROUTE_DATA.filter(r => r.paso.startsWith(prefix) && r.paso !== row.paso);
-                        const mdContent = marked.parse(row.contenido);
-
-                        // Renderizar hijos
-                        let childrenHTML = children.map(child => {
-                            const childMD = marked.parse(child.contenido);
+                // 3. Renderizado Recursivo
+                const renderRecursive = (nodeList) => {
+                    return nodeList.map(node => {
+                        // Usar CONTENIDO_MD en lugar de DESCRIPCION para el separador
+                        const mdContent = marked.parse(node.contenido || '');
+                        
+                        if (node.paso === 'SEPARADOR') {
                             return `
-                            <div class="ml-4 mt-3 border-l-4 border-blue-200 pl-4 py-2">
-                                <span class="text-xs font-bold text-gov-blue bg-blue-50 px-2 py-1 rounded border border-blue-100">${child.paso}</span>
-                                <strong class="block text-gray-800 mt-1">${child.titulo}</strong>
-                                <div class="text-sm text-gray-600 mt-1 md-content">${childMD}</div>
+                            <div class="mt-8 mb-4 bg-gov-dark-blue text-white p-4 rounded-lg shadow-md">
+                                <h4 class="font-bold text-lg">${node.titulo}</h4>
+                                <div class="text-sm opacity-90 mt-1 md-content">${mdContent}</div>
                             </div>`;
-                        }).join('');
+                        }
 
-                        html += `
-                        <details class="group bg-blue-50 border border-blue-200 rounded-lg mb-3 shadow-sm hover:shadow-md transition-all">
-                            <summary class="flex items-center p-4 cursor-pointer select-none">
-                                <div class="flex items-center flex-1">
-                                    <span class="bg-gov-dark-blue text-white text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-900 min-w-[24px] text-center">Opc</span>
-                                    <span class="font-bold text-gov-dark-blue text-lg">${row.titulo}</span>
+                        if (node.isBif) {
+                            // Render BIF (Padre Recursivo)
+                            const childrenHtml = renderRecursive(node.children);
+                            return `
+                            <details class="group bg-blue-50 border border-blue-200 rounded-lg mb-3 shadow-sm hover:shadow-md transition-all ml-0">
+                                <summary class="flex items-center p-4 cursor-pointer select-none">
+                                    <div class="flex items-center flex-1">
+                                        <span class="bg-gov-dark-blue text-white text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-900 min-w-[24px] text-center">Opc</span>
+                                        <span class="font-bold text-gov-dark-blue text-lg">${node.titulo}</span>
+                                    </div>
+                                    <svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </summary>
+                                <div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-blue-100 bg-white text-base md-content">
+                                    ${mdContent}
+                                    ${childrenHtml ? `<div class="mt-4 pt-4 border-t border-gray-100 pl-4 border-l-2 border-blue-100 space-y-2">${childrenHtml}</div>` : ''}
                                 </div>
-                                <svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            </summary>
-                            <div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-blue-100 bg-white text-base md-content">
-                                ${mdContent}
-                                ${childrenHTML ? '<div class="mt-4 pt-4 border-t border-gray-100">' + childrenHTML + '</div>' : ''}
-                            </div>
-                        </details>`;
-                        return;
-                    }
+                            </details>`;
+                        } else {
+                            // Render Paso (Hoja)
+                            return `
+                            <details class="group bg-white border border-gray-200 rounded-lg mb-2 shadow-sm hover:shadow-md transition-all">
+                                <summary class="flex items-center p-4 cursor-pointer select-none">
+                                    <div class="flex items-center flex-1">
+                                        <span class="bg-blue-100 text-gov-blue text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-200 min-w-[24px] text-center">${node.paso}</span>
+                                        <span class="font-bold text-gov-dark-blue text-lg">${node.titulo}</span>
+                                    </div>
+                                    <svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </summary>
+                                <div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-gray-100 bg-gray-50 text-base md-content">
+                                    ${mdContent}
+                                </div>
+                            </details>`;
+                        }
+                    }).join('');
+                };
 
-                    // TIPO: PASO NORMAL
-                    const mdContent = marked.parse(row.contenido);
-                    html += `
-                    <details class="group bg-white border border-gray-200 rounded-lg mb-3 shadow-sm hover:shadow-md transition-all">
-                        <summary class="flex items-center p-4 cursor-pointer select-none">
-                            <div class="flex items-center flex-1">
-                                <span class="bg-blue-100 text-gov-blue text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-200 min-w-[24px] text-center">${row.paso}</span>
-                                <span class="font-bold text-gov-dark-blue text-lg">${row.titulo}</span>
-                            </div>
-                            <svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </summary>
-                        <div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-gray-100 bg-gray-50 text-base md-content">
-                            ${mdContent}
-                        </div>
-                    </details>`;
-                });
-
-                return html;
+                return renderRecursive(root);
             };
 
             // HTML de Contactos
