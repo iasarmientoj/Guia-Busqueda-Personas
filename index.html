@@ -222,29 +222,36 @@
             document.getElementById('btn-' + tabId).classList.add('active');
         }
 
-        // --- 1. CONFIGURACIÓN DE DATOS (URLS ACTUALIZADAS) ---
-        // Usamos los CSV publicados directamente
+        // --- 1. CONFIGURACIÓN DE DATOS ---
         const SHEETS_CONFIG = {
             ACCIONES: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=812842567&single=true&output=csv',
-            CONTACTOS: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=871607364&single=true&output=csv',
-            // Mantenemos Casos por si se requiere después
-            CASOS: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=1713175009&single=true&output=csv'
+            CONTACTOS: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=871607364&single=true&output=csv'
+        };
+
+        // Mapa de rutas maestras según opción de P1
+        const ROUTES_MAP = {
+            '4.1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=545298463&single=true&output=csv',
+            '4.2': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=1342244385&single=true&output=csv',
+            '4.3': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=399030951&single=true&output=csv',
+            '4.4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=718152538&single=true&output=csv',
+            '4.5': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=428871968&single=true&output=csv',
+            '4.6': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=1764372827&single=true&output=csv'
         };
 
         // Bases de Datos en Memoria
-        let DB_ACCIONES = []; // Array de Objetos Acción
-        let DB_CONTACTOS = []; // Array de Contactos
+        let DB_ACCIONES = []; 
+        let DB_CONTACTOS = []; 
+        let CURRENT_ROUTE_DATA = []; // Datos de la ruta maestra seleccionada
 
         // --- 2. ESTADO DE LA APP ---
         const state = {
             currentStep: 'intro',
             history: [],
             answers: {
-                p1: null, p1_sub: null, // Contexto
-                p2: null, p2_sub: null, // Tiempo
-                p2_date_month: null, p2_date_year: null, // Fecha Conflicto
-                p3_type: null, p3_detail: null, p3_sub_detail: null, p3_characteristics: [], // Lugar
-                p4_profile: [] // Perfil
+                p1: null, p1_sub: null, 
+                p2: null, p2_sub: null, p2_date_month: null, p2_date_year: null,
+                p3_type: null, p3_detail: null, p3_sub_detail: null, p3_characteristics: [], 
+                p4_profile: [] 
             }
         };
 
@@ -417,7 +424,6 @@
             const errorMsg = document.getElementById('errorMsg');
             
             try {
-                // Función para cargar CSV directo
                 const loadSheet = async (url) => {
                     const res = await fetch(url);
                     if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
@@ -425,15 +431,12 @@
                     return Papa.parse(text, { header: true, skipEmptyLines: true }).data;
                 };
 
-                // Cargar Contactos
                 status.innerText = "Descargando Directorio...";
                 DB_CONTACTOS = await loadSheet(SHEETS_CONFIG.CONTACTOS);
 
-                // Cargar Acciones
                 status.innerText = "Descargando Matriz de Acciones...";
                 const accionesRaw = await loadSheet(SHEETS_CONFIG.ACCIONES);
                 
-                // Procesar Acciones: Limpieza básica
                 DB_ACCIONES = accionesRaw.map(row => ({
                     id: row.ID_ACCION ? row.ID_ACCION.trim() : '',
                     categoria: row.CATEGORIA ? row.CATEGORIA.trim().toUpperCase() : '',
@@ -445,9 +448,8 @@
                     titulo: row.TITULO_VISIBLE || "Acción",
                     contenido: row.CONTENIDO_MD || "",
                     contactos: row.CONTACTOS ? row.CONTACTOS.split(',') : []
-                })).filter(a => a.id); // Filtrar filas vacías
+                })).filter(a => a.id);
 
-                console.log("DB Cargada", { Acciones: DB_ACCIONES.length, Contactos: DB_CONTACTOS.length });
                 document.getElementById('loader').style.display = 'none';
                 renderView('intro');
 
@@ -460,9 +462,43 @@
             }
         }
 
-        // --- 5. RENDERIZADO UI (Se mantiene igual, solo se actualiza generateResultsEngine) ---
+        // --- NUEVA FUNCIÓN: CARGAR RUTA ESPECÍFICA ---
+        async function loadRouteData() {
+            const loader = document.getElementById('loader');
+            const status = document.getElementById('loaderStatus');
+            loader.style.display = 'flex';
+            status.innerText = "Calculando Ruta Maestra...";
+
+            const routeId = state.answers.p1; // Ej: 4.1, 4.2...
+            const url = ROUTES_MAP[routeId];
+
+            if (!url) {
+                CURRENT_ROUTE_DATA = [];
+                loader.style.display = 'none';
+                return;
+            }
+
+            try {
+                const res = await fetch(url);
+                const text = await res.text();
+                const data = Papa.parse(text, { header: true, skipEmptyLines: true }).data;
+                // Normalizar datos de ruta
+                CURRENT_ROUTE_DATA = data.map(row => ({
+                    paso: row.PASO ? row.PASO.trim() : '',
+                    titulo: row.TITULO || '',
+                    descripcion: row.DESCRIPCION || '',
+                    contenido: row.CONTENIDO_MD || ''
+                }));
+            } catch (e) {
+                console.error("Error cargando ruta:", e);
+                CURRENT_ROUTE_DATA = [];
+            } finally {
+                loader.style.display = 'none';
+            }
+        }
+
+        // --- 5. RENDERIZADO UI ---
         function renderView(stepId) {
-            // (Código de renderizado existente...)
             state.currentStep = stepId;
             const config = steps[stepId];
             const container = document.getElementById('viewContainer');
@@ -514,7 +550,7 @@
                 document.getElementById('navButtons').classList.add('hidden');
             }
             else {
-                // Renderizado Genérico (single, multi, dropdown, etc.)
+                // Renderizado Genérico
                 html += `<h2 class="text-2xl font-bold text-gov-blue mb-3">${config.title}</h2>
                     ${config.description ? `<p class="text-gray-600 mb-6 text-lg">${config.description}</p>` : ''}
                     ${config.alert ? `<div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 text-red-700 font-bold rounded-r">${config.alert}</div>` : ''}`;
@@ -526,7 +562,6 @@
                     
                     html += `<div class="${wrapperClass}">`;
                     config.options.forEach(opt => {
-                        // Lógica de selección
                         let isSelected = false;
                         if(isMulti) {
                             let collection = stepId === 'p3.4' ? state.answers.p3_characteristics : state.answers.p4_profile;
@@ -579,7 +614,7 @@
             container.innerHTML = html;
         }
 
-        // --- 6. LOGICA DE NAVEGACIÓN (Igual que antes) ---
+        // --- 6. LOGICA DE NAVEGACIÓN ---
         function handleChoice(val) {
             const cur = state.currentStep;
             if (cur === 'p2') state.answers.p2 = val;
@@ -601,7 +636,7 @@
             let arr = step === 'p3.4' ? state.answers.p3_characteristics : state.answers.p4_profile;
             if(arr.includes(val)) arr.splice(arr.indexOf(val), 1); else arr.push(val);
         }
-        function goNext() {
+        async function goNext() {
             const cur = state.currentStep;
             const currentConfig = steps[cur];
             if (currentConfig && currentConfig.type === 'dropdown') {
@@ -638,6 +673,12 @@
             else if (['p3.1', 'p3.2', 'p3.3'].includes(cur)) next = 'p3.4';
             else if (cur === 'p3.4') next = 'p1';
             else if (cur === 'p_narrative') next = 'results';
+
+            // --- CARGAR RUTA SI VAMOS A RESULTADOS ---
+            if (next === 'results') {
+                await loadRouteData();
+            }
+
             renderView(next);
         }
         function goBack() { if(state.history.length > 0) renderView(state.history.pop()); }
@@ -649,7 +690,6 @@
             const temporalContext = isReciente ? 'URGENTE' : 'HISTORICO';
 
             // 2. Contexto Fecha Conflicto (PRE_2016 / POST_2016)
-            // Solo aplica si es Historico (2.2) y si el caso tiene que ver con Conflicto (4.1...)
             let conflictDateContext = null;
             if (!isReciente && (state.answers.p1 === '4.1' || state.answers.p1_sub?.startsWith('4.1'))) {
                 const year = parseInt(state.answers.p2_date_year);
@@ -657,51 +697,33 @@
                 const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
                 const monthIndex = months.indexOf(monthName);
                 
-                // Fecha de corte: 1 Diciembre 2016
-                const dateCutoff = new Date(2016, 11, 1); // Mes 11 es Diciembre
+                const dateCutoff = new Date(2016, 11, 1); 
                 const dateUser = new Date(year, monthIndex, 1);
                 
                 conflictDateContext = (dateUser < dateCutoff) ? 'PRE_2016' : 'POST_2016';
             }
 
-            // 3. Recolectar Tags del Usuario (P1, P4, P3.4)
+            // 3. Recolectar Tags del Usuario
             const userTags = new Set();
-            if (state.answers.p1) userTags.add(state.answers.p1); // Ej: 4.1
-            if (state.answers.p1_sub) userTags.add(state.answers.p1_sub); // Ej: 4.1.1
-            state.answers.p4_profile.forEach(t => userTags.add(t)); // Ej: 1.1, 1.2
-            state.answers.p3_characteristics.forEach(t => userTags.add(t)); // Ej: 3.4.1
+            if (state.answers.p1) userTags.add(state.answers.p1);
+            if (state.answers.p1_sub) userTags.add(state.answers.p1_sub);
+            state.answers.p4_profile.forEach(t => userTags.add(t));
+            state.answers.p3_characteristics.forEach(t => userTags.add(t));
 
-            // 4. Filtrado Maestro
+            // 4. Filtrado Maestro Acciones
             let matchedActions = DB_ACCIONES.filter(action => {
-                // A. Match CASO (p1)
-                // La acción aplica si tiene 'TODOS' o si intersecciona con userTags
                 const casoMatch = action.caso.includes('TODOS') || action.caso.some(c => userTags.has(c));
-                
-                // B. Match UBICACION/PERFIL (p3.4, p4)
                 const ubiMatch = action.ubicacion.includes('TODOS') || action.ubicacion.some(u => userTags.has(u));
-
                 if (!casoMatch || !ubiMatch) return false;
-
-                // C. Match TEMPORAL
-                // Acción debe tener 'AMBAS' o el contexto actual (URGENTE/HISTORICO)
                 const timeMatch = action.temporalidad.includes('AMBAS') || action.temporalidad.includes(temporalContext);
-                
                 if (!timeMatch) return false;
-
-                // D. Match FECHA CONFLICTO (Refinamiento)
-                // Si estamos en contexto conflicto historico, validar PRE/POST 2016
                 if (conflictDateContext) {
-                    // Si acción es especificamente para la OTRA fecha, descartar.
-                    // Ej: Soy PRE_2016, pero acción dice POST_2016 -> Descartar.
-                    // Si acción dice PRE_2016 o no dice nada -> Mantener.
                     if (conflictDateContext === 'PRE_2016' && action.temporalidad.includes('POST_2016') && !action.temporalidad.includes('PRE_2016')) return false;
                     if (conflictDateContext === 'POST_2016' && action.temporalidad.includes('PRE_2016') && !action.temporalidad.includes('POST_2016')) return false;
                 }
-
                 return true;
             });
 
-            // 5. Deduplicación (Por ID, ganando mayor prioridad)
             const uniqueMap = new Map();
             matchedActions.forEach(action => {
                 if (!uniqueMap.has(action.id) || action.prioridad > uniqueMap.get(action.id).prioridad) {
@@ -709,23 +731,18 @@
                 }
             });
             const finalActions = Array.from(uniqueMap.values());
-
-            // 6. Ordenar por Etapa
             finalActions.sort((a, b) => a.etapa - b.etapa);
 
-            // === CLASIFICACIÓN POR PESTAÑAS (ACTUALIZADO) ===
+            // === CLASIFICACIÓN POR PESTAÑAS ===
             const legalActions = finalActions.filter(a => a.categoria === 'ACCION LEGAL');
             const ownActions = finalActions.filter(a => a.categoria === 'ACCION PROPIA');
             const supportActions = finalActions.filter(a => a.categoria === 'APOYO EXTRA');
 
-            // --- RENDER ---
+            // --- RENDERIZADO ACCIONES ---
             const renderActionList = (actions) => {
                 if (actions.length === 0) return '<div class="p-6 bg-gray-50 text-gray-500 rounded-lg text-center border border-gray-200">No hay acciones específicas para este criterio.</div>';
-                
                 return actions.map((action, idx) => {
-                    // Convertir Markdown a HTML
                     const htmlContent = marked.parse(action.contenido);
-                    
                     return `
                     <details class="group bg-white border border-gray-200 rounded-lg mb-3 shadow-sm hover:shadow-md transition-all">
                         <summary class="flex items-center p-4 cursor-pointer select-none">
@@ -742,10 +759,99 @@
                 }).join('');
             };
 
+            // --- RENDERIZADO RUTA MAESTRA (NUEVO) ---
+            const renderRouteMaster = () => {
+                if (!CURRENT_ROUTE_DATA || CURRENT_ROUTE_DATA.length === 0) {
+                    return '<div class="p-6 bg-gray-50 text-gray-500 rounded-lg text-center border border-gray-200">Cargando ruta...</div>';
+                }
+
+                let html = '';
+                // Mapa para agrupar hijos
+                // Estrategia: Iterar. Si es SEPARADOR -> Render. Si es BIF -> Render Accordion Parent e iterar hijos.
+                
+                // Primero identificamos BIFs padres para saber cuáles pasos son hijos y no renderizarlos en el loop principal
+                const bifParents = CURRENT_ROUTE_DATA.filter(row => row.paso.startsWith('BIF'));
+                const childSteps = new Set();
+                bifParents.forEach(bif => {
+                    const prefix = bif.paso.replace('BIF', '').trim(); // ej: "6.A"
+                    CURRENT_ROUTE_DATA.forEach(row => {
+                        if (row.paso.startsWith(prefix) && row.paso !== bif.paso) {
+                            childSteps.add(row.paso);
+                        }
+                    });
+                });
+
+                CURRENT_ROUTE_DATA.forEach(row => {
+                    if (childSteps.has(row.paso)) return; // Es hijo, se renderiza dentro del padre
+
+                    // TIPO: SEPARADOR
+                    if (row.paso === 'SEPARADOR') {
+                        html += `
+                        <div class="mt-8 mb-4 bg-gov-dark-blue text-white p-4 rounded-lg shadow-md">
+                            <h4 class="font-bold text-lg">${row.titulo}</h4>
+                            <p class="text-sm opacity-90 mt-1">${row.descripcion}</p>
+                        </div>`;
+                        return;
+                    }
+
+                    // TIPO: BIFURCACIÓN (PADRE)
+                    if (row.paso.startsWith('BIF')) {
+                        const prefix = row.paso.replace('BIF', '').trim();
+                        // Encontrar hijos
+                        const children = CURRENT_ROUTE_DATA.filter(r => r.paso.startsWith(prefix) && r.paso !== row.paso);
+                        const mdContent = marked.parse(row.contenido);
+
+                        // Renderizar hijos
+                        let childrenHTML = children.map(child => {
+                            const childMD = marked.parse(child.contenido);
+                            return `
+                            <div class="ml-4 mt-3 border-l-4 border-blue-200 pl-4 py-2">
+                                <span class="text-xs font-bold text-gov-blue bg-blue-50 px-2 py-1 rounded border border-blue-100">${child.paso}</span>
+                                <strong class="block text-gray-800 mt-1">${child.titulo}</strong>
+                                <div class="text-sm text-gray-600 mt-1 md-content">${childMD}</div>
+                            </div>`;
+                        }).join('');
+
+                        html += `
+                        <details class="group bg-blue-50 border border-blue-200 rounded-lg mb-3 shadow-sm hover:shadow-md transition-all">
+                            <summary class="flex items-center p-4 cursor-pointer select-none">
+                                <div class="flex items-center flex-1">
+                                    <span class="bg-gov-dark-blue text-white text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-900 min-w-[24px] text-center">Opc</span>
+                                    <span class="font-bold text-gov-dark-blue text-lg">${row.titulo}</span>
+                                </div>
+                                <svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </summary>
+                            <div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-blue-100 bg-white text-base md-content">
+                                ${mdContent}
+                                ${childrenHTML ? '<div class="mt-4 pt-4 border-t border-gray-100">' + childrenHTML + '</div>' : ''}
+                            </div>
+                        </details>`;
+                        return;
+                    }
+
+                    // TIPO: PASO NORMAL
+                    const mdContent = marked.parse(row.contenido);
+                    html += `
+                    <details class="group bg-white border border-gray-200 rounded-lg mb-3 shadow-sm hover:shadow-md transition-all">
+                        <summary class="flex items-center p-4 cursor-pointer select-none">
+                            <div class="flex items-center flex-1">
+                                <span class="bg-blue-100 text-gov-blue text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-200 min-w-[24px] text-center">${row.paso}</span>
+                                <span class="font-bold text-gov-dark-blue text-lg">${row.titulo}</span>
+                            </div>
+                            <svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </summary>
+                        <div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-gray-100 bg-gray-50 text-base md-content">
+                            ${mdContent}
+                        </div>
+                    </details>`;
+                });
+
+                return html;
+            };
+
             // HTML de Contactos
             let contactsHTML = '';
             if(DB_CONTACTOS.length > 0) {
-                // Filtro simple por ciudad (igual que antes)
                 let localContacts = DB_CONTACTOS.filter(c => 
                     (c.Ciudad === state.answers.p3_detail || c.Cobertura === 'NACIONAL') && c.Activa === 'SI'
                 );
@@ -766,29 +872,16 @@
             const lugarTexto = state.answers.p3_sub_detail ? `${state.answers.p3_sub_detail}` : (state.answers.p3_detail || 'la zona');
             const scriptHTML = narrative ? `<div class="bg-gray-100 p-6 rounded-lg mb-8 border-l-4 border-gray-500 shadow-sm print:border-black"><h4 class="font-bold text-gray-700 text-xs uppercase mb-2 tracking-wider">Guion para su denuncia</h4><p class="text-gray-800 italic text-lg font-serif">"Vengo a reportar la desaparición de una persona con perfil: ${getProfiles()}. ${narrative}. Hechos ocurridos en ${lugarTexto} hace ${state.answers.p2}."</p></div>` : '';
 
-            // Contenidos
+            // Contenidos Tabs
             const contentLegal = `${scriptHTML}<div class="space-y-2">${renderActionList(legalActions)}</div>`;
             const contentOwn = `<div class="space-y-2">${renderActionList(ownActions)}</div>`;
-            // Apoyos: Acciones de Apoyo + Directorio
+            // Apoyos: Acciones de Apoyo (sin titulo directorio)
             const contentSupport = `
                 <div class="space-y-2 mb-8">${renderActionList(supportActions)}</div>
-                <h4 class="font-bold text-gov-blue mb-4 border-b border-blue-200 pb-1">Directorio de Entidades</h4>
                 ${contactsHTML}
             `;
-            
             const contentMaster = `
-                ${scriptHTML}
-                <h4 class="font-bold text-gov-blue mt-6 mb-2 border-b border-blue-200 pb-1">Acciones Legales y Formales</h4>
-                <div class="space-y-2">${renderActionList(legalActions)}</div>
-                
-                <h4 class="font-bold text-gov-blue mt-8 mb-2 border-b border-blue-200 pb-1">Acciones de Búsqueda Propia</h4>
-                <div class="space-y-2">${renderActionList(ownActions)}</div>
-
-                <h4 class="font-bold text-gov-blue mt-8 mb-2 border-b border-blue-200 pb-1">Acciones de Apoyo</h4>
-                <div class="space-y-2">${renderActionList(supportActions)}</div>
-                
-                <h4 class="font-bold text-gov-blue mt-8 mb-2 border-b border-blue-200 pb-1">Red de Apoyo (Directorio)</h4>
-                ${contactsHTML}
+                <div class="space-y-2">${renderRouteMaster()}</div>
             `;
 
             return `
