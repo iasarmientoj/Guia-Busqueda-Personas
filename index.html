@@ -97,6 +97,7 @@
         .a11y-menu {
             position: fixed; right: 0; top: 50%; transform: translateY(-50%); z-index: 60;
             display: flex; flex-direction: column; gap: 2px;
+            align-items: flex-end; /* FIX: Alinea los items a la derecha para que crezcan hacia la izquierda */
         }
         .a11y-btn {
             background-color: #004884; color: white; border: none; padding: 10px; width: 44px; height: 44px;
@@ -117,7 +118,7 @@
         body.high-contrast .bg-white { background-color: #000 !important; color: #FFF !important; border: 1px solid #FFF !important; }
         body.high-contrast .bg-blue-50, body.high-contrast .bg-gov-bg, body.high-contrast .bg-gray-100 { background-color: #1a1a1a !important; color: #FFF !important; border: 1px solid #888; }
         body.high-contrast .text-gov-blue, body.high-contrast .text-gov-dark-blue, body.high-contrast .md-content strong, body.high-contrast .md-content a, body.high-contrast .md-content h1, body.high-contrast .md-content h2, body.high-contrast .md-content h3 { color: #FFFF00 !important; }
-        body.high-contrast .text-gray-600, body.high-contrast .text-gray-700, body.high-contrast .text-gray-500 { color: #DDD !important; }
+        body.high-contrast .text-gray-600, body.high-contrast .text-gray-700, body.high-contrast .text-gray-500, body.high-contrast .text-gray-800 { color: #DDD !important; }
         body.high-contrast .btn-gov { background-color: #000 !important; color: #FFFF00 !important; border-color: #FFFF00 !important; }
         body.high-contrast .btn-gov:hover, body.high-contrast .btn-gov.selected { background-color: #FFFF00 !important; color: #000 !important; }
         body.high-contrast .checkbox-card { background-color: #000 !important; border-color: #FFF !important; }
@@ -129,6 +130,16 @@
         body.high-contrast .tab-btn.active { color: #000 !important; background-color: #FFFF00 !important; }
         body.high-contrast footer { background-color: #111 !important; border-top: 1px solid #FFFF00; }
         body.high-contrast img { filter: grayscale(100%) contrast(120%); }
+
+        /* FIXES ALTO CONTRASTE ESPECÍFICOS */
+        body.high-contrast #loader { background-color: #000 !important; }
+        body.high-contrast select, body.high-contrast input, body.high-contrast textarea { background-color: #000 !important; color: #FFFF00 !important; border: 1px solid #FFFF00 !important; }
+        body.high-contrast .bg-blue-100 { background-color: #000 !important; color: #FFFF00 !important; border: 1px solid #FFFF00 !important; }
+        body.high-contrast details[open] > summary { background-color: #1a1a1a !important; border-bottom: 1px solid #FFFF00 !important; }
+        body.high-contrast .bg-gray-200 { background-color: #000 !important; color: #FFFF00 !important; border: 1px solid #FFFF00 !important; }
+        body.high-contrast details .p-5 { background-color: #000 !important; color: #FFF !important; }
+        /* FIX BLOCKQUOTE ALTO CONTRASTE */
+        body.high-contrast .md-content blockquote { background-color: #000 !important; color: #FFF !important; border-left: 4px solid #FFFF00 !important; border: 1px solid #FFFF00; }
     </style>
 </head>
 <body class="flex flex-col min-h-screen">
@@ -198,7 +209,8 @@
     <!-- Footer -->
     <footer class="bg-gov-blue py-4 mt-auto transition-colors duration-300">
         <div class="container mx-auto px-4">
-            <div class="border-t border-blue-400/30 pt-4 flex items-center">
+            <!-- CAMBIO: Se eliminó border-t y border-blue-400/30 para limpiar el footer -->
+            <div class="pt-4 flex items-center">
                 <img src="logoGovCO.png" alt="GOV.CO" class="h-6 w-auto opacity-90 brightness-0 invert">
             </div>
         </div>
@@ -606,7 +618,7 @@
                                     <span class="text-lg text-left">${opt.label}</span>
                                     <svg class="w-6 h-6 text-blue-200 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
                                 </button>
-                                ${opt.help ? `<button onclick="event.stopPropagation(); toggleHelp('help-${opt.id}')" class="absolute right-12 text-gov-blue hover:text-gov-dark-blue p-2 z-10" title="Ver ayuda"><svg class="w-6 h-6 bg-white rounded-full border border-gov-blue text-gov-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button>` : ''}
+                                ${opt.help ? `<button onclick="event.stopPropagation(); toggleHelp('help-${opt.id}')" class="absolute right-4 text-gov-blue hover:text-gov-dark-blue p-2 z-10" title="Ver ayuda"><svg class="w-6 h-6 bg-white rounded-full border border-gov-blue text-gov-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button>` : ''}
                             </div>
                             ${opt.help ? `<div id="help-${opt.id}" class="hidden mt-2 mx-4 text-sm text-gov-dark-blue bg-blue-50 p-3 rounded-b-lg border-x border-b border-blue-100">${opt.help}</div>` : ''}</div>`;
                         } else {
@@ -670,15 +682,11 @@
         async function goNext() {
             const cur = state.currentStep;
             const currentConfig = steps[cur];
-            
-            // --- DROPDOWN SIMPLE (CIUDAD/PAIS) ---
             if (currentConfig && currentConfig.type === 'dropdown') {
                 const select = document.getElementById('selectInput');
                 if (!select.value) { select.classList.add('border-red-500', 'ring-2', 'ring-red-200'); select.focus(); return; }
-                if (cur === 'p3.1') state.answers.p3_detail = (select.value === 'Otro') ? 'Bogotá D.C.' : select.value;
+                state.answers.p3_detail = select.value;
             }
-
-            // --- MUNICIPIO + CIUDAD (P3.2) ---
             if (currentConfig && currentConfig.type === 'municipality-city') {
                 const muniSelect = document.getElementById('municipalityInput');
                 const citySelect = document.getElementById('cityInput');
@@ -785,7 +793,7 @@
             const narrative = state.answers.narrative || '';
 
             // --- RENDERIZADO ACCIONES ---
-            const renderActionList = (actions) => {
+            const renderActionList = (actions, groupName = 'default') => {
                 if (actions.length === 0) return '<div class="p-6 bg-gray-50 text-gray-500 rounded-lg text-center border border-gray-200">No hay acciones específicas para este criterio.</div>';
                 return actions.map((action, idx) => {
                     let rawContent = action.contenido;
@@ -851,7 +859,7 @@
 
                     const htmlContent = marked.parse(rawContent);
                     return `
-                    <details class="group bg-white border border-gray-200 rounded-lg mb-3 shadow-sm hover:shadow-md transition-all">
+                    <details name="guide-accordion" class="group bg-white border border-gray-200 rounded-lg mb-3 shadow-sm hover:shadow-md transition-all">
                         <summary class="flex items-center p-4 cursor-pointer select-none">
                             <div class="flex items-center flex-1">
                                 <span class="bg-blue-100 text-gov-blue text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-200 min-w-[24px] text-center">${action.etapa}</span>
@@ -917,7 +925,7 @@
                 });
 
                 // 3. Renderizado Recursivo
-                const renderRecursive = (nodeList) => {
+                const renderRecursive = (nodeList, groupName = 'guide-accordion') => {
                     return nodeList.map(node => {
                         // Usar CONTENIDO_MD en lugar de DESCRIPCION para el separador
                         const mdContent = marked.parse(node.contenido || '');
@@ -932,9 +940,10 @@
 
                         if (node.isBif) {
                             // Render BIF (Padre Recursivo)
-                            const childrenHtml = renderRecursive(node.children);
+                            // CAMBIO: Asignar un grupo diferente a los hijos
+                            const childrenHtml = renderRecursive(node.children, `guide-accordion-${node.cleanId}`);
                             return `
-                            <details class="group bg-blue-50 border border-blue-200 rounded-lg mb-3 shadow-sm hover:shadow-md transition-all ml-0">
+                            <details name="${groupName}" class="group bg-blue-50 border border-blue-200 rounded-lg mb-3 shadow-sm hover:shadow-md transition-all ml-0">
                                 <summary class="flex items-center p-4 cursor-pointer select-none">
                                     <div class="flex items-center flex-1">
                                         <span class="bg-gov-dark-blue text-white text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-900 min-w-[24px] text-center">Opc</span>
@@ -950,7 +959,7 @@
                         } else {
                             // Render Paso (Hoja)
                             return `
-                            <details class="group bg-white border border-gray-200 rounded-lg mb-2 shadow-sm hover:shadow-md transition-all">
+                            <details name="${groupName}" class="group bg-white border border-gray-200 rounded-lg mb-2 shadow-sm hover:shadow-md transition-all">
                                 <summary class="flex items-center p-4 cursor-pointer select-none">
                                     <div class="flex items-center flex-1">
                                         <span class="bg-blue-100 text-gov-blue text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-200 min-w-[24px] text-center">${node.paso}</span>
@@ -987,7 +996,11 @@
                 
                 if(contactsHTML) contactsHTML = `<div class="mt-4 bg-blue-50 p-6 rounded-lg border border-blue-100"><ul class="space-y-0">${contactsHTML}</ul></div>`;
             }
-            
+
+            // const narrative = ... (eliminado por redundancia, ya tenemos state.answers.narrative)
+            const lugarTexto = state.answers.p3_sub_detail ? `${state.answers.p3_sub_detail}` : (state.answers.p3_detail || 'la zona');
+            // Ya no generamos scriptHTML aquí porque los guiones están integrados en las acciones
+
             // Contenidos Tabs
             const contentLegal = `<div class="space-y-2">${renderActionList(legalActions)}</div>`;
             const contentOwn = `<div class="space-y-2">${renderActionList(ownActions)}</div>`;
@@ -1009,7 +1022,7 @@
                     <button id="btn-legal" onclick="switchTab('legal')" class="tab-btn active">Acciones Legales</button>
                     <button id="btn-propias" onclick="switchTab('propias')" class="tab-btn">Acciones Propias</button>
                     <button id="btn-apoyos" onclick="switchTab('apoyos')" class="tab-btn">Apoyos Extra</button>
-                    <button id="btn-maestra" onclick="switchTab('maestra')" class="tab-btn">Ruta Completa de Acción</button>
+                    <button id="btn-maestra" onclick="switchTab('maestra')" class="tab-btn">Ruta Completa de Búsqueda</button>
                 </div>
                 <div id="tab-legal" class="tab-content fade-in">${contentLegal}</div>
                 <div id="tab-propias" class="tab-content hidden fade-in">${contentOwn}</div>
