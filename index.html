@@ -713,12 +713,10 @@
             // 6. Ordenar por Etapa
             finalActions.sort((a, b) => a.etapa - b.etapa);
 
-            // === CLASIFICACIÓN POR PESTAÑAS ===
-            // Filtro específico para "Acciones Legales" = CATEGORIA 'ACCION LEGAL'
+            // === CLASIFICACIÓN POR PESTAÑAS (ACTUALIZADO) ===
             const legalActions = finalActions.filter(a => a.categoria === 'ACCION LEGAL');
-            
-            // Propias: Todas las demás (Ajustar según necesidad, por ahora todo lo que no es legal)
-            const ownActions = finalActions.filter(a => a.categoria !== 'ACCION LEGAL');
+            const ownActions = finalActions.filter(a => a.categoria === 'ACCION PROPIA');
+            const supportActions = finalActions.filter(a => a.categoria === 'APOYO EXTRA');
 
             // --- RENDER ---
             const renderActionList = (actions) => {
@@ -761,7 +759,7 @@
                         </div>
                     </li>`).join('');
                 
-                if(contactsHTML) contactsHTML = `<div class="mt-4 bg-blue-50 p-6 rounded-lg border border-blue-100"><h3 class="font-bold text-gov-dark-blue mb-4">Directorio de Entidades</h3><ul class="space-y-0">${contactsHTML}</ul></div>`;
+                if(contactsHTML) contactsHTML = `<div class="mt-4 bg-blue-50 p-6 rounded-lg border border-blue-100"><ul class="space-y-0">${contactsHTML}</ul></div>`;
             }
 
             const narrative = document.getElementById('narrativeInput') ? document.getElementById('narrativeInput').value : '';
@@ -771,15 +769,25 @@
             // Contenidos
             const contentLegal = `${scriptHTML}<div class="space-y-2">${renderActionList(legalActions)}</div>`;
             const contentOwn = `<div class="space-y-2">${renderActionList(ownActions)}</div>`;
-            const contentSupport = `<p class="mb-4 text-gray-600">Encuentre aquí las entidades y organizaciones que pueden brindarle apoyo.</p>${contactsHTML}`;
+            // Apoyos: Acciones de Apoyo + Directorio
+            const contentSupport = `
+                <div class="space-y-2 mb-8">${renderActionList(supportActions)}</div>
+                <h4 class="font-bold text-gov-blue mb-4 border-b border-blue-200 pb-1">Directorio de Entidades</h4>
+                ${contactsHTML}
+            `;
             
             const contentMaster = `
                 ${scriptHTML}
                 <h4 class="font-bold text-gov-blue mt-6 mb-2 border-b border-blue-200 pb-1">Acciones Legales y Formales</h4>
                 <div class="space-y-2">${renderActionList(legalActions)}</div>
-                <h4 class="font-bold text-gov-blue mt-8 mb-2 border-b border-blue-200 pb-1">Otras Acciones</h4>
+                
+                <h4 class="font-bold text-gov-blue mt-8 mb-2 border-b border-blue-200 pb-1">Acciones de Búsqueda Propia</h4>
                 <div class="space-y-2">${renderActionList(ownActions)}</div>
-                <h4 class="font-bold text-gov-blue mt-8 mb-2 border-b border-blue-200 pb-1">Red de Apoyo</h4>
+
+                <h4 class="font-bold text-gov-blue mt-8 mb-2 border-b border-blue-200 pb-1">Acciones de Apoyo</h4>
+                <div class="space-y-2">${renderActionList(supportActions)}</div>
+                
+                <h4 class="font-bold text-gov-blue mt-8 mb-2 border-b border-blue-200 pb-1">Red de Apoyo (Directorio)</h4>
                 ${contactsHTML}
             `;
 
@@ -792,7 +800,7 @@
                     <button id="btn-legal" onclick="switchTab('legal')" class="tab-btn active">Acciones Legales</button>
                     <button id="btn-propias" onclick="switchTab('propias')" class="tab-btn">Acciones Propias</button>
                     <button id="btn-apoyos" onclick="switchTab('apoyos')" class="tab-btn">Apoyos Extra</button>
-                    <button id="btn-maestra" onclick="switchTab('maestra')" class="tab-btn">Ruta Maestra Completa</button>
+                    <button id="btn-maestra" onclick="switchTab('maestra')" class="tab-btn">Ruta Completa de Acción</button>
                 </div>
                 <div id="tab-legal" class="tab-content fade-in">${contentLegal}</div>
                 <div id="tab-propias" class="tab-content hidden fade-in">${contentOwn}</div>
