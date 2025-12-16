@@ -7,6 +7,37 @@ tailwind.config = {
     }
 }
 
+// --- CONFIGURACIÓN DE MARKED PARA ENLACES ---
+// Función helper para agregar target="_blank" a todos los enlaces en HTML
+function processMarkdownLinks(html) {
+    if (!html) return html;
+    // Reemplazar todos los enlaces que no tengan ya target="_blank"
+    return html.replace(/<a\s+([^>]*?)>/gi, function(match, attrs) {
+        if (attrs.includes('target=')) {
+            return match; // Ya tiene target, no modificar
+        }
+        return '<a ' + attrs + ' target="_blank" rel="noopener noreferrer">';
+    });
+}
+
+// Configurar marked para que los enlaces se abran en nueva pestaña
+if (typeof marked !== 'undefined') {
+    try {
+        const renderer = new marked.Renderer();
+        const originalLink = renderer.link.bind(renderer);
+        renderer.link = function(href, title, text) {
+            const link = originalLink(href, title, text);
+            if (!link.includes('target="_blank"')) {
+                return link.replace('<a ', '<a target="_blank" rel="noopener noreferrer" ');
+            }
+            return link;
+        };
+        marked.setOptions({ renderer: renderer });
+    } catch (e) {
+        console.warn('No se pudo configurar marked renderer, usando función helper');
+    }
+}
+
 // --- LOGICA DE ACCESIBILIDAD ---
 let currentFontSize = 100;
 
@@ -533,11 +564,11 @@ function generateResultsEngine() {
                 if (!bestMatch) bestMatch = candidates.find(c => c.PAIS === 'Colombia' && c.CIUDAD && c.CIUDAD.toLowerCase().startsWith('bogo') && (!c.MUNICIPIO || c.MUNICIPIO.trim() === ''));
 
                 if (!bestMatch) return '';
-                return `<div class="bg-blue-50 border-l-4 border-gov-blue p-4 my-3 rounded-r-lg shadow-sm text-base [&_a]:text-gov-blue [&_a]:font-semibold [&_a]:underline [&_a:hover]:text-gov-dark-blue [&_a]:transition-colors">${marked.parse(bestMatch.CONTENIDO_MD)}</div>`;
+                return `<div class="bg-blue-50 border-l-4 border-gov-blue p-4 my-3 rounded-r-lg shadow-sm text-base [&_a]:text-gov-blue [&_a]:font-semibold [&_a]:underline [&_a:hover]:text-gov-dark-blue [&_a]:transition-colors">${processMarkdownLinks(marked.parse(bestMatch.CONTENIDO_MD))}</div>`;
             }).join('');
             rawContent = rawContent.replace(/CONTACTOINMEDIATO/g, contactDetails);
         }
-        return marked.parse(rawContent);
+        return processMarkdownLinks(marked.parse(rawContent));
     };
 
     // --- RENDERIZADO ACCIONES (WEB: Acordeones) ---
@@ -601,7 +632,7 @@ function generateResultsEngine() {
     const renderRouteRecursive = (nodeList, groupName = 'guide-accordion') => {
         if (!nodeList || nodeList.length === 0) return '';
         return nodeList.map(node => {
-            const mdContent = marked.parse(node.contenido || '');
+            const mdContent = processMarkdownLinks(marked.parse(node.contenido || ''));
             if (node.paso === 'SEPARADOR') {
                 return `<div class="mt-8 mb-4 bg-gov-dark-blue text-white p-4 rounded-lg shadow-md"><h4 class="font-bold text-lg">${node.titulo}</h4><div class="text-sm opacity-90 mt-1 md-content">${mdContent}</div></div>`;
             }
@@ -618,7 +649,7 @@ function generateResultsEngine() {
     const renderRouteRecursivePrint = (nodeList, depth = 0) => {
         if (!nodeList || nodeList.length === 0) return '';
         return nodeList.map(node => {
-            const mdContent = marked.parse(node.contenido || '');
+            const mdContent = processMarkdownLinks(marked.parse(node.contenido || ''));
             if (node.paso === 'SEPARADOR') {
                 return `<div class="mt-4 mb-2 bg-gray-100 p-2 border-b-2 border-gov-dark-blue"><h4 class="font-bold text-lg text-gov-dark-blue">${node.titulo}</h4><div class="text-xs text-gray-600 md-content">${mdContent}</div></div>`;
             }
