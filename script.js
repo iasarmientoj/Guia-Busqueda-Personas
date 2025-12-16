@@ -729,6 +729,12 @@ function generateResultsEngine() {
                     <div id="tab-maestra" class="tab-content hidden fade-in">${contentMaster}</div>
                     
                     <div class="mt-12 flex flex-col sm:flex-row justify-center items-center gap-4">
+                        <button onclick="goBack()" class="bg-white text-gov-blue border-2 border-gov-blue px-6 py-3 rounded-full font-bold hover:bg-blue-50 transition shadow-md flex items-center justify-center w-full sm:w-auto">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                            Volver
+                        </button>
                         <button onclick="window.print()" class="bg-white text-gov-blue border-2 border-gov-blue px-8 py-3 rounded-full font-bold hover:bg-blue-50 transition shadow-md flex items-center justify-center w-full sm:w-auto">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                             Descargar Guía Completa (PDF)
