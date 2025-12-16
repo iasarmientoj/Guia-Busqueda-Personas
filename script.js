@@ -513,11 +513,11 @@ function generateResultsEngine() {
     // --- FUNCIÓN DE PROCESAMIENTO DE CONTENIDO ---
     const processActionContent = (action) => {
         let rawContent = action.contenido;
-        if (rawContent.includes('&INFORMACION_ADICIONAL&')) {
+        if (rawContent.includes('INFORMACIONADICIONAL')) {
             const infoText = narrative ? `**${narrative}**` : '';
-            rawContent = rawContent.replace(/&INFORMACION_ADICIONAL&/g, infoText);
+            rawContent = rawContent.replace(/INFORMACIONADICIONAL/g, infoText);
         }
-        if (rawContent.includes('&CONTACTO&')) {
+        if (rawContent.includes('CONTACTOINMEDIATO')) {
             const contactIds = action.contactos;
             const contactDetails = contactIds.map(id => {
                 const cleanId = id.trim();
@@ -535,7 +535,7 @@ function generateResultsEngine() {
                 if (!bestMatch) return '';
                 return `<div class="bg-blue-50 border-l-4 border-gov-blue p-4 my-3 rounded-r-lg shadow-sm text-sm">${marked.parse(bestMatch.CONTENIDO_MD)}</div>`;
             }).join('');
-            rawContent = rawContent.replace(/&CONTACTO&/g, contactDetails);
+            rawContent = rawContent.replace(/CONTACTOINMEDIATO/g, contactDetails);
         }
         return marked.parse(rawContent);
     };
@@ -543,19 +543,23 @@ function generateResultsEngine() {
     // --- RENDERIZADO ACCIONES (WEB: Acordeones) ---
     const renderActionList = (actions) => {
         if (actions.length === 0) return '<div class="p-6 bg-gray-50 text-gray-500 rounded-lg text-center border border-gray-200">No hay acciones específicas para este criterio.</div>';
-        return actions.map(action => {
+        return actions.map((action, index) => {
             const htmlContent = processActionContent(action);
+            const showConnector = index < actions.length - 1;
             return `
-                    <details name="guide-accordion" class="group bg-white border border-gray-200 rounded-lg mb-3 shadow-sm hover:shadow-md transition-all">
-                        <summary class="flex items-center p-4 cursor-pointer select-none">
-                            <div class="flex items-center flex-1">
-                                <span class="bg-blue-100 text-gov-blue text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-200 min-w-[24px] text-center">${action.etapa}</span>
-                                <span class="font-bold text-gov-dark-blue text-lg">${action.titulo}</span>
-                            </div>
-                            <svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                        </summary>
-                        <div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-gray-100 bg-gray-50 text-base md-content">${htmlContent}</div>
-                    </details>`;
+                    <div class="relative">
+                        <details name="guide-accordion" class="group bg-white border-2 border-gray-200 rounded-lg mb-3 shadow-sm hover:shadow-md hover:border-gov-blue transition-all">
+                            <summary class="flex items-center p-4 cursor-pointer select-none">
+                                <div class="flex items-center flex-1">
+                                    <span class="bg-gov-blue text-white text-sm font-bold px-3 py-1.5 rounded-lg mr-4 border-2 border-gov-dark-blue min-w-[40px] text-center shadow-sm">Paso ${action.etapa}</span>
+                                    <span class="font-bold text-gov-dark-blue text-lg">${action.titulo}</span>
+                                </div>
+                                <svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </summary>
+                            <div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-gray-100 bg-gray-50 text-base md-content">${htmlContent}</div>
+                        </details>
+                        ${showConnector ? '<div class="flex justify-center mb-2"><svg class="w-6 h-6 text-gov-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg></div>' : ''}
+                    </div>`;
         }).join('');
     };
 
@@ -715,7 +719,8 @@ function generateResultsEngine() {
                 <div class="print:hidden">
                     <div class="text-center mb-6">
                         <h3 class="text-2xl font-bold text-gray-800 mb-1">Ruta de Acción Personalizada</h3>
-                        <p class="text-gray-500">Guía de orientación generada automáticamente</p>
+                        <p class="text-gray-600 text-base md:text-lg font-semibold mb-2">Siga estos pasos en orden secuencial. Complete cada paso antes de avanzar al siguiente.</p>
+                        <p class="text-gray-500 text-sm">Las acciones están numeradas según el orden recomendado. Agote cada paso antes de continuar.</p>
                     </div>
                     <div class="flex flex-wrap gap-2 mb-6">
                         <button id="btn-legal" onclick="switchTab('legal')" class="tab-btn active">Acciones Legales</button>
@@ -723,10 +728,30 @@ function generateResultsEngine() {
                         <button id="btn-apoyos" onclick="switchTab('apoyos')" class="tab-btn">Apoyos Extra</button>
                         <button id="btn-maestra" onclick="switchTab('maestra')" class="tab-btn">Ruta Completa de Búsqueda</button>
                     </div>
-                    <div id="tab-legal" class="tab-content fade-in">${contentLegal}</div>
-                    <div id="tab-propias" class="tab-content hidden fade-in">${contentOwn}</div>
-                    <div id="tab-apoyos" class="tab-content hidden fade-in">${contentSupport}</div>
-                    <div id="tab-maestra" class="tab-content hidden fade-in">${contentMaster}</div>
+                    <div id="tab-legal" class="tab-content fade-in">
+                        <div class="bg-blue-50 border-l-4 border-gov-blue p-4 mb-4 rounded-r-lg">
+                            <p class="text-sm font-semibold text-gov-dark-blue"><strong>Importante:</strong> Las acciones se presentan en un orden sugerido; comience por las primeras y avance según las alternativas que mejor se ajusten a su caso.</p>
+                        </div>
+                        ${contentLegal}
+                    </div>
+                    <div id="tab-propias" class="tab-content hidden fade-in">
+                        <div class="bg-blue-50 border-l-4 border-gov-blue p-4 mb-4 rounded-r-lg">
+                            <p class="text-sm font-semibold text-gov-dark-blue"><strong>Importante:</strong> Las acciones se presentan en un orden sugerido; comience por las primeras y avance según las alternativas que mejor se ajusten a su caso.</p>
+                        </div>
+                        ${contentOwn}
+                    </div>
+                    <div id="tab-apoyos" class="tab-content hidden fade-in">
+                        <div class="bg-blue-50 border-l-4 border-gov-blue p-4 mb-4 rounded-r-lg">
+                            <p class="text-sm font-semibold text-gov-dark-blue"><strong>Importante:</strong> Las acciones se presentan en un orden sugerido; comience por las primeras y avance según las alternativas que mejor se ajusten a su caso.</p>
+                        </div>
+                        ${contentSupport}
+                    </div>
+                    <div id="tab-maestra" class="tab-content hidden fade-in">
+                        <div class="bg-gov-dark-blue text-white p-4 mb-4 rounded-lg shadow-md">
+                            <p class="text-sm font-semibold"><strong>Ruta Completa:</strong> Esta es la secuencia completa de pasos. Siga el orden numérico y complete cada paso antes de avanzar al siguiente.</p>
+                        </div>
+                        ${contentMaster}
+                    </div>
                     
                     <div class="mt-12 flex flex-col sm:flex-row justify-center items-center gap-4">
                         <button onclick="goBack()" class="bg-white text-gov-blue border-2 border-gov-blue px-6 py-3 rounded-full font-bold hover:bg-blue-50 transition shadow-md flex items-center justify-center w-full sm:w-auto">
