@@ -101,7 +101,7 @@ let MUNICIPALITIES_LIST = ['Bogotá D.C.'];
 const steps = {
     'intro': {
         progress: '0%', title: 'Bienvenido a la Guía de Búsqueda de Personas Desaparecidas', type: 'intro',
-        description: 'Esta es una herramienta de orientación para la búsqueda de personas desaparecidas. Le guiaremos paso a paso para identificar la ruta de acción más efectiva según su caso.',
+        description: 'Esta herramienta le orientará para definir la ruta institucional de búsqueda de su ser querido. Es una guía informativa que le indicará paso a paso las entidades y acciones correspondientes.',
         disclaimer: 'Su privacidad es fundamental. Esta guía es anónima: no almacenamos, registramos ni compartimos ningún dato personal que ingrese durante la consulta.',
         btnLabel: 'Comenzar Consulta'
     },
