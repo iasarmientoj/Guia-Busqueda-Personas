@@ -67,8 +67,8 @@ let MUNICIPALITIES_LIST = ['Bogotá D.C.'];
 // --- 3. DEFINICIÓN DE PASOS (UI) ---
 const steps = {
     'intro': {
-        progress: '0%', title: 'Bienvenido', type: 'intro',
-        description: 'Esta es una herramienta de orientación para la búsqueda de personas dadas por desaparecidas. Le guiaremos paso a paso para identificar la ruta de acción más efectiva según su caso.',
+        progress: '0%', title: 'Bienvenido a la Guía de Búsqueda de Personas Desaparecidas', type: 'intro',
+        description: 'Esta es una herramienta de orientación para la búsqueda de personas desaparecidas. Le guiaremos paso a paso para identificar la ruta de acción más efectiva según su caso.',
         disclaimer: 'Su privacidad es fundamental. Esta guía es anónima: no almacenamos, registramos ni compartimos ningún dato personal que ingrese durante la consulta.',
         btnLabel: 'Comenzar Consulta'
     },
@@ -82,7 +82,7 @@ const steps = {
             { id: '1.5', label: 'Es una persona que requiere cuidado o apoyo especial', help: 'Adulto mayor, condiciones de salud mental, discapacidad.' },
             { id: '1.6', label: 'Es migrante o de nacionalidad extranjera' },
             { id: '1.7', label: 'Es una mujer y se teme violencia de género', help: 'Antecedentes de violencia intrafamiliar, exparejas agresivas, etc.' },
-            { id: '1.8', label: 'Pertenece a comunidad indígena o NARP', help: 'Comunidades Negras, Afrocolombianas, Raizales y Palenqueras.' },
+            { id: '1.8', label: 'Pertenece a comunidad indígena o étnica', help: 'Comunidades Indígenas, Negras, Afrocolombianas, Raizales y Palenqueras.' },
             { id: '1.9', label: 'Se identifica como persona LGBTIQ+' },
             { id: '1.10', label: 'Desaparecieron dos o más personas juntas', help: 'Ej: madre e hijo, hermanos, familia entera.' },
             { id: '1.11', label: 'Ninguna de las anteriores' }
@@ -302,22 +302,22 @@ function renderView(stepId) {
     if (config.type === 'intro') {
         html += `
                     <div class="text-center py-6">
-                        <div class="bg-blue-50 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6 border border-blue-100">
-                            <svg class="w-12 h-12 text-gov-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <div class="mx-auto mb-6">
+                            <img src="logoMinJus.png" alt="Ministerio de Justicia y del Derecho" class="mx-auto w-24 h-24 object-contain">
                         </div>
                         <h2 class="text-3xl font-bold text-gov-blue mb-4">${config.title}</h2>
                         <p class="text-gray-600 text-lg mb-8 leading-relaxed max-w-2xl mx-auto">${config.description}</p>
-                        <div class="bg-gov-bg border border-blue-100 rounded-lg p-5 mb-8 text-sm text-gray-600 flex items-start text-left max-w-2xl mx-auto">
+                        <button onclick="goNext()" class="bg-gov-blue text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg hover:bg-gov-dark-blue transition-all transform hover:scale-105 flex items-center mx-auto mb-8">
+                            ${config.btnLabel}
+                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                        </button>
+                        <div class="bg-gov-bg border border-blue-100 rounded-lg p-5 mt-4 text-sm text-gray-600 flex items-start text-left max-w-2xl mx-auto">
                             <svg class="w-6 h-6 mr-3 mt-0.5 text-gov-blue flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                             <div>
                                 <span class="font-bold block text-gov-dark-blue mb-1">Protección de Datos</span>
                                 ${config.disclaimer}
                             </div>
                         </div>
-                        <button onclick="goNext()" class="bg-gov-blue text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg hover:bg-gov-dark-blue transition-all transform hover:scale-105 flex items-center mx-auto">
-                            ${config.btnLabel}
-                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                        </button>
                     </div>`;
     }
     else if (config.type === 'results') {
