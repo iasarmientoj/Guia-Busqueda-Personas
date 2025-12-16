@@ -533,7 +533,7 @@ function generateResultsEngine() {
                 if (!bestMatch) bestMatch = candidates.find(c => c.PAIS === 'Colombia' && c.CIUDAD && c.CIUDAD.toLowerCase().startsWith('bogo') && (!c.MUNICIPIO || c.MUNICIPIO.trim() === ''));
 
                 if (!bestMatch) return '';
-                return `<div class="bg-blue-50 border-l-4 border-gov-blue p-4 my-3 rounded-r-lg shadow-sm text-sm">${marked.parse(bestMatch.CONTENIDO_MD)}</div>`;
+                return `<div class="bg-blue-50 border-l-4 border-gov-blue p-4 my-3 rounded-r-lg shadow-sm text-base [&_a]:text-gov-blue [&_a]:font-semibold [&_a]:underline [&_a:hover]:text-gov-dark-blue [&_a]:transition-colors">${marked.parse(bestMatch.CONTENIDO_MD)}</div>`;
             }).join('');
             rawContent = rawContent.replace(/CONTACTOINMEDIATO/g, contactDetails);
         }
