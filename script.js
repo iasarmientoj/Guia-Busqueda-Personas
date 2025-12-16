@@ -104,7 +104,7 @@ const steps = {
         btnLabel: 'Comenzar Consulta'
     },
     'p4': {
-        progress: '20%', title: '¿Quién es la persona desaparecida?', description: 'Seleccione todas las condiciones que apliquen. Esto define la prioridad de la búsqueda.', type: 'multi-choice',
+        progress: '20%', title: '¿Quién es la persona desaparecida?', description: 'Marque todas las condiciones que correspondan a su caso. Esto define la prioridad de la búsqueda.', type: 'multi-choice',
         options: [
             { id: '1.1', label: 'Es un/a niño/a o adolescente', help: 'Menor de 18 años al momento de desaparecer.' },
             { id: '1.2', label: 'Es una persona con un rol público o de alto riesgo', help: 'Líder, defensor/a, periodista, sindicalista, político.' },
@@ -135,7 +135,7 @@ const steps = {
     },
     'p3.3': { progress: '65%', title: 'Seleccione el país', type: 'dropdown', data: ['España', 'Estados Unidos', 'México', 'Ecuador', 'Chile', 'Otro'] },
     'p3.4': {
-        progress: '75%', title: 'Características del lugar', description: 'Marque si el lugar tiene alguna condición especial.', type: 'multi-choice',
+        progress: '75%', title: 'Características del lugar', description: 'Marque todas las características especiales que tenga el lugar donde ocurrió la desaparición.', type: 'multi-choice',
         options: [
             { id: '3.4.1', label: 'En el agua o cerca de ella', help: 'Mar, río, costa, puerto, represa' },
             { id: '3.4.2', label: 'Cerca de una frontera con otro país', help: 'Límite con Venezuela, Ecuador, Panamá, etc.' },
@@ -362,8 +362,19 @@ function renderView(stepId) {
 
         if (config.type === 'single-choice' || config.type === 'multi-choice') {
             const isMulti = config.type === 'multi-choice';
-            if (isMulti) nextBtn.classList.remove('hidden');
-            const wrapperClass = isMulti ? 'grid md:grid-cols-2 gap-4 mb-6' : 'space-y-3';
+            if (isMulti) {
+                nextBtn.classList.remove('hidden');
+                // Banner destacado para multi-choice
+                html += `<div class="bg-blue-50 border-2 border-gov-blue rounded-lg p-4 mb-6 flex items-start">
+                            <svg class="w-6 h-6 text-gov-blue mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div>
+                                <p class="font-bold text-gov-dark-blue text-base">Puede seleccionar <strong class="text-gov-blue">múltiples opciones</strong></p>
+                            </div>
+                        </div>`;
+            }
+            const wrapperClass = isMulti ? 'grid md:grid-cols-2 gap-2 mb-6' : 'space-y-3';
 
             html += `<div class="${wrapperClass}">`;
             config.options.forEach(opt => {
@@ -385,13 +396,13 @@ function renderView(stepId) {
                             ${opt.help ? `<div id="help-${opt.id}" class="hidden mt-2 mx-4 text-sm text-gov-dark-blue bg-blue-50 p-3 rounded-b-lg border-x border-b border-blue-100">${opt.help}</div>` : ''}</div>`;
                 } else {
                     html += `
-                            <div onclick="toggleMulti(this, '${opt.id}', '${stepId}')" class="checkbox-card ${isSelected ? 'selected' : ''} flex flex-col !items-start">
+                            <div onclick="toggleMulti(this, '${opt.id}', '${stepId}')" class="checkbox-card ${isSelected ? 'selected' : ''} flex flex-col !items-start cursor-pointer hover:shadow-md transition-all">
                                 <div class="flex items-center w-full">
-                                    <div class="checkbox-mark">${isSelected ? '<svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>' : ''}</div>
-                                    <span class="text-gray-700 font-semibold flex-1">${opt.label}</span>
+                                    <div class="checkbox-mark flex-shrink-0">${isSelected ? '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>' : '<div class="w-5 h-5 border-2 border-gray-400 rounded"></div>'}</div>
+                                    <span class="text-gray-700 font-semibold flex-1 ml-3 text-base">${opt.label}</span>
                                     ${opt.help ? `<button onclick="event.stopPropagation(); toggleHelp('help-${opt.id}')" class="ml-2 text-gov-blue hover:bg-blue-100 rounded-full p-1 transition-colors flex-shrink-0" title="Ver ayuda"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button>` : ''}
                                 </div>
-                                ${opt.help ? `<div id="help-${opt.id}" class="hidden w-full mt-3 text-sm text-gov-dark-blue bg-blue-50 p-3 rounded border border-blue-100 text-left">${opt.help}</div>` : ''}
+                                ${opt.help ? `<div id="help-${opt.id}" class="hidden w-full mt-2 text-sm text-gov-dark-blue bg-blue-50 p-2 rounded border border-blue-100 text-left">${opt.help}</div>` : ''}
                             </div>`;
                 }
             });

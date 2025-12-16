@@ -12,7 +12,7 @@ body { font-family: 'Nunito Sans', sans-serif; background-color: #F2F2F2; color:
         /* Checkbox Cards */
         .checkbox-card { 
             cursor: pointer; border: 1px solid #d1d5db; background: white; transition: all 0.2s; 
-            border-radius: 8px; padding: 16px; display: flex; align-items: center;
+            border-radius: 8px; padding: 8px 16px; display: flex; align-items: center;
         }
         .checkbox-card:hover { border-color: #3366CC; background-color: #F8FBFF; }
         .checkbox-card.selected { border-color: #3366CC; background-color: #EFF6FF; ring: 1px solid #3366CC; }
