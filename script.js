@@ -62,7 +62,8 @@ function switchTab(tabId) {
 // --- 1. CONFIGURACIÓN DE DATOS ---
 const SHEETS_CONFIG = {
     ACCIONES: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=812842567&single=true&output=csv',
-    CONTACTOS: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=871607364&single=true&output=csv'
+    CONTACTOS: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=871607364&single=true&output=csv',
+    LINKS_NOTAS: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=1731177785&single=true&output=csv'
 };
 
 const ROUTES_MAP = {
@@ -77,6 +78,7 @@ const ROUTES_MAP = {
 let DB_ACCIONES = [];
 let DB_CONTACTOS = [];
 let CURRENT_ROUTE_DATA = [];
+let SURVEY_FORM_URL = '';
 
 // --- 2. ESTADO DE LA APP ---
 const state = {
@@ -211,6 +213,18 @@ async function loadData() {
 
         status.innerText = "Descargando Directorio...";
         DB_CONTACTOS = await loadSheet(SHEETS_CONFIG.CONTACTOS);
+
+        status.innerText = "Cargando enlaces de retroalimentación...";
+        const linksNotasRaw = await fetch(SHEETS_CONFIG.LINKS_NOTAS);
+        const linksNotasText = await linksNotasRaw.text();
+        const linksNotasParsed = Papa.parse(linksNotasText, { header: false, skipEmptyLines: false });
+        if (linksNotasParsed.data && linksNotasParsed.data.length > 0) {
+            // Buscar la fila que contiene "LINK DE FORMULARIO" en la primera columna
+            const linkRow = linksNotasParsed.data.find(row => row[0] && row[0].trim().toUpperCase() === 'LINK DE FORMULARIO');
+            if (linkRow && linkRow[1] && linkRow[1].trim()) {
+                SURVEY_FORM_URL = linkRow[1].trim();
+            }
+        }
 
         const getUniqueSorted = (data, key) => {
             const unique = [...new Set(data.map(item => item[key]?.trim()).filter(Boolean))].sort();
@@ -588,12 +602,13 @@ function generateResultsEngine() {
         return actions.map((action, index) => {
             const htmlContent = processActionContent(action);
             const showConnector = index < actions.length - 1;
+            const displayStep = index + 1; // Numeración secuencial para mostrar al usuario
             return `
                     <div class="relative">
                         <details name="guide-accordion" class="group bg-white border-2 border-gray-200 rounded-lg mb-3 shadow-sm hover:shadow-md hover:border-gov-blue transition-all">
                             <summary class="flex items-center p-4 cursor-pointer select-none">
                                 <div class="flex items-center flex-1">
-                                    <span class="bg-gov-blue text-white text-sm font-bold px-3 py-1.5 rounded-lg mr-4 border-2 border-gov-dark-blue min-w-[40px] text-center shadow-sm">Paso ${action.etapa}</span>
+                                    <span class="bg-gov-blue text-white text-sm font-bold px-3 py-1.5 rounded-lg mr-4 border-2 border-gov-dark-blue min-w-[40px] text-center shadow-sm">Paso ${displayStep}</span>
                                     <span class="font-bold text-gov-dark-blue text-lg">${action.titulo}</span>
                                 </div>
                                 <svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -608,11 +623,12 @@ function generateResultsEngine() {
     // --- RENDERIZADO ACCIONES (IMPRESIÓN: Bloques expandidos) ---
     const renderActionListPrint = (actions) => {
         if (actions.length === 0) return '<div class="print-item text-gray-500 italic">No aplica para este caso.</div>';
-        return actions.map(action => {
+        return actions.map((action, index) => {
             const htmlContent = processActionContent(action);
+            const displayStep = index + 1; // Numeración secuencial solo para mostrar
             return `
                     <div class="print-item">
-                        <div class="print-title">${action.etapa}. ${action.titulo}</div>
+                        <div class="print-title">Paso ${displayStep}. ${action.titulo}</div>
                         <div class="print-content md-content">${htmlContent}</div>
                     </div>`;
         }).join('');
@@ -735,13 +751,13 @@ function generateResultsEngine() {
                     ${narrative ? `<div class="mt-2 pt-2 border-t border-gray-200 text-sm"><strong>Notas:</strong> ${narrative}</div>` : ''}
                 </div>
                 
-                <h2 class="print-subheader">1. Acciones Legales</h2>
+                <h2 class="print-subheader">1. Acciones Legales y Humanitarias</h2>
                 <div class="print-section">${renderActionListPrint(legalActions)}</div>
                 
-                <h2 class="print-subheader">2. Acciones Propias</h2>
+                <h2 class="print-subheader">2. Acciones Personales</h2>
                 <div class="print-section">${renderActionListPrint(ownActions)}</div>
                 
-                <h2 class="print-subheader">3. Apoyos Extra</h2>
+                <h2 class="print-subheader">3. Apoyos Complementarios</h2>
                 <div class="print-section">
                     ${renderActionListPrint(supportActions)}
                     ${contactsHTMLPrint}
@@ -762,12 +778,11 @@ function generateResultsEngine() {
                     <div class="text-center mb-6">
                         <h3 class="text-2xl font-bold text-gray-800 mb-1">Ruta de Acción Personalizada</h3>
                         <p class="text-gray-600 text-base md:text-lg font-semibold mb-2">Siga estos pasos en orden secuencial. Complete cada paso antes de avanzar al siguiente.</p>
-                        <p class="text-gray-500 text-sm">Las acciones están numeradas según el orden recomendado. Agote cada paso antes de continuar.</p>
                     </div>
                     <div class="flex flex-wrap gap-2 mb-6">
-                        <button id="btn-legal" onclick="switchTab('legal')" class="tab-btn active">Acciones Legales</button>
-                        <button id="btn-propias" onclick="switchTab('propias')" class="tab-btn">Acciones Propias</button>
-                        <button id="btn-apoyos" onclick="switchTab('apoyos')" class="tab-btn">Apoyos Extra</button>
+                        <button id="btn-legal" onclick="switchTab('legal')" class="tab-btn active">Acciones Legales y Humanitarias</button>
+                        <button id="btn-propias" onclick="switchTab('propias')" class="tab-btn">Acciones Personales</button>
+                        <button id="btn-apoyos" onclick="switchTab('apoyos')" class="tab-btn">Apoyos Complementarios</button>
                         <button id="btn-maestra" onclick="switchTab('maestra')" class="tab-btn">Ruta Completa de Búsqueda</button>
                     </div>
                     <div id="tab-legal" class="tab-content fade-in">
@@ -789,26 +804,28 @@ function generateResultsEngine() {
                         ${contentSupport}
                     </div>
                     <div id="tab-maestra" class="tab-content hidden fade-in">
-                        <div class="bg-gov-dark-blue text-white p-4 mb-4 rounded-lg shadow-md">
-                            <p class="text-sm font-semibold"><strong>Ruta Completa:</strong> Esta es la secuencia completa de pasos. Siga el orden numérico y complete cada paso antes de avanzar al siguiente.</p>
-                        </div>
                         ${contentMaster}
                     </div>
                     
-                    <div class="mt-12 flex flex-col sm:flex-row justify-center items-center gap-4">
-                        <button onclick="goBack()" class="bg-white text-gov-blue border-2 border-gov-blue px-6 py-3 rounded-full font-bold hover:bg-blue-50 transition shadow-md flex items-center justify-center w-full sm:w-auto">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                            </svg>
-                            Volver
-                        </button>
-                        <button onclick="window.print()" class="bg-white text-gov-blue border-2 border-gov-blue px-8 py-3 rounded-full font-bold hover:bg-blue-50 transition shadow-md flex items-center justify-center w-full sm:w-auto">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                            Descargar Guía Completa (PDF)
-                        </button>
-                        <button onclick="location.reload()" class="bg-white text-gray-600 border-2 border-gray-300 px-6 py-3 rounded-full font-bold hover:bg-gray-50 transition shadow-sm flex items-center justify-center w-full sm:w-auto">
-                            Nueva Consulta
-                        </button>
+                    <div class="mt-12 flex flex-col items-center gap-4">
+                        <div class="flex flex-wrap justify-center items-center gap-4 w-full">
+                            <button onclick="goBack()" class="bg-white text-gov-blue border-2 border-gov-blue px-6 py-3 rounded-full font-bold hover:bg-blue-50 transition shadow-md flex items-center justify-center h-12">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                                Volver
+                            </button>
+                            <button onclick="window.print()" class="bg-white text-gov-blue border-2 border-gov-blue px-8 py-3 rounded-full font-bold hover:bg-blue-50 transition shadow-md flex items-center justify-center h-12">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                                Descargar Guía Completa (PDF)
+                            </button>
+                            <button onclick="location.reload()" class="bg-white text-gray-600 border-2 border-gray-300 px-6 py-3 rounded-full font-bold hover:bg-gray-50 transition shadow-sm flex items-center justify-center h-12">
+                                Nueva Consulta
+                            </button>
+                        </div>
+                        ${SURVEY_FORM_URL ? `<a href="${SURVEY_FORM_URL}" target="_blank" rel="noopener noreferrer" class="bg-white text-gov-blue border-2 border-gov-blue px-6 py-3 rounded-full font-bold hover:bg-blue-50 transition shadow-md flex items-center justify-center h-12">
+                            ⭐ Califica tu experiencia
+                        </a>` : ''}
                     </div>
                 </div>
                 ${printHTML}`;
