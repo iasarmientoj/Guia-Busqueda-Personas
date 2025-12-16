@@ -12,7 +12,7 @@ tailwind.config = {
 function processMarkdownLinks(html) {
     if (!html) return html;
     // Reemplazar todos los enlaces que no tengan ya target="_blank"
-    return html.replace(/<a\s+([^>]*?)>/gi, function(match, attrs) {
+    return html.replace(/<a\s+([^>]*?)>/gi, function (match, attrs) {
         if (attrs.includes('target=')) {
             return match; // Ya tiene target, no modificar
         }
@@ -25,7 +25,7 @@ if (typeof marked !== 'undefined') {
     try {
         const renderer = new marked.Renderer();
         const originalLink = renderer.link.bind(renderer);
-        renderer.link = function(href, title, text) {
+        renderer.link = function (href, title, text) {
             const link = originalLink(href, title, text);
             if (!link.includes('target="_blank"')) {
                 return link.replace('<a ', '<a target="_blank" rel="noopener noreferrer" ');
@@ -352,6 +352,7 @@ function renderView(stepId) {
                         </div>
                         <h2 class="text-3xl font-bold text-gov-blue mb-4">${config.title}</h2>
                         <p class="text-gray-600 text-lg mb-8 leading-relaxed max-w-2xl mx-auto">${config.description}</p>
+                        <p class="text-gov-blue font-medium italic text-xl mb-4">¿Busca a una persona desaparecida?</p>
                         <button onclick="goNext()" class="bg-gov-blue text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg hover:bg-gov-dark-blue transition-all transform hover:scale-105 flex items-center mx-auto mb-8">
                             ${config.btnLabel}
                             <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
