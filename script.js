@@ -80,6 +80,26 @@ let DB_CONTACTOS = [];
 let CURRENT_ROUTE_DATA = [];
 let SURVEY_FORM_URL = '';
 
+// --- CONFIGURACIÓN GOOGLE FORMS ANALYTICS ---
+const GOOGLE_FORM_CONFIG = {
+    FORM_ACTION_URL: 'https://docs.google.com/forms/d/e/1FAIpQLSflrIHU_zp1-ZTsWdTh510kkhAGgOUTUrrkdfUwGBw-PtWxKw/formResponse',
+    FIELDS: {
+        EVENT_TYPE: 'entry.1552483467',      // Tipo de Evento
+        PROFILE: 'entry.977357382',          // Perfil (Multi)
+        TIMEFRAME: 'entry.109708931',        // Tiempo
+        DATE_MONTH: 'entry.218389769',       // Fecha Mes
+        DATE_YEAR: 'entry.1529804203',       // Fecha Año
+        LOCATION_TYPE: 'entry.206369886',    // Tipo Ubicación
+        CITY: 'entry.1294800187',            // Ciudad
+        MUNICIPALITY: 'entry.1915983326',    // Municipio
+        COUNTRY: 'entry.1126039543',         // País
+        LOC_DETAILS: 'entry.1457032952',     // Características Lugar (Multi)
+        CTX_SUSPICION: 'entry.1153266847',   // Sospecha
+        CTX_DETAIL: 'entry.1632596329',      // Detalle Sospecha
+        TIMESTAMP: 'entry.1579318792'        // Fecha Sistema
+    }
+};
+
 // --- 2. ESTADO DE LA APP ---
 const state = {
     currentStep: 'intro',
@@ -300,6 +320,86 @@ async function loadRouteData() {
     } finally {
         loader.style.display = 'none';
     }
+
+}
+
+// --- ANALYTICS ENGINE ---
+function sendAnalytics(eventType, data = {}) {
+    try {
+        const formData = new URLSearchParams();
+        const f = GOOGLE_FORM_CONFIG.FIELDS;
+        const now = new Date();
+
+        // 1. Datos Básicos
+        formData.append(f.EVENT_TYPE, eventType);
+        // Timestamp removido a petición
+
+        // 2. Datos de Ruta (Solo para RUTA_GENERADA)
+        if (eventType === 'RUTA_GENERADA') {
+            const getLabel = (stepId, optId) => {
+                if (!optId) return '';
+                const step = steps[stepId];
+                if (!step || !step.options) return optId;
+                const opt = step.options.find(o => o.id === optId);
+                return opt ? `${opt.id} ${opt.label}` : optId; // Envía "1.1 Texto..."
+            };
+
+            // Perfil (Multi -> string joined)
+            // Perfil (Multi -> multiples parametros con el mismo nombre)
+            state.answers.p4_profile.forEach(pid => {
+                formData.append(f.PROFILE, getLabel('p4', pid));
+            });
+
+            // Tiempo y Fecha
+            formData.append(f.TIMEFRAME, getLabel('p2', state.answers.p2));
+            if (state.answers.p2_date_month) formData.append(f.DATE_MONTH, state.answers.p2_date_month);
+            if (state.answers.p2_date_year) formData.append(f.DATE_YEAR, state.answers.p2_date_year);
+
+            // Ubicación
+            const locType = state.answers.p3_type;
+            formData.append(f.LOCATION_TYPE, getLabel('p3_type', locType));
+
+            if (locType === '3.1') { // Ciudad Principal
+                formData.append(f.CITY, state.answers.p3_detail || '');
+            } else if (locType === '3.2') { // Municipio
+                formData.append(f.MUNICIPALITY, state.answers.p3_sub_detail || '');
+                formData.append(f.CITY, state.answers.p3_detail || ''); // Ciudad Ref
+            } else if (locType === '3.3') { // País
+                formData.append(f.COUNTRY, state.answers.p3_detail || '');
+            }
+
+            // Detalles Lugar (Multi -> string joined)
+            // Detalles Lugar (Multi -> multiples parametros con el mismo nombre)
+            state.answers.p3_characteristics.forEach(cid => {
+                formData.append(f.LOC_DETAILS, getLabel('p3.4', cid));
+            });
+
+            // Contexto
+            formData.append(f.CTX_SUSPICION, getLabel('p1', state.answers.p1));
+
+            let subId = state.answers.p1_sub;
+            let subStep = '';
+            if (state.answers.p1 === '4.1') subStep = 'p1_conflict';
+            else if (state.answers.p1 === '4.2') subStep = 'p1_crime';
+            else if (state.answers.p1 === '4.5') subStep = 'p1_migration';
+
+            if (subId && subStep) {
+                formData.append(f.CTX_DETAIL, getLabel(subStep, subId));
+            }
+        }
+
+        // DEBUG: Imprimir URL generada
+        // Envío "No-CORS" (Fire and Forget)
+        fetch(GOOGLE_FORM_CONFIG.FORM_ACTION_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: formData
+        }).catch(e => console.warn('Analytics error:', e));
+
+    } catch (error) {
+        console.error('Analytics logic failed:', error);
+    }
 }
 
 // --- 5. RENDERIZADO UI ---
@@ -503,7 +603,10 @@ async function goNext() {
 
     state.history.push(cur);
     let next = '';
-    if (cur === 'intro') next = 'p4';
+    if (cur === 'intro') {
+        sendAnalytics('INICIO_CONSULTA');
+        next = 'p4';
+    }
     else if (cur === 'p4') next = 'p2';
     else if (cur === 'p2_date') next = 'p3_type';
     else if (['p3.1', 'p3.2', 'p3.3'].includes(cur)) next = 'p3.4';
@@ -512,6 +615,7 @@ async function goNext() {
 
     if (next === 'results') {
         await loadRouteData();
+        sendAnalytics('RUTA_GENERADA');
     }
 
     renderView(next);
@@ -837,4 +941,6 @@ function getProfiles() {
     return state.answers.p4_profile.map(id => map[id] || id).join(', ') || "General";
 }
 
-loadData();
+loadData().then(() => {
+    sendAnalytics('VISITA_PAGINA');
+});
