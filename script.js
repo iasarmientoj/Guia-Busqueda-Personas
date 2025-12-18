@@ -150,6 +150,7 @@ const steps = {
     'p3_type': {
         progress: '60%',
         title: '¿Dónde ocurrió o fue vista por última vez?',
+        description: 'Esta información es necesaria para indicarle las entidades territoriales competentes que lo pueden ayudar.',
         type: 'place-selector',
         countryData: [],      // lleno dinámicamente
         municipalityData: [], // lleno dinámicamente
@@ -543,6 +544,10 @@ function renderView(stepId) {
 
         // Variable global temporal para "inyectar" esto después de renderizar las opciones normales
         window.P2_EXTRA_HTML = dateHtml;
+    } else if (stepId === 'p3_type') {
+        const personName = state.answers.p4_name ? state.answers.p4_name.trim() : 'su ser querido';
+        config.title = `¿Dónde cree que desapareció ${personName}?`;
+        window.P2_EXTRA_HTML = '';
     } else {
         window.P2_EXTRA_HTML = '';
     }
@@ -639,7 +644,41 @@ function renderView(stepId) {
                 }
             };
 
-            const isColombia = state.answers.p3_country === 'Colombia' || !state.answers.p3_country; // Default Colombia si no hay info
+            // Función para actualizar municipios basado en departamento (ciudad)
+            window.updateMunicipalities = function (deptName) {
+                const muniSelect = document.getElementById('p3_municipality');
+                muniSelect.innerHTML = '<option value="">Seleccione...</option>';
+
+                if (!deptName) return;
+
+                // Filtrar DB_CONTACTOS por CIUDAD (Departamento) y obtener MUNICIPIOs
+                const validMunis = [...new Set(
+                    DB_CONTACTOS
+                        .filter(r => r.CIUDAD === deptName)
+                        .map(r => r.MUNICIPIO)
+                        .filter(Boolean)
+                )].sort();
+
+                validMunis.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = m;
+                    opt.textContent = m;
+                    muniSelect.appendChild(opt);
+                });
+            };
+
+            const isColombia = state.answers.p3_country === 'Colombia' || !state.answers.p3_country;
+
+            // Calcular municipios iniciales si ya hay un departamento seleccionado
+            let initMunis = [];
+            if (state.answers.p3_detail) {
+                initMunis = [...new Set(
+                    DB_CONTACTOS
+                        .filter(r => r.CIUDAD === state.answers.p3_detail)
+                        .map(r => r.MUNICIPIO)
+                        .filter(Boolean)
+                )].sort();
+            }
 
             html += `
             <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mb-6">
@@ -651,31 +690,32 @@ function renderView(stepId) {
                             <option value="">Seleccione...</option>
                             ${config.countryData.map(c => `<option value="${c}" ${state.answers.p3_country === c || (c === 'Colombia' && !state.answers.p3_country) ? 'selected' : ''}>${c}</option>`).join('')}
                         </select>
+                        <p class="text-xs text-gray-500 italic mt-1">Obligatorio</p>
                     </div>
 
                     <!-- Contenedor para Municipio y Ciudad (solo si es Colombia) -->
                     <div class="contents ${isColombia ? '' : 'hidden'}" id="colombia-fields">
-                        <!-- Municipio -->
-                        <div>
-                            <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Municipio</label>
-                            <select id="p3_municipality" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue bg-white">
-                                <option value="">Seleccione...</option>
-                                ${config.municipalityData.map(m => `<option value="${m}" ${state.answers.p3_sub_detail === m ? 'selected' : ''}>${m}</option>`).join('')}
-                            </select>
-                        </div>
-
-                        <!-- Ciudad Principal -->
+                        <!-- Ciudad Principal (Ahora DEPARTAMENTO) -->
                         <div class="relative">
-                            <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Ciudad Principal Ref. <button onclick="toggleHelp('help-city')" class="ml-1 text-gov-blue hover:text-gov-dark-blue"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button></label>
-                            <select id="p3_city" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue bg-white">
+                            <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Departamento</label>
+                            <select id="p3_city" onchange="updateMunicipalities(this.value)" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue bg-white">
                                 <option value="">Seleccione...</option>
                                 ${config.cityData.map(c => `<option value="${c}" ${state.answers.p3_detail === c ? 'selected' : ''}>${c}</option>`).join('')}
                             </select>
-                            <div id="help-city" class="hidden absolute top-0 right-0 mt-8 z-20 bg-blue-50 text-gov-dark-blue text-xs p-2 rounded border border-blue-200 shadow-lg w-64">Seleccione la ciudad capital más cercana para ubicar las sedes de las entidades (Fiscalía, Medicina Legal) donde debe ir.</div>
+                        </div>
+
+                        <!-- Municipio (Ahora CIUDAD/MUNICIPIO) -->
+                        <div>
+                            <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Ciudad/Municipio</label>
+                            <select id="p3_municipality" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue bg-white">
+                                <option value="">Seleccione...</option>
+                                ${initMunis.map(m => `<option value="${m}" ${state.answers.p3_sub_detail === m ? 'selected' : ''}>${m}</option>`).join('')}
+                            </select>
                         </div>
                     </div>
                 </div>
             </div>`;
+
         }
         else if (config.type === 'dropdown' || config.type === 'municipality-city') {
             // Deprecated render logic remains just in case, but empty for now or simple
@@ -684,11 +724,11 @@ function renderView(stepId) {
         else if (config.type === 'date-year-picker') {
             nextBtn.classList.remove('hidden');
             const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-            html += `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6"><div><label class="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wide">Mes</label><select id="monthInput" class="w-full p-4 border border-gray-300 rounded-lg text-lg outline-none focus:ring-2 focus:ring-gov-blue appearance-none bg-white"><option value="">Seleccione...</option>${months.map(m => `<option value="${m}">${m}</option>`).join('')}</select></div><div><label class="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wide">Año (4 dígitos)</label><input type="number" id="yearInput" placeholder="Ej: 2020" min="1900" max="2025" class="w-full p-4 border border-gray-300 rounded-lg text-lg outline-none focus:ring-2 focus:ring-gov-blue" oninput="if(this.value.length > 4) this.value = this.value.slice(0,4);"></div></div><div id="dateError" class="text-red-600 font-bold hidden mb-4 bg-red-50 p-3 rounded border border-red-200 text-center">⚠️ Por favor ingrese un año válido entre 1900 y 2025 y seleccione el mes.</div>`;
+            html += `< div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6" ><div><label class="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wide">Mes</label><select id="monthInput" class="w-full p-4 border border-gray-300 rounded-lg text-lg outline-none focus:ring-2 focus:ring-gov-blue appearance-none bg-white"><option value="">Seleccione...</option>${months.map(m => `<option value="${m}">${m}</option>`).join('')}</select></div><div><label class="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wide">Año (4 dígitos)</label><input type="number" id="yearInput" placeholder="Ej: 2020" min="1900" max="2025" class="w-full p-4 border border-gray-300 rounded-lg text-lg outline-none focus:ring-2 focus:ring-gov-blue" oninput="if(this.value.length > 4) this.value = this.value.slice(0,4);"></div></div > <div id="dateError" class="text-red-600 font-bold hidden mb-4 bg-red-50 p-3 rounded border border-red-200 text-center">⚠️ Por favor ingrese un año válido entre 1900 y 2025 y seleccione el mes.</div>`;
         }
         else if (config.type === 'textarea') {
             nextBtn.classList.remove('hidden');
-            html += `<textarea id="narrativeInput" class="w-full p-4 border border-gray-300 rounded-lg h-40 outline-none focus:border-gov-blue text-lg" placeholder="Ej: Vestía jean azul, camisa roja. Tiene una cicatriz en la ceja..."></textarea>`;
+            html += `< textarea id = "narrativeInput" class="w-full p-4 border border-gray-300 rounded-lg h-40 outline-none focus:border-gov-blue text-lg" placeholder = "Ej: Vestía jean azul, camisa roja. Tiene una cicatriz en la ceja..." ></textarea > `;
         }
         else if (config.type === 'profile-complex') {
             nextBtn.classList.remove('hidden');
@@ -700,15 +740,15 @@ function renderView(stepId) {
                     <div class="relative">
                         <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Nombre <button onclick="toggleHelp('help-name')" class="ml-1 text-gov-blue hover:text-gov-dark-blue"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button></label>
                         <input type="text" id="p4_name" value="${state.answers.p4_name || ''}" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue" placeholder="Ej: Juan">
-                        <p class="text-xs text-gray-500 italic mt-1">Opcional</p>
-                        <div id="help-name" class="hidden absolute top-0 left-0 mt-8 z-20 bg-blue-50 text-gov-dark-blue text-xs p-2 rounded border border-blue-200 shadow-lg w-64">Este campo es opcional y no será usado ni almacenado, es solo para mostrar un nombre en la guía.</div>
+                            <p class="text-xs text-gray-500 italic mt-1">Opcional</p>
+                            <div id="help-name" class="hidden absolute top-0 left-0 mt-8 z-20 bg-blue-50 text-gov-dark-blue text-xs p-2 rounded border border-blue-200 shadow-lg w-64">Este campo es opcional y no será usado ni almacenado, es solo para mostrar un nombre en la guía.</div>
                     </div>
                     <!-- Edad -->
                     <div class="relative">
                         <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Edad <button onclick="toggleHelp('help-age')" class="ml-1 text-gov-blue hover:text-gov-dark-blue"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button></label>
                         <input type="number" id="p4_age" value="${state.answers.p4_age || ''}" min="0" max="120" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue" placeholder="Ej: 25">
-                        <p class="text-xs text-gray-500 italic mt-1">Aproximada</p>
-                        <div id="help-age" class="hidden absolute top-0 left-0 mt-8 z-20 bg-blue-50 text-gov-dark-blue text-xs p-2 rounded border border-blue-200 shadow-lg w-64">Puede ser una edad aproximada si no la sabe exactamente.</div>
+                            <p class="text-xs text-gray-500 italic mt-1">Aproximada</p>
+                            <div id="help-age" class="hidden absolute top-0 left-0 mt-8 z-20 bg-blue-50 text-gov-dark-blue text-xs p-2 rounded border border-blue-200 shadow-lg w-64">Puede ser una edad aproximada si no la sabe exactamente.</div>
                     </div>
                     <!-- Sexo -->
                     <div>
@@ -943,7 +983,7 @@ function generateResultsEngine() {
     const processActionContent = (action) => {
         let rawContent = action.contenido;
         if (rawContent.includes('INFORMACIONADICIONAL')) {
-            const infoText = narrative ? `**${narrative}**` : '';
+            const infoText = narrative ? `** ${narrative}** ` : '';
             rawContent = rawContent.replace(/INFORMACIONADICIONAL/g, infoText);
         }
         if (rawContent.includes('CONTACTOINMEDIATO')) {
@@ -962,7 +1002,7 @@ function generateResultsEngine() {
                 if (!bestMatch) bestMatch = candidates.find(c => c.PAIS === 'Colombia' && c.CIUDAD && c.CIUDAD.toLowerCase().startsWith('bogo') && (!c.MUNICIPIO || c.MUNICIPIO.trim() === ''));
 
                 if (!bestMatch) return '';
-                return `<div class="bg-blue-50 border-l-4 border-gov-blue p-4 my-3 rounded-r-lg shadow-sm text-base [&_a]:text-gov-blue [&_a]:font-semibold [&_a]:underline [&_a:hover]:text-gov-dark-blue [&_a]:transition-colors">${processMarkdownLinks(marked.parse(bestMatch.CONTENIDO_MD))}</div>`;
+                return `< div class="bg-blue-50 border-l-4 border-gov-blue p-4 my-3 rounded-r-lg shadow-sm text-base [&_a]:text-gov-blue [&_a]:font-semibold [&_a]:underline [&_a:hover]:text-gov-dark-blue [&_a]:transition-colors" > ${processMarkdownLinks(marked.parse(bestMatch.CONTENIDO_MD))}</div > `;
             }).join('');
             rawContent = rawContent.replace(/CONTACTOINMEDIATO/g, contactDetails);
         }
@@ -977,19 +1017,19 @@ function generateResultsEngine() {
             const showConnector = index < actions.length - 1;
             const displayStep = index + 1; // Numeración secuencial para mostrar al usuario
             return `
-                    <div class="relative">
-                        <details name="guide-accordion" class="group bg-white border-2 border-gray-200 rounded-lg mb-3 shadow-sm hover:shadow-md hover:border-gov-blue transition-all">
-                            <summary class="flex items-center p-4 cursor-pointer select-none">
-                                <div class="flex items-center flex-1">
-                                    <span class="bg-gov-blue text-white text-sm font-bold px-3 py-1.5 rounded-lg mr-4 border-2 border-gov-dark-blue min-w-[40px] text-center shadow-sm">Paso ${displayStep}</span>
-                                    <span class="font-bold text-gov-dark-blue text-lg">${action.titulo}</span>
-                                </div>
-                                <svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                            </summary>
-                            <div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-gray-100 bg-gray-50 text-base md-content">${htmlContent}</div>
-                        </details>
+                < div class="relative" >
+                    <details name="guide-accordion" class="group bg-white border-2 border-gray-200 rounded-lg mb-3 shadow-sm hover:shadow-md hover:border-gov-blue transition-all">
+                        <summary class="flex items-center p-4 cursor-pointer select-none">
+                            <div class="flex items-center flex-1">
+                                <span class="bg-gov-blue text-white text-sm font-bold px-3 py-1.5 rounded-lg mr-4 border-2 border-gov-dark-blue min-w-[40px] text-center shadow-sm">Paso ${displayStep}</span>
+                                <span class="font-bold text-gov-dark-blue text-lg">${action.titulo}</span>
+                            </div>
+                            <svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </summary>
+                        <div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-gray-100 bg-gray-50 text-base md-content">${htmlContent}</div>
+                    </details>
                         ${showConnector ? '<div class="flex justify-center mb-2"><svg class="w-6 h-6 text-gov-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg></div>' : ''}
-                    </div>`;
+                    </div > `;
         }).join('');
     };
 
@@ -1000,10 +1040,10 @@ function generateResultsEngine() {
             const htmlContent = processActionContent(action);
             const displayStep = index + 1; // Numeración secuencial solo para mostrar
             return `
-                    <div class="print-item">
+                < div class="print-item" >
                         <div class="print-title">Paso ${displayStep}. ${action.titulo}</div>
                         <div class="print-content md-content">${htmlContent}</div>
-                    </div>`;
+                    </div > `;
         }).join('');
     };
 
@@ -1034,13 +1074,13 @@ function generateResultsEngine() {
         return nodeList.map(node => {
             const mdContent = processMarkdownLinks(marked.parse(node.contenido || ''));
             if (node.paso === 'SEPARADOR') {
-                return `<div class="mt-8 mb-4 bg-gov-dark-blue text-white p-4 rounded-lg shadow-md"><h4 class="font-bold text-lg">${node.titulo}</h4><div class="text-sm opacity-90 mt-1 md-content">${mdContent}</div></div>`;
+                return `< div class="mt-8 mb-4 bg-gov-dark-blue text-white p-4 rounded-lg shadow-md" ><h4 class="font-bold text-lg">${node.titulo}</h4><div class="text-sm opacity-90 mt-1 md-content">${mdContent}</div></div > `;
             }
             if (node.isBif) {
-                const childrenHtml = renderRouteRecursive(node.children, `guide-accordion-${node.cleanId}`);
-                return `<details name="${groupName}" class="group bg-blue-50 border border-blue-200 rounded-lg mb-3 shadow-sm hover:shadow-md transition-all ml-0"><summary class="flex items-center p-4 cursor-pointer select-none"><div class="flex items-center flex-1"><span class="bg-gov-dark-blue text-white text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-900 min-w-[24px] text-center">Opc</span><span class="font-bold text-gov-dark-blue text-lg">${node.titulo}</span></div><svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></summary><div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-blue-100 bg-white text-base md-content">${mdContent}${childrenHtml ? `<div class="mt-4 pt-4 border-t border-gray-100 pl-4 border-l-2 border-blue-100 space-y-2">${childrenHtml}</div>` : ''}</div></details>`;
+                const childrenHtml = renderRouteRecursive(node.children, `guide - accordion - ${node.cleanId} `);
+                return `< details name = "${groupName}" class="group bg-blue-50 border border-blue-200 rounded-lg mb-3 shadow-sm hover:shadow-md transition-all ml-0" ><summary class="flex items-center p-4 cursor-pointer select-none"><div class="flex items-center flex-1"><span class="bg-gov-dark-blue text-white text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-900 min-w-[24px] text-center">Opc</span><span class="font-bold text-gov-dark-blue text-lg">${node.titulo}</span></div><svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></summary><div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-blue-100 bg-white text-base md-content">${mdContent}${childrenHtml ? `<div class="mt-4 pt-4 border-t border-gray-100 pl-4 border-l-2 border-blue-100 space-y-2">${childrenHtml}</div>` : ''}</div></details > `;
             } else {
-                return `<details name="${groupName}" class="group bg-white border border-gray-200 rounded-lg mb-2 shadow-sm hover:shadow-md transition-all"><summary class="flex items-center p-4 cursor-pointer select-none"><div class="flex items-center flex-1"><span class="bg-blue-100 text-gov-blue text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-200 min-w-[24px] text-center">${node.paso}</span><span class="font-bold text-gov-dark-blue text-lg">${node.titulo}</span></div><svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></summary><div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-gray-100 bg-gray-50 text-base md-content">${mdContent}</div></details>`;
+                return `< details name = "${groupName}" class="group bg-white border border-gray-200 rounded-lg mb-2 shadow-sm hover:shadow-md transition-all" ><summary class="flex items-center p-4 cursor-pointer select-none"><div class="flex items-center flex-1"><span class="bg-blue-100 text-gov-blue text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-200 min-w-[24px] text-center">${node.paso}</span><span class="font-bold text-gov-dark-blue text-lg">${node.titulo}</span></div><svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></summary><div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-gray-100 bg-gray-50 text-base md-content">${mdContent}</div></details > `;
             }
         }).join('');
     };
@@ -1051,7 +1091,7 @@ function generateResultsEngine() {
         return nodeList.map(node => {
             const mdContent = processMarkdownLinks(marked.parse(node.contenido || ''));
             if (node.paso === 'SEPARADOR') {
-                return `<div class="mt-4 mb-2 bg-gray-100 p-2 border-b-2 border-gov-dark-blue"><h4 class="font-bold text-lg text-gov-dark-blue">${node.titulo}</h4><div class="text-xs text-gray-600 md-content">${mdContent}</div></div>`;
+                return `< div class="mt-4 mb-2 bg-gray-100 p-2 border-b-2 border-gov-dark-blue" ><h4 class="font-bold text-lg text-gov-dark-blue">${node.titulo}</h4><div class="text-xs text-gray-600 md-content">${mdContent}</div></div > `;
             }
 
             const indentClass = depth > 0 ? 'ml-4 border-l-2 border-gray-300 pl-4' : '';
@@ -1063,11 +1103,11 @@ function generateResultsEngine() {
             }
 
             return `
-                    <div class="print-item ${indentClass}">
+                < div class="print-item ${indentClass}" >
                         <div class="print-title text-sm"><span class="bg-gray-200 px-1 rounded text-xs mr-2 font-mono">${titlePrefix}</span> ${node.titulo}</div>
                         <div class="print-content md-content text-sm mb-2">${mdContent}</div>
                         ${childrenHtml}
-                    </div>`;
+                    </div > `;
         }).join('');
     };
 
@@ -1078,35 +1118,35 @@ function generateResultsEngine() {
         let localContacts = DB_CONTACTOS.filter(c => (c.Ciudad === state.answers.p3_detail || c.Cobertura === 'NACIONAL') && c.Activa === 'SI');
         // Web HTML
         contactsHTML = localContacts.map(c => `
-                    <li class="bg-white p-4 rounded border border-blue-100 shadow-sm mb-2">
+                < li class="bg-white p-4 rounded border border-blue-100 shadow-sm mb-2" >
                         <strong class="block text-gov-blue text-lg">${c.Nombre_Corto || c.Nombre_Largo}</strong>
                         <span class="block text-sm text-gray-700 mt-1">${c.Que_Hace_Resumen || ''}</span>
                         <div class="mt-2 text-sm text-gray-600">📞 ${c.Telefono_Principal || c.Linea_Gratuita} <br>📍 ${c.Direccion || 'Nacional'}</div>
-                    </li>`).join('');
-        if (contactsHTML) contactsHTML = `<div class="mt-4 bg-blue-50 p-6 rounded-lg border border-blue-100"><ul class="space-y-0">${contactsHTML}</ul></div>`;
+                    </li > `).join('');
+        if (contactsHTML) contactsHTML = `< div class="mt-4 bg-blue-50 p-6 rounded-lg border border-blue-100" > <ul class="space-y-0">${contactsHTML}</ul></div > `;
 
         // Print HTML
         contactsHTMLPrint = localContacts.map(c => `
-                    <div class="mb-2 pb-2 border-b border-gray-100">
+                < div class="mb-2 pb-2 border-b border-gray-100" >
                         <strong class="block text-gov-blue">${c.Nombre_Corto || c.Nombre_Largo}</strong>
                         <div class="text-xs text-gray-600">📞 ${c.Telefono_Principal || c.Linea_Gratuita} | 📍 ${c.Direccion || 'Nacional'}</div>
-                    </div>`).join('');
-        if (contactsHTMLPrint) contactsHTMLPrint = `<div class="mt-4 p-4 border border-gray-300 rounded"><h3 class="font-bold text-sm mb-2">Directorio de Apoyo Local</h3>${contactsHTMLPrint}</div>`;
+                    </div > `).join('');
+        if (contactsHTMLPrint) contactsHTMLPrint = `< div class="mt-4 p-4 border border-gray-300 rounded" > <h3 class="font-bold text-sm mb-2">Directorio de Apoyo Local</h3>${contactsHTMLPrint}</div > `;
     }
 
-    const lugarTexto = state.answers.p3_sub_detail ? `${state.answers.p3_sub_detail}, ${state.answers.p3_detail}` : (state.answers.p3_detail || 'Nacional');
-    const fechaTexto = isReciente ? "Reciente" : (state.answers.p2_date_year ? `${state.answers.p2_date_month} ${state.answers.p2_date_year}` : "Histórico");
+    const lugarTexto = state.answers.p3_sub_detail ? `${state.answers.p3_sub_detail}, ${state.answers.p3_detail} ` : (state.answers.p3_detail || 'Nacional');
+    const fechaTexto = isReciente ? "Reciente" : (state.answers.p2_date_year ? `${state.answers.p2_date_month} ${state.answers.p2_date_year} ` : "Histórico");
 
     // --- CONSTRUCCIÓN HTML FINAL ---
     // 1. Contenido Web
-    const contentLegal = `<div class="space-y-2">${renderActionList(legalActions)}</div>`;
-    const contentOwn = `<div class="space-y-2">${renderActionList(ownActions)}</div>`;
-    const contentSupport = `<div class="space-y-2 mb-8">${renderActionList(supportActions)}</div>${contactsHTML}`;
-    const contentMaster = `<div class="space-y-2">${renderRouteRecursive(routeNodes)}</div>`;
+    const contentLegal = `< div class="space-y-2" > ${renderActionList(legalActions)}</div > `;
+    const contentOwn = `< div class="space-y-2" > ${renderActionList(ownActions)}</div > `;
+    const contentSupport = `< div class="space-y-2 mb-8" > ${renderActionList(supportActions)}</div > ${contactsHTML} `;
+    const contentMaster = `< div class="space-y-2" > ${renderRouteRecursive(routeNodes)}</div > `;
 
     // 2. Contenido Impresión
     const printHTML = `
-            <div id="print-area" class="hidden">
+                < div id = "print-area" class="hidden" >
                 <div class="mb-8 border-b-2 border-gov-blue pb-4">
                     <img src="logoGovCO.png" class="h-12 mb-4" alt="Logo MinJusticia">
                     <h1 class="print-header">Guía de Búsqueda - Plan de Acción Personalizado</h1>
@@ -1143,11 +1183,11 @@ function generateResultsEngine() {
                     <p>Ministerio de Justicia y del Derecho - Colombia</p>
                     <p>Esta guía es informativa y no constituye un documento legal vinculante. Llame siempre a las líneas oficiales.</p>
                 </div>
-            </div>`;
+            </div > `;
 
     // Retorno Combinado
     return `
-                <div class="print:hidden">
+                < div class="print:hidden" >
                     <div class="text-center mb-6">
                         <h3 class="text-2xl font-bold text-gray-800 mb-1">Ruta de Acción Personalizada</h3>
                         <p class="text-gray-600 text-base md:text-lg font-semibold mb-2">Siga estos pasos en orden secuencial. Complete cada paso antes de avanzar al siguiente.</p>
@@ -1200,8 +1240,8 @@ function generateResultsEngine() {
                             ⭐ Califica tu experiencia
                         </a>` : ''}
                     </div>
-                </div>
-                ${printHTML}`;
+                </div >
+                ${printHTML} `;
 }
 
 function getProfiles() {
