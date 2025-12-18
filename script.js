@@ -133,10 +133,10 @@ const steps = {
             { id: '1.3', label: 'Fuerza Pública' },
             { id: '1.4', label: 'Fue integrante de grupo armado' },
             { id: '1.8', label: 'Comunidades Indígenas' },
-            { id: '1.12', label: 'Comunidades Negras, Afrocolombianas, Raizales y Palenqueras' },
             { id: '1.9', label: 'LGBTIQ+' },
             { id: '1.6', label: 'Extranjero' },
-            { id: '1.2', label: 'Rol público' }
+            { id: '1.2', label: 'Rol público' },
+            { id: '1.12', label: 'Comunidades Negras, Afrocolombianas, Raizales y Palenqueras' }
         ]
     },
     'p2': {
@@ -734,21 +734,21 @@ function renderView(stepId) {
             </div>
             
             <div class="grid md:grid-cols-2 gap-2 mb-6">
-                ${config.contextOptions.map(opt => `
-                    <div onclick="document.getElementById('p3_ctx_${opt.id}').click()" 
-                         class="cursor-pointer border border-gray-200 rounded-lg p-4 hover:bg-blue-50 transition-all flex items-start h-full shadow-sm">
-                        <div class="flex items-center h-5">
-                            <input id="p3_ctx_${opt.id}" type="checkbox" value="${opt.id}" 
-                                class="w-5 h-5 text-gov-blue border-gray-300 rounded focus:ring-gov-blue"
-                                ${state.answers.p3_context && state.answers.p3_context.includes(opt.id) ? 'checked' : ''}
-                                onclick="event.stopPropagation()">
-                        </div>
-                        <div class="ml-3 text-sm">
-                            <span class="font-medium text-gray-900 block">${opt.label}</span>
-                            ${opt.help ? `<span class="text-gray-500 text-xs mt-1 block">${opt.help}</span>` : ''}
+                ${config.contextOptions.map(opt => {
+                const isSelected = state.answers.p3_context && state.answers.p3_context.includes(opt.id);
+                return `
+                    <div onclick="this.classList.toggle('selected'); const chk = this.querySelector('input'); chk.checked = !chk.checked;" 
+                         class="checkbox-card ${isSelected ? 'selected' : ''} flex flex-col !items-start cursor-pointer hover:shadow-md transition-all">
+                        <div class="flex items-center w-full">
+                            <div class="checkbox-mark flex-shrink-0">
+                                <input id="p3_ctx_${opt.id}" type="checkbox" value="${opt.id}" 
+                                    class="w-5 h-5 text-gov-blue accent-gov-blue border-gray-300 rounded focus:ring-gov-blue pointer-events-none"
+                                    ${isSelected ? 'checked' : ''}>
+                            </div>
+                            <span class="text-gray-700 font-semibold flex-1 ml-3 text-base">${opt.label}</span>
                         </div>
                     </div>
-                `).join('')}
+                `}).join('')}
             </div>`;
 
         }
@@ -815,7 +815,9 @@ function renderView(stepId) {
                 html += `
                 <div onclick="toggleMulti(this, '${opt.id}', 'p4')" class="checkbox-card ${isSelected ? 'selected' : ''} flex flex-col !items-start cursor-pointer hover:shadow-md transition-all">
                     <div class="flex items-center w-full">
-                        <div class="checkbox-mark flex-shrink-0">${isSelected ? '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>' : '<div class="w-5 h-5 border-2 border-gray-400 rounded"></div>'}</div>
+                        <div class="checkbox-mark flex-shrink-0">
+                            <input type="checkbox" class="w-5 h-5 text-gov-blue accent-gov-blue border-gray-300 rounded focus:ring-gov-blue pointer-events-none" ${isSelected ? 'checked' : ''} readonly>
+                        </div>
                         <span class="text-gray-700 font-semibold flex-1 ml-3 text-base">${opt.label}</span>
                     </div>
                 </div>`;
