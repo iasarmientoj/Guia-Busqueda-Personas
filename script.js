@@ -154,7 +154,15 @@ const steps = {
         type: 'place-selector',
         countryData: [],      // lleno dinámicamente
         municipalityData: [], // lleno dinámicamente
-        cityData: []          // lleno dinámicamente
+        cityData: [],          // lleno dinámicamente
+        contextOptions: [
+            { id: '3.4.1', label: 'Mar, río o costa' },
+            { id: '3.4.3', label: 'Territorio indígena' },
+            { id: '3.4.5', label: 'Montaña, selva o bosque' },
+            { id: '3.4.7', label: 'Zona de conflicto armado' },
+            { id: '3.4.2', label: 'Frontera' },
+            { id: '3.4.4', label: 'Parque Nacional' }
+        ]
     },
 
     // 'p3.1', 'p3.2', 'p3.3' eliminados/fusionados
@@ -250,7 +258,7 @@ async function loadData() {
 
         const getUniqueSorted = (data, key) => {
             const unique = [...new Set(data.map(item => item[key]?.trim()).filter(Boolean))].sort();
-            if (!unique.includes('Otro')) unique.push('Otro');
+            // if (!unique.includes('Otro')) unique.push('Otro');
             return unique;
         };
 
@@ -714,6 +722,33 @@ function renderView(stepId) {
                         </div>
                     </div>
                 </div>
+            </div>
+            
+            <!-- Contexto del Lugar (Multi-select) -->
+            <h3 class="text-xl font-bold text-gov-blue mb-4">¿El lugar donde desapareció tenía alguna de estas características?</h3>
+            <div class="bg-blue-50 border-2 border-gov-blue rounded-lg p-3 mb-4 flex items-center">
+                <svg class="w-5 h-5 text-gov-blue mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="font-bold text-gov-dark-blue text-sm">Puede seleccionar múltiples opciones</span>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-2 mb-6">
+                ${config.contextOptions.map(opt => `
+                    <div onclick="document.getElementById('p3_ctx_${opt.id}').click()" 
+                         class="cursor-pointer border border-gray-200 rounded-lg p-4 hover:bg-blue-50 transition-all flex items-start h-full shadow-sm">
+                        <div class="flex items-center h-5">
+                            <input id="p3_ctx_${opt.id}" type="checkbox" value="${opt.id}" 
+                                class="w-5 h-5 text-gov-blue border-gray-300 rounded focus:ring-gov-blue"
+                                ${state.answers.p3_context && state.answers.p3_context.includes(opt.id) ? 'checked' : ''}
+                                onclick="event.stopPropagation()">
+                        </div>
+                        <div class="ml-3 text-sm">
+                            <span class="font-medium text-gray-900 block">${opt.label}</span>
+                            ${opt.help ? `<span class="text-gray-500 text-xs mt-1 block">${opt.help}</span>` : ''}
+                        </div>
+                    </div>
+                `).join('')}
             </div>`;
 
         }
@@ -858,6 +893,11 @@ async function goNext() {
         if (!valid) return;
 
         state.answers.p3_country = country;
+
+        // Capturar checkboxes de contexto
+        const selectedContexts = Array.from(document.querySelectorAll('input[id^="p3_ctx_"]:checked')).map(cb => cb.value);
+        state.answers.p3_context = selectedContexts;
+
         if (country === 'Colombia') {
             state.answers.p3_sub_detail = muni;
             state.answers.p3_detail = city;
@@ -916,9 +956,9 @@ async function goNext() {
         next = 'p4';
     }
     else if (cur === 'p4') next = 'p2';
-    else if (cur === 'p2_date') next = 'p3_type';
-    else if (['p3.1', 'p3.2', 'p3.3'].includes(cur)) next = 'p3.4';
-    else if (cur === 'p3.4') next = 'p1';
+    else if (cur === 'p2') next = 'p3_type'; // p2 ahora incluye fecha, va directo a p3_type
+    else if (cur === 'p3_type') next = 'p1';
+    else if (cur === 'p1') next = 'results'; // Asumiendo que p1 va a resultados o narrativa (revisar flujo)
     else if (cur === 'p_narrative') next = 'results';
 
     if (next === 'results') {
