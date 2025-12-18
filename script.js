@@ -95,8 +95,7 @@ const GOOGLE_FORM_CONFIG = {
         COUNTRY: 'entry.1126039543',         // País
         LOC_DETAILS: 'entry.1457032952',     // Características Lugar (Multi)
         CTX_SUSPICION: 'entry.1153266847',   // Sospecha
-        CTX_DETAIL: 'entry.1632596329',      // Detalle Sospecha
-        TIMESTAMP: 'entry.1579318792'        // Fecha Sistema
+        CTX_DETAIL: 'entry.1632596329'      // Detalle Sospecha
     }
 };
 
@@ -108,7 +107,7 @@ const state = {
         p1: null, p1_sub: null,
         p2: null, p2_sub: null, p2_date_month: null, p2_date_year: null,
         p3_type: null, p3_detail: null, p3_sub_detail: null, p3_characteristics: [],
-        p4_profile: [],
+        p4_profile: [], p4_name: '', p4_age: '', p4_sex: '',
         narrative: ''
     }
 };
@@ -126,19 +125,18 @@ const steps = {
         btnLabel: 'Comenzar Consulta'
     },
     'p4': {
-        progress: '20%', title: '¿Quién es la persona desaparecida?', description: 'Marque todas las condiciones que correspondan a su caso. Esto define la prioridad de la búsqueda.', type: 'multi-choice',
+        progress: '20%', title: '¿Quién es la persona desaparecida?',
+        alert: '⚠️ Esta información es solo para personalizar la guía. NO reemplaza una denuncia ni será enviada a autoridades.',
+        description: 'Estos datos nos ayudan a decirle a qué entidades específicas debe acudir según el caso.',
+        type: 'profile-complex',
         options: [
-            { id: '1.1', label: 'Es un/a niño/a o adolescente', help: 'Menor de 18 años al momento de desaparecer.' },
-            { id: '1.2', label: 'Es una persona con un rol público o de alto riesgo', help: 'Líder, defensor/a, periodista, sindicalista, político.' },
-            { id: '1.3', label: 'Es o fue miembro de la Fuerza Pública', help: 'Ejército, Policía, Armada, Fuerza Aérea, etc.' },
-            { id: '1.4', label: 'Es o fue integrante de un grupo armado ilegal', help: 'Guerrilla, AUC, BACRIM, GAO, etc.' },
-            { id: '1.5', label: 'Es una persona que requiere cuidado o apoyo especial', help: 'Adulto mayor, condiciones de salud mental, discapacidad.' },
-            { id: '1.6', label: 'Es migrante o de nacionalidad extranjera' },
-            { id: '1.7', label: 'Es una mujer y se teme violencia de género', help: 'Antecedentes de violencia intrafamiliar, exparejas agresivas, etc.' },
-            { id: '1.8', label: 'Pertenece a comunidad indígena o étnica', help: 'Comunidades Indígenas, Negras, Afrocolombianas, Raizales y Palenqueras.' },
-            { id: '1.9', label: 'Se identifica como persona LGBTIQ+' },
-            { id: '1.10', label: 'Desaparecieron dos o más personas juntas', help: 'Ej: madre e hijo, hermanos, familia entera.' },
-            { id: '1.11', label: 'Ninguna de las anteriores' }
+            { id: '1.3', label: 'Fuerza Pública' },
+            { id: '1.4', label: 'Fue integrante de grupo armado' },
+            { id: '1.8', label: 'Comunidades Indígenas' },
+            { id: '1.12', label: 'Comunidades Negras, Afrocolombianas, Raizales y Palenqueras' },
+            { id: '1.9', label: 'LGBTIQ+' },
+            { id: '1.6', label: 'Extranjero' },
+            { id: '1.2', label: 'Rol público' }
         ]
     },
     'p2': {
@@ -541,6 +539,63 @@ function renderView(stepId) {
             nextBtn.classList.remove('hidden');
             html += `<textarea id="narrativeInput" class="w-full p-4 border border-gray-300 rounded-lg h-40 outline-none focus:border-gov-blue text-lg" placeholder="Ej: Vestía jean azul, camisa roja. Tiene una cicatriz en la ceja..."></textarea>`;
         }
+        else if (config.type === 'profile-complex') {
+            nextBtn.classList.remove('hidden');
+
+            // Sección 1: Datos Básicos
+            html += `<div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Nombre -->
+                    <div class="relative">
+                        <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Nombre <button onclick="toggleHelp('help-name')" class="ml-1 text-gov-blue hover:text-gov-dark-blue"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button></label>
+                        <input type="text" id="p4_name" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue" placeholder="Ej: Juan">
+                        <p class="text-xs text-gray-500 italic mt-1">Opcional</p>
+                        <div id="help-name" class="hidden absolute top-0 left-0 mt-8 z-20 bg-blue-50 text-gov-dark-blue text-xs p-2 rounded border border-blue-200 shadow-lg w-64">Este campo es opcional y no será usado ni almacenado, es solo para mostrar un nombre en la guía.</div>
+                    </div>
+                    <!-- Edad -->
+                    <div class="relative">
+                        <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Edad <button onclick="toggleHelp('help-age')" class="ml-1 text-gov-blue hover:text-gov-dark-blue"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button></label>
+                        <input type="number" id="p4_age" min="0" max="120" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue" placeholder="Ej: 25">
+                        <p class="text-xs text-gray-500 italic mt-1">Aproximada</p>
+                        <div id="help-age" class="hidden absolute top-0 left-0 mt-8 z-20 bg-blue-50 text-gov-dark-blue text-xs p-2 rounded border border-blue-200 shadow-lg w-64">Puede ser una edad aproximada si no la sabe exactamente.</div>
+                    </div>
+                    <!-- Sexo -->
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Sexo/Género</label>
+                        <select id="p4_sex" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue bg-white">
+                            <option value="">Seleccione...</option>
+                            <option value="Mujer">Mujer</option>
+                            <option value="Hombre">Hombre</option>
+                            <option value="Intersexual">Intersexual</option>
+                            <option value="Otro">Otro/No Binario</option>
+                        </select>
+                    </div>
+                </div>
+            </div>`;
+
+            // Sección 2: Poblaciones (Multi-select)
+            html += `<h3 class="text-xl font-bold text-gov-blue mb-4">¿La persona pertenece a alguna de estas poblaciones?</h3>
+            <div class="bg-blue-50 border-2 border-gov-blue rounded-lg p-3 mb-4 flex items-center">
+                <svg class="w-5 h-5 text-gov-blue mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <span class="font-bold text-gov-dark-blue text-sm">Puede seleccionar múltiples opciones</span>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-2 mb-6">`;
+
+            config.options.forEach(opt => {
+                const isSelected = state.answers.p4_profile.includes(opt.id);
+                html += `
+                <div onclick="toggleMulti(this, '${opt.id}', 'p4')" class="checkbox-card ${isSelected ? 'selected' : ''} flex flex-col !items-start cursor-pointer hover:shadow-md transition-all">
+                    <div class="flex items-center w-full">
+                        <div class="checkbox-mark flex-shrink-0">${isSelected ? '<svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>' : '<div class="w-5 h-5 border-2 border-gray-400 rounded"></div>'}</div>
+                        <span class="text-gray-700 font-semibold flex-1 ml-3 text-base">${opt.label}</span>
+                    </div>
+                </div>`;
+            });
+            html += `</div>`;
+        }
     }
     container.innerHTML = html;
 }
@@ -598,7 +653,40 @@ async function goNext() {
         state.answers.p2_date_month = month;
         state.answers.p2_date_year = year;
     }
-    if (cur === 'p4' && state.answers.p4_profile.length === 0) state.answers.p4_profile.push('1.11');
+    if (cur === 'p4') {
+        // Capturar nuevos campos
+        state.answers.p4_name = document.getElementById('p4_name').value;
+        state.answers.p4_age = document.getElementById('p4_age').value;
+        state.answers.p4_sex = document.getElementById('p4_sex').value;
+
+        // Validar Edad < 18 para agregar tag '1.1' (Menor de edad)
+        if (state.answers.p4_age && parseInt(state.answers.p4_age) < 18) {
+            if (!state.answers.p4_profile.includes('1.1')) {
+                state.answers.p4_profile.push('1.1');
+            }
+        } else {
+            // Si corrigió la edad y ya no es menor, eliminar tag (opcional, pero limpio)
+            const idx = state.answers.p4_profile.indexOf('1.1');
+            if (idx > -1) state.answers.p4_profile.splice(idx, 1);
+        }
+
+        // Si no selecciona nada en poblaciones, marcar Ninguna (1.11)
+        if (state.answers.p4_profile.length === 0) {
+            // Solo si tampoco es menor de edad autodetectado. 
+            // Si es menor (1.1), el array ya tiene algo.
+            state.answers.p4_profile.push('1.11');
+        }
+
+        // Logica para NARP (1.12) -> mapear a 1.8 si es necesario para el motor, 
+        // pero mantenemos 1.12 en los datos. El motor debería saber qué hacer con 1.12 si existe.
+        // *Nota: Como no hemos tocado el motor de acciones para 1.12, asumimos que 1.8 cubre ambos en el Excel actual 
+        // o que agregaremos 1.12 al motor.
+        // HACK: Si Excel usa solo 1.8 para todo lo étnico, agregamos 1.8 invisiblemente si selecciona 1.12
+        if (state.answers.p4_profile.includes('1.12') && !state.answers.p4_profile.includes('1.8')) {
+            state.answers.p4_profile.push('1.8');
+        }
+    }
+
     if (cur === 'p3.4' && state.answers.p3_characteristics.length === 0) state.answers.p3_characteristics.push('3.4.10');
 
     state.history.push(cur);
