@@ -135,8 +135,9 @@ const steps = {
             { id: '1.8', label: 'Comunidades Indígenas' },
             { id: '1.9', label: 'LGBTIQ+' },
             { id: '1.6', label: 'Extranjero' },
-            { id: '1.2', label: 'Rol público' },
-            { id: '1.12', label: 'Comunidades Negras, Afrocolombianas, Raizales y Palenqueras' }
+            { id: '1.2', label: 'Servidor público' },
+            { id: '1.12', label: 'Comunidades Negras, Afrocolombianas, Raizales y Palenqueras' },
+            { id: '1.13', label: 'Defensor(a) de DDHH, líder o lideresa social, mujer buscadora' }
         ]
     },
     'p2': {
@@ -186,10 +187,11 @@ const steps = {
         options: [
             { id: '4.1', label: 'En un contexto de conflicto armado o violencia política', help: 'Sospecha de Guerrilla, Paramilitares, "Falsos Positivos", Grupos Armados.' },
             { id: '4.2', label: 'A causa de un crimen o acto de delincuencia común', help: 'Sospecha de secuestro, extorsión, robo, "gota a gota", bandas, trata de personas.' },
-            { id: '4.3', label: 'Se perdió o se ausentó (sin violencia aparente)', help: 'Salió de casa y no regresó, puede estar desorientado/a, se fue por voluntad propia.' },
+            { id: '4.3', label: 'Salió y no regresó', help: 'Salió de casa y no regresó, puede estar desorientado/a, se fue por voluntad propia.' },
             { id: '4.4', label: 'Durante un accidente o desastre natural', help: 'Desapareció en un río, en el mar, en una montaña o durante una avalancha.' },
             { id: '4.5', label: 'En un contexto de migración o estando en el exterior', help: 'Estaba en una ruta migratoria (ej. Darién) o vivía/viajaba en otro país.' },
-            { id: '4.6', label: 'No tengo sospechas claras de lo que pudo pasar', help: 'Simplemente no he vuelto a saber de él/ella.' }
+            { id: '4.7', label: 'Reclutamiento ilícito de Niños, Niñas y Adolescentes (NNA)', help: 'Sospecha que un menor fue reclutado por un grupo armado.' },
+            { id: '4.6', label: 'No sé', help: 'Simplemente no he vuelto a saber de él/ella.' }
         ]
     },
     'p1_conflict': {
@@ -199,7 +201,7 @@ const steps = {
             { id: '4.1.2', label: 'Sospecha de participación de agentes del Estado' },
             { id: '4.1.3', label: 'Relacionado con reclutamiento forzado de menores' },
             { id: '4.1.4', label: 'Muerto en combate o acto de hostilidades' },
-            { id: '4.1.5', label: 'Otra situación / No sé específicamente' }
+            { id: '4.1.5', label: 'No sé' }
         ]
     },
     'p1_crime': {
@@ -210,7 +212,7 @@ const steps = {
             { id: '4.2.3', label: 'Violencia intrafamiliar o de pareja' },
             { id: '4.2.4', label: 'Secuestro' },
             { id: '4.2.5', label: 'Extorsión' },
-            { id: '4.2.6', label: 'Otro tipo de crimen / No sé específicamente' }
+            { id: '4.2.6', label: 'No sé' }
         ]
     },
     'p1_migration': {
@@ -219,7 +221,7 @@ const steps = {
             { id: '4.5.1', label: 'Planeaba migrar y desapareció en el camino' },
             { id: '4.5.2', label: 'Ya estaba en otro país y perdimos contacto' },
             { id: '4.5.3', label: 'Fue forzada a salir del país (posible trata)' },
-            { id: '4.5.4', label: 'Otra situación' }
+            { id: '4.5.4', label: 'No sé' }
         ]
     },
     'p_narrative': {
@@ -959,8 +961,16 @@ async function goNext() {
     }
     else if (cur === 'p4') next = 'p2';
     else if (cur === 'p2') next = 'p3_type'; // p2 ahora incluye fecha, va directo a p3_type
+
     else if (cur === 'p3_type') next = 'p1';
-    else if (cur === 'p1') next = 'results'; // Asumiendo que p1 va a resultados o narrativa (revisar flujo)
+    else if (cur === 'p1') {
+        const val = state.answers.p1;
+        if (val === '4.1') next = 'p1_conflict';
+        else if (val === '4.2') next = 'p1_crime';
+        else if (val === '4.5') next = 'p1_migration';
+        else next = 'results';
+    }
+    else if (['p1_conflict', 'p1_crime', 'p1_migration'].includes(cur)) next = 'results';
     else if (cur === 'p_narrative') next = 'results';
 
     if (next === 'results') {
