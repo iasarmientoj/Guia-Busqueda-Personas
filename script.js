@@ -256,6 +256,13 @@ async function loadData() {
             if (linkRow && linkRow[1] && linkRow[1].trim()) {
                 SURVEY_FORM_URL = linkRow[1].trim();
             }
+
+            // Buscar la fecha de actualización
+            const dateRow = linksNotasParsed.data.find(row => row[0] && row[0].trim().toUpperCase() === 'FECHA ACTUALIZACION INFORMACION');
+            if (dateRow && dateRow[1] && dateRow[1].trim()) {
+                const dateElem = document.getElementById('lastUpdateDate');
+                if (dateElem) dateElem.innerText = `Información actualizada al: ${dateRow[1].trim()}`;
+            }
         }
 
         const getUniqueSorted = (data, key) => {
