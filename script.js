@@ -143,9 +143,8 @@ const steps = {
         progress: '40%',
         // El título se genera dinámicamente en renderView, aquí dejamos un placeholder
         title: '¿Hace cuánto tiempo ocurrió?',
-        description: 'Saber el tiempo transcurrido es clave para determinar si la búsqueda debe ser Operativa (Urgente, primeras horas/días) o Investigativa (Histórica).',
-        type: 'single-choice',
-        options: [{ id: '2.1', label: 'Ocurrió hace poco (horas, días o semanas)' }, { id: '2.2', label: 'Ocurrió hace más de un año' }]
+        description: 'Este dato es clave para determinar si la búsqueda debe ser Operativa o Investigativa.',
+        options: [] // Sin opciones automáticas, usamos el HTML inyectado
     },
     'p2_date': { progress: '45%', title: 'Fecha aproximada de los hechos', description: 'Por favor indique el mes y año aproximado en que ocurrió la desaparición.', type: 'date-year-picker' },
     'p3_type': {
@@ -441,7 +440,60 @@ function renderView(stepId) {
                 </svg> Atrás`;
         }
 
-        nextBtn.classList.add('hidden');
+        nextBtn.classList.remove('hidden');
+
+        // Comportamiento especial del botón Next
+        nextBtn.onclick = () => {
+            if (stepId === 'p2') {
+                // Validación Custom para p2
+                const yIn = document.getElementById('p2_year');
+                const mIn = document.getElementById('p2_month');
+                let isValid = true;
+
+                // Limpiar errores previos
+                yIn.classList.remove('border-red-500', 'ring-2', 'ring-red-200');
+                mIn.classList.remove('border-red-500', 'ring-2', 'ring-red-200');
+
+                // 1. Año Obligatorio
+                if (!yIn.value) {
+                    yIn.classList.add('border-red-500', 'ring-2', 'ring-red-200');
+                    isValid = false;
+                }
+
+                // 2. Mes obligatorio solo si año es 2016
+                if (yIn.value === '2016' && !mIn.value) {
+                    mIn.classList.add('border-red-500', 'ring-2', 'ring-red-200');
+                    alert('Para el año 2016, es obligatorio seleccionar el Mes. Esto es vital para la Ley de Víctimas.');
+                    isValid = false;
+                }
+
+                if (isValid) handleChoice('2.2');
+            }
+            else if (stepId === 'p4') {
+                // Validación para Perfil
+                const ageIn = document.getElementById('p4_age');
+                const sexIn = document.getElementById('p4_sex');
+                let isValid = true;
+
+                // Limpiar errores
+                ageIn.classList.remove('border-red-500', 'ring-2', 'ring-red-200');
+                sexIn.classList.remove('border-red-500', 'ring-2', 'ring-red-200');
+
+                if (!ageIn.value) {
+                    ageIn.classList.add('border-red-500', 'ring-2', 'ring-red-200');
+                    isValid = false;
+                }
+                if (!sexIn.value) {
+                    sexIn.classList.add('border-red-500', 'ring-2', 'ring-red-200');
+                    isValid = false;
+                }
+
+                if (isValid) goNext();
+            }
+            else goNext();
+        };
+
+        if (stepId === 'intro') nextBtn.classList.add('hidden'); // Solo ocultar en intro (y logicamente manejado arriba, pero por seguridad)
     }
 
     let html = '';
@@ -450,6 +502,50 @@ function renderView(stepId) {
     if (stepId === 'p2') {
         const personName = state.answers.p4_name ? state.answers.p4_name.trim() : 'su ser querido';
         config.title = `¿Hace cuánto tiempo desapareció ${personName}?`;
+
+        // Inyectamos el HTML de Fecha en la p2 (Hack visual)
+        // Esto se agrega al final del html generado para p2, modificamos el renderizado estándar
+        const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        const dateHtml = `
+            <div class="bg-white p-6 rounded-lg border border-gray-200">
+                <h4 class="font-bold text-gov-blue mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                    Fecha aproximada de los hechos
+                </h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="relative">
+                        <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Mes <button onclick="toggleHelp('help-month')" class="ml-1 text-gov-blue hover:text-gov-dark-blue"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button></label>
+                        <select id="p2_month" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue bg-white">
+                            <option value="">Seleccione...</option>
+                            ${months.map(m => `<option value="${m}">${m}</option>`).join('')}
+                        </select>
+                        <p class="text-xs text-gray-500 italic mt-1">Aproximado</p>
+                        <div id="help-month" class="hidden absolute top-0 left-0 mt-8 z-20 bg-blue-50 text-gov-dark-blue text-xs p-2 rounded border border-blue-200 shadow-lg w-64">Si no recuerda el mes exacto puede dejarlo vacío, a menos que sea del año 2016 (fecha clave para el proceso de paz).</div>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Año</label>
+                        <input type="number" id="p2_year" min="1900" max="2025" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue" placeholder="Ej: 2020" oninput="if(this.value.length > 4) this.value = this.value.slice(0,4);">
+                        <p class="text-xs text-gray-500 italic mt-1">Aproximado</p>
+                    </div>
+                </div>
+            </div>
+            
+            </div>
+            
+            </div>
+            
+            <div class="mt-8 text-center border-t border-gray-200 pt-6">
+                 <h4 class="font-bold text-gray-700 mb-4 text-lg">¿Es una urgencia o desapareció hace muy poco?</h4>
+                 <button onclick="handleChoice('2.1')" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition-all flex items-center justify-center mx-auto">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    ¡Es una urgencia!
+                </button>
+            </div>`;
+
+        // Variable global temporal para "inyectar" esto después de renderizar las opciones normales
+        window.P2_EXTRA_HTML = dateHtml;
+    } else {
+        window.P2_EXTRA_HTML = '';
     }
 
     if (config.type === 'intro') {
@@ -607,20 +703,41 @@ function renderView(stepId) {
             html += `</div>`;
         }
     }
+    if (window.P2_EXTRA_HTML && stepId === 'p2') {
+        html += window.P2_EXTRA_HTML;
+    }
     container.innerHTML = html;
 }
 
 // --- 6. LOGICA DE NAVEGACIÓN ---
 function handleChoice(val) {
     const cur = state.currentStep;
-    if (cur === 'p2') state.answers.p2 = val;
+
+    // Captura especial para p2 (inputs manuales dentro de la pantalla)
+    if (cur === 'p2') {
+        const m = document.getElementById('p2_month');
+        const y = document.getElementById('p2_year');
+        if (m && m.value) state.answers.p2_date_month = m.value;
+        if (y && y.value) state.answers.p2_date_year = y.value;
+        state.answers.p2 = val; // Asegurar que guardamos la opción elegida (2.1 o 2.2)
+    }
+    else if (cur === 'p2') state.answers.p2 = val; // Fallback por si acaso (aunque el if anterior lo cubre)
+
     if (cur === 'p2.4_conflict') state.answers.p2_sub = val;
     if (cur === 'p3_type') state.answers.p3_type = val;
     if (cur === 'p1') state.answers.p1 = val;
     if (['p1_conflict', 'p1_crime', 'p1_migration'].includes(cur)) state.answers.p1_sub = val;
     state.history.push(cur);
     let next = '';
-    if (cur === 'p2') { if (val === '2.1') next = 'p3_type'; else next = 'p2_date'; }
+    if (cur === 'p2') {
+        // Capturar fecha en p2 también
+        const m = document.getElementById('p2_month').value;
+        const y = document.getElementById('p2_year').value;
+        if (m) state.answers.p2_date_month = m;
+        if (y) state.answers.p2_date_year = y;
+
+        if (val === '2.1') next = 'p3_type'; else next = 'p3_type'; // Saltamos p2_date porque ya está integrada
+    }
     else if (cur === 'p3_type') { if (val === '3.1') next = 'p3.1'; else if (val === '3.2') next = 'p3.2'; else next = 'p3.3'; }
     else if (cur === 'p1') { if (val === '4.1') next = 'p1_conflict'; else if (val === '4.2') next = 'p1_crime'; else if (val === '4.5') next = 'p1_migration'; else next = 'p_narrative'; }
     else if (['p1_conflict', 'p1_crime', 'p1_migration'].includes(cur)) { next = 'p_narrative'; }
@@ -655,14 +772,7 @@ async function goNext() {
         state.answers.narrative = document.getElementById('narrativeInput').value;
     }
 
-    if (cur === 'p2_date') {
-        const month = document.getElementById('monthInput').value;
-        const year = document.getElementById('yearInput').value;
-        const yearNum = parseInt(year);
-        if (!month || !year || year.length !== 4 || yearNum < 1900 || yearNum > 2025) { document.getElementById('dateError').classList.remove('hidden'); return; }
-        state.answers.p2_date_month = month;
-        state.answers.p2_date_year = year;
-    }
+    /* Paso p2_date eliminado, integrado en p2 */
     if (cur === 'p4') {
         // Capturar nuevos campos
         state.answers.p4_name = document.getElementById('p4_name').value;
