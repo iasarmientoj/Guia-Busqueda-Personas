@@ -148,15 +148,15 @@ const steps = {
     },
     'p2_date': { progress: '45%', title: 'Fecha aproximada de los hechos', description: 'Por favor indique el mes y año aproximado en que ocurrió la desaparición.', type: 'date-year-picker' },
     'p3_type': {
-        progress: '60%', title: '¿Dónde ocurrió o fue vista por última vez?', type: 'single-choice',
-        options: [{ id: '3.1', label: 'Capital o ciudad principal' }, { id: '3.2', label: 'Municipio pequeño o zona rural' }, { id: '3.3', label: 'En otro país' }]
+        progress: '60%',
+        title: '¿Dónde ocurrió o fue vista por última vez?',
+        type: 'place-selector',
+        countryData: [],      // lleno dinámicamente
+        municipalityData: [], // lleno dinámicamente
+        cityData: []          // lleno dinámicamente
     },
-    'p3.1': { progress: '65%', title: 'Seleccione la ciudad', type: 'dropdown', data: CITIES_LIST },
-    'p3.2': {
-        progress: '65%', title: 'Ubicación en Municipio', type: 'municipality-city', municipalityData: ['Otro'], cityData: CITIES_LIST,
-        description: 'Seleccione el municipio y la ciudad principal más cercana para ubicar las entidades de apoyo.'
-    },
-    'p3.3': { progress: '65%', title: 'Seleccione el país', type: 'dropdown', data: ['España', 'Estados Unidos', 'México', 'Ecuador', 'Chile', 'Otro'] },
+
+    // 'p3.1', 'p3.2', 'p3.3' eliminados/fusionados
     'p3.4': {
         progress: '75%', title: 'Características del lugar', description: 'Marque todas las características especiales que tenga el lugar donde ocurrió la desaparición.', type: 'multi-choice',
         options: [
@@ -257,10 +257,9 @@ async function loadData() {
         CITIES_LIST = getUniqueSorted(DB_CONTACTOS, 'CIUDAD');
         MUNICIPALITIES_LIST = getUniqueSorted(DB_CONTACTOS, 'MUNICIPIO');
 
-        steps['p3.1'].data = CITIES_LIST;
-        steps['p3.2'].municipalityData = MUNICIPALITIES_LIST;
-        steps['p3.2'].cityData = CITIES_LIST;
-        steps['p3.3'].data = COUNTRIES_LIST;
+        steps['p3_type'].municipalityData = MUNICIPALITIES_LIST;
+        steps['p3_type'].cityData = CITIES_LIST;
+        steps['p3_type'].countryData = COUNTRIES_LIST;
 
         status.innerText = "Descargando Matriz de Acciones...";
         const accionesRaw = await loadSheet(SHEETS_CONFIG.ACCIONES);
@@ -627,14 +626,60 @@ function renderView(stepId) {
             });
             html += '</div>';
         }
-        else if (config.type === 'dropdown' || config.type === 'municipality-city') {
+        else if (config.type === 'place-selector') {
             nextBtn.classList.remove('hidden');
-            if (config.type === 'dropdown') {
-                html += `<div class="mb-6"><select id="selectInput" onchange="this.classList.remove('border-red-500', 'ring-2', 'ring-red-200')" class="w-full p-4 border border-gray-300 rounded-lg text-lg outline-none focus:ring-2 focus:ring-gov-blue"><option value="">Seleccione una opción...</option>${config.data.map(i => `<option value="${i}">${i}</option>`).join('')}</select></div>`;
-            } else {
-                html += `
-                        <div class="space-y-6"><div><label class="block text-gray-700 font-bold mb-2 text-sm uppercase tracking-wide">Municipio</label><select id="municipalityInput" onchange="this.classList.remove('border-red-500', 'ring-2', 'ring-red-200')" class="w-full p-4 border border-gray-300 rounded-lg text-lg outline-none focus:ring-2 focus:ring-gov-blue">${config.municipalityData.map(i => `<option value="${i}">${i}</option>`).join('')}</select></div><div class="bg-blue-50 p-4 rounded border border-blue-100"><label class="block text-gov-blue font-bold mb-2 text-sm uppercase tracking-wide flex items-center"><svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>Ciudad Principal más cercana</label><p class="text-xs text-gray-500 mb-2">Seleccione dónde le quedaría más fácil recibir atención presencial.</p><select id="cityInput" onchange="this.classList.remove('border-red-500', 'ring-2', 'ring-red-200')" class="w-full p-3 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-gov-blue"><option value="">Seleccione...</option>${config.cityData.map(i => `<option value="${i}">${i}</option>`).join('')}</select></div></div>`;
-            }
+
+            // Función para manejar el cambio de país y mostrar/ocultar los otros campos
+            window.togglePlaceFields = function (val) {
+                const colombiaFields = document.getElementById('colombia-fields');
+                if (val === 'Colombia') {
+                    colombiaFields.classList.remove('hidden');
+                } else {
+                    colombiaFields.classList.add('hidden');
+                }
+            };
+
+            const isColombia = state.answers.p3_country === 'Colombia' || !state.answers.p3_country; // Default Colombia si no hay info
+
+            html += `
+            <div class="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- País -->
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">País</label>
+                        <select id="p3_country" onchange="togglePlaceFields(this.value)" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue bg-white">
+                            <option value="">Seleccione...</option>
+                            ${config.countryData.map(c => `<option value="${c}" ${state.answers.p3_country === c || (c === 'Colombia' && !state.answers.p3_country) ? 'selected' : ''}>${c}</option>`).join('')}
+                        </select>
+                    </div>
+
+                    <!-- Contenedor para Municipio y Ciudad (solo si es Colombia) -->
+                    <div class="contents ${isColombia ? '' : 'hidden'}" id="colombia-fields">
+                        <!-- Municipio -->
+                        <div>
+                            <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Municipio</label>
+                            <select id="p3_municipality" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue bg-white">
+                                <option value="">Seleccione...</option>
+                                ${config.municipalityData.map(m => `<option value="${m}" ${state.answers.p3_sub_detail === m ? 'selected' : ''}>${m}</option>`).join('')}
+                            </select>
+                        </div>
+
+                        <!-- Ciudad Principal -->
+                        <div class="relative">
+                            <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Ciudad Principal Ref. <button onclick="toggleHelp('help-city')" class="ml-1 text-gov-blue hover:text-gov-dark-blue"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button></label>
+                            <select id="p3_city" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue bg-white">
+                                <option value="">Seleccione...</option>
+                                ${config.cityData.map(c => `<option value="${c}" ${state.answers.p3_detail === c ? 'selected' : ''}>${c}</option>`).join('')}
+                            </select>
+                            <div id="help-city" class="hidden absolute top-0 right-0 mt-8 z-20 bg-blue-50 text-gov-dark-blue text-xs p-2 rounded border border-blue-200 shadow-lg w-64">Seleccione la ciudad capital más cercana para ubicar las sedes de las entidades (Fiscalía, Medicina Legal) donde debe ir.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }
+        else if (config.type === 'dropdown' || config.type === 'municipality-city') {
+            // Deprecated render logic remains just in case, but empty for now or simple
+            nextBtn.classList.remove('hidden');
         }
         else if (config.type === 'date-year-picker') {
             nextBtn.classList.remove('hidden');
@@ -736,9 +781,9 @@ function handleChoice(val) {
         if (m) state.answers.p2_date_month = m;
         if (y) state.answers.p2_date_year = y;
 
-        if (val === '2.1') next = 'p3_type'; else next = 'p3_type'; // Saltamos p2_date porque ya está integrada
+        if (val === '2.1') next = 'p3_type'; else next = 'p3_type';
     }
-    else if (cur === 'p3_type') { if (val === '3.1') next = 'p3.1'; else if (val === '3.2') next = 'p3.2'; else next = 'p3.3'; }
+    // else if (cur === 'p3_type') ... YA NO USA handleChoice para navegación interna, usa goNext con dropdown
     else if (cur === 'p1') { if (val === '4.1') next = 'p1_conflict'; else if (val === '4.2') next = 'p1_crime'; else if (val === '4.5') next = 'p1_migration'; else next = 'p_narrative'; }
     else if (['p1_conflict', 'p1_crime', 'p1_migration'].includes(cur)) { next = 'p_narrative'; }
     renderView(next);
@@ -757,15 +802,30 @@ async function goNext() {
         if (!select.value) { select.classList.add('border-red-500', 'ring-2', 'ring-red-200'); select.focus(); return; }
         state.answers.p3_detail = select.value;
     }
-    if (currentConfig && currentConfig.type === 'municipality-city') {
-        const muniSelect = document.getElementById('municipalityInput');
-        const citySelect = document.getElementById('cityInput');
+    if (currentConfig && currentConfig.type === 'place-selector') {
+        const country = document.getElementById('p3_country').value;
+        const muni = document.getElementById('p3_municipality').value;
+        const city = document.getElementById('p3_city').value;
+
         let valid = true;
-        if (!muniSelect.value) { muniSelect.classList.add('border-red-500', 'ring-2', 'ring-red-200'); valid = false; }
-        if (!citySelect.value) { citySelect.classList.add('border-red-500', 'ring-2', 'ring-red-200'); valid = false; }
+        if (!country) { document.getElementById('p3_country').classList.add('border-red-500', 'ring-2', 'ring-red-200'); valid = false; }
+
+        if (country === 'Colombia') {
+            if (!muni) { document.getElementById('p3_municipality').classList.add('border-red-500', 'ring-2', 'ring-red-200'); valid = false; }
+            if (!city) { document.getElementById('p3_city').classList.add('border-red-500', 'ring-2', 'ring-red-200'); valid = false; }
+        }
+
         if (!valid) return;
-        state.answers.p3_sub_detail = (muniSelect.value === 'Otro') ? '' : muniSelect.value;
-        state.answers.p3_detail = (citySelect.value === 'Otro') ? 'Bogotá D.C.' : citySelect.value;
+
+        state.answers.p3_country = country;
+        if (country === 'Colombia') {
+            state.answers.p3_sub_detail = muni;
+            state.answers.p3_detail = city;
+            state.answers.p3_type = '3.2'; // Mantenemos compatibilidad interna (Municipio/Colombia)
+        } else {
+            state.answers.p3_type = '3.3'; // Extranjero
+            state.answers.p3_detail = country;
+        }
     }
 
     if (currentConfig && currentConfig.type === 'textarea') {
