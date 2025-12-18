@@ -140,7 +140,11 @@ const steps = {
         ]
     },
     'p2': {
-        progress: '40%', title: '¿Hace cuánto tiempo ocurrió?', description: 'Esto determina si la búsqueda es operativa (urgente) o investigativa (histórica).', type: 'single-choice',
+        progress: '40%',
+        // El título se genera dinámicamente en renderView, aquí dejamos un placeholder
+        title: '¿Hace cuánto tiempo ocurrió?',
+        description: 'Saber el tiempo transcurrido es clave para determinar si la búsqueda debe ser Operativa (Urgente, primeras horas/días) o Investigativa (Histórica).',
+        type: 'single-choice',
         options: [{ id: '2.1', label: 'Ocurrió hace poco (horas, días o semanas)' }, { id: '2.2', label: 'Ocurrió hace más de un año' }]
     },
     'p2_date': { progress: '45%', title: 'Fecha aproximada de los hechos', description: 'Por favor indique el mes y año aproximado en que ocurrió la desaparición.', type: 'date-year-picker' },
@@ -441,6 +445,12 @@ function renderView(stepId) {
     }
 
     let html = '';
+
+    // Lógica dinámica de Títulos (Personalización con Nombre)
+    if (stepId === 'p2') {
+        const personName = state.answers.p4_name ? state.answers.p4_name.trim() : 'su ser querido';
+        config.title = `¿Hace cuánto tiempo desapareció ${personName}?`;
+    }
 
     if (config.type === 'intro') {
         html += `
