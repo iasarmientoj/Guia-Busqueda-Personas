@@ -517,14 +517,14 @@ function renderView(stepId) {
                         <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Mes <button onclick="toggleHelp('help-month')" class="ml-1 text-gov-blue hover:text-gov-dark-blue"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button></label>
                         <select id="p2_month" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue bg-white">
                             <option value="">Seleccione...</option>
-                            ${months.map(m => `<option value="${m}">${m}</option>`).join('')}
+                            ${months.map(m => `<option value="${m}" ${state.answers.p2_date_month === m ? 'selected' : ''}>${m}</option>`).join('')}
                         </select>
                         <p class="text-xs text-gray-500 italic mt-1">Aproximado</p>
                         <div id="help-month" class="hidden absolute top-0 left-0 mt-8 z-20 bg-blue-50 text-gov-dark-blue text-xs p-2 rounded border border-blue-200 shadow-lg w-64">Si no recuerda el mes exacto puede dejarlo vacío, a menos que sea del año 2016 (fecha clave para el proceso de paz).</div>
                     </div>
                     <div>
                         <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Año</label>
-                        <input type="number" id="p2_year" min="1900" max="2025" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue" placeholder="Ej: 2020" oninput="if(this.value.length > 4) this.value = this.value.slice(0,4);">
+                        <input type="number" id="p2_year" value="${state.answers.p2_date_year || ''}" min="1900" max="2025" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue" placeholder="Ej: 2020" oninput="if(this.value.length > 4) this.value = this.value.slice(0,4);">
                         <p class="text-xs text-gray-500 italic mt-1">Aproximado</p>
                     </div>
                 </div>
@@ -654,14 +654,14 @@ function renderView(stepId) {
                     <!-- Nombre -->
                     <div class="relative">
                         <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Nombre <button onclick="toggleHelp('help-name')" class="ml-1 text-gov-blue hover:text-gov-dark-blue"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button></label>
-                        <input type="text" id="p4_name" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue" placeholder="Ej: Juan">
+                        <input type="text" id="p4_name" value="${state.answers.p4_name || ''}" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue" placeholder="Ej: Juan">
                         <p class="text-xs text-gray-500 italic mt-1">Opcional</p>
                         <div id="help-name" class="hidden absolute top-0 left-0 mt-8 z-20 bg-blue-50 text-gov-dark-blue text-xs p-2 rounded border border-blue-200 shadow-lg w-64">Este campo es opcional y no será usado ni almacenado, es solo para mostrar un nombre en la guía.</div>
                     </div>
                     <!-- Edad -->
                     <div class="relative">
                         <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Edad <button onclick="toggleHelp('help-age')" class="ml-1 text-gov-blue hover:text-gov-dark-blue"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button></label>
-                        <input type="number" id="p4_age" min="0" max="120" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue" placeholder="Ej: 25">
+                        <input type="number" id="p4_age" value="${state.answers.p4_age || ''}" min="0" max="120" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue" placeholder="Ej: 25">
                         <p class="text-xs text-gray-500 italic mt-1">Aproximada</p>
                         <div id="help-age" class="hidden absolute top-0 left-0 mt-8 z-20 bg-blue-50 text-gov-dark-blue text-xs p-2 rounded border border-blue-200 shadow-lg w-64">Puede ser una edad aproximada si no la sabe exactamente.</div>
                     </div>
@@ -670,10 +670,10 @@ function renderView(stepId) {
                         <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Sexo/Género</label>
                         <select id="p4_sex" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue bg-white">
                             <option value="">Seleccione...</option>
-                            <option value="Mujer">Mujer</option>
-                            <option value="Hombre">Hombre</option>
-                            <option value="Intersexual">Intersexual</option>
-                            <option value="Otro">Otro/No Binario</option>
+                            <option value="Mujer" ${state.answers.p4_sex === 'Mujer' ? 'selected' : ''}>Mujer</option>
+                            <option value="Hombre" ${state.answers.p4_sex === 'Hombre' ? 'selected' : ''}>Hombre</option>
+                            <option value="Intersexual" ${state.answers.p4_sex === 'Intersexual' ? 'selected' : ''}>Intersexual</option>
+                            <option value="Otro" ${state.answers.p4_sex === 'Otro' ? 'selected' : ''}>Otro/No Binario</option>
                         </select>
                     </div>
                 </div>
