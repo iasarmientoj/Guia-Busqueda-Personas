@@ -471,6 +471,13 @@ function renderView(stepId) {
         document.getElementById('progressBar').style.width = config.progress;
     }
 
+    // Toggle Botones Extra Intro
+    const introExtras = document.getElementById('introExtraButtons');
+    if (introExtras) {
+        if (stepId === 'intro') introExtras.classList.remove('hidden');
+        else introExtras.classList.add('hidden');
+    }
+
     const nextBtn = document.getElementById('nextBtn');
     const backBtn = document.getElementById('backBtn');
 
@@ -832,7 +839,7 @@ function renderView(stepId) {
         }
         else if (config.type === 'textarea') {
             nextBtn.classList.remove('hidden');
-            html += `< textarea id = "narrativeInput" class="w-full p-4 border border-gray-300 rounded-lg h-40 outline-none focus:border-gov-blue text-lg" placeholder = "Ej: Vestía jean azul, camisa roja. Tiene una cicatriz en la ceja..." ></textarea > `;
+            html += `<textarea id="narrativeInput" class="w-full p-4 border border-gray-300 rounded-lg h-40 outline-none focus:border-gov-blue text-lg" placeholder="Ej: Vestía jean azul, camisa roja. Tiene una cicatriz en la ceja..."></textarea>`;
         }
         else if (config.type === 'profile-complex') {
             nextBtn.classList.remove('hidden');
@@ -1159,10 +1166,10 @@ function generateResultsEngine() {
             const htmlContent = processActionContent(action);
             const displayStep = index + 1; // Numeración secuencial solo para mostrar
             return `
-                < div class="print-item" >
+                <div class="print-item">
                         <div class="print-title">Paso ${displayStep}. ${action.titulo}</div>
                         <div class="print-content md-content">${htmlContent}</div>
-                    </div > `;
+                    </div>`;
         }).join('');
     };
 
@@ -1193,13 +1200,13 @@ function generateResultsEngine() {
         return nodeList.map(node => {
             const mdContent = processMarkdownLinks(marked.parse(node.contenido || ''));
             if (node.paso === 'SEPARADOR') {
-                return `< div class="mt-8 mb-4 bg-gov-dark-blue text-white p-4 rounded-lg shadow-md" ><h4 class="font-bold text-lg">${node.titulo}</h4><div class="text-sm opacity-90 mt-1 md-content">${mdContent}</div></div > `;
+                return `<div class="mt-8 mb-4 bg-gov-dark-blue text-white p-4 rounded-lg shadow-md"><h4 class="font-bold text-lg">${node.titulo}</h4><div class="text-sm opacity-90 mt-1 md-content">${mdContent}</div></div>`;
             }
             if (node.isBif) {
-                const childrenHtml = renderRouteRecursive(node.children, `guide - accordion - ${node.cleanId} `);
-                return `< details name = "${groupName}" class="group bg-blue-50 border border-blue-200 rounded-lg mb-3 shadow-sm hover:shadow-md transition-all ml-0" ><summary class="flex items-center p-4 cursor-pointer select-none"><div class="flex items-center flex-1"><span class="bg-gov-dark-blue text-white text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-900 min-w-[24px] text-center">Opc</span><span class="font-bold text-gov-dark-blue text-lg">${node.titulo}</span></div><svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></summary><div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-blue-100 bg-white text-base md-content">${mdContent}${childrenHtml ? `<div class="mt-4 pt-4 border-t border-gray-100 pl-4 border-l-2 border-blue-100 space-y-2">${childrenHtml}</div>` : ''}</div></details > `;
+                const childrenHtml = renderRouteRecursive(node.children, `guide-accordion-${node.cleanId}`);
+                return `<details name="${groupName}" class="group bg-blue-50 border border-blue-200 rounded-lg mb-3 shadow-sm hover:shadow-md transition-all ml-0"><summary class="flex items-center p-4 cursor-pointer select-none"><div class="flex items-center flex-1"><span class="bg-gov-dark-blue text-white text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-900 min-w-[24px] text-center">Opc</span><span class="font-bold text-gov-dark-blue text-lg">${node.titulo}</span></div><svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></summary><div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-blue-100 bg-white text-base md-content">${mdContent}${childrenHtml ? `<div class="mt-4 pt-4 border-t border-gray-100 pl-4 border-l-2 border-blue-100 space-y-2">${childrenHtml}</div>` : ''}</div></details>`;
             } else {
-                return `< details name = "${groupName}" class="group bg-white border border-gray-200 rounded-lg mb-2 shadow-sm hover:shadow-md transition-all" ><summary class="flex items-center p-4 cursor-pointer select-none"><div class="flex items-center flex-1"><span class="bg-blue-100 text-gov-blue text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-200 min-w-[24px] text-center">${node.paso}</span><span class="font-bold text-gov-dark-blue text-lg">${node.titulo}</span></div><svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></summary><div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-gray-100 bg-gray-50 text-base md-content">${mdContent}</div></details > `;
+                return `<details name="${groupName}" class="group bg-white border border-gray-200 rounded-lg mb-2 shadow-sm hover:shadow-md transition-all"><summary class="flex items-center p-4 cursor-pointer select-none"><div class="flex items-center flex-1"><span class="bg-blue-100 text-gov-blue text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-200 min-w-[24px] text-center">${node.paso}</span><span class="font-bold text-gov-dark-blue text-lg">${node.titulo}</span></div><svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></summary><div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-gray-100 bg-gray-50 text-base md-content">${mdContent}</div></details>`;
             }
         }).join('');
     };
@@ -1210,7 +1217,7 @@ function generateResultsEngine() {
         return nodeList.map(node => {
             const mdContent = processMarkdownLinks(marked.parse(node.contenido || ''));
             if (node.paso === 'SEPARADOR') {
-                return `< div class="mt-4 mb-2 bg-gray-100 p-2 border-b-2 border-gov-dark-blue" ><h4 class="font-bold text-lg text-gov-dark-blue">${node.titulo}</h4><div class="text-xs text-gray-600 md-content">${mdContent}</div></div > `;
+                return `<div class="mt-4 mb-2 bg-gray-100 p-2 border-b-2 border-gov-dark-blue"><h4 class="font-bold text-lg text-gov-dark-blue">${node.titulo}</h4><div class="text-xs text-gray-600 md-content">${mdContent}</div></div>`;
             }
 
             const indentClass = depth > 0 ? 'ml-4 border-l-2 border-gray-300 pl-4' : '';
@@ -1222,11 +1229,11 @@ function generateResultsEngine() {
             }
 
             return `
-                < div class="print-item ${indentClass}" >
+                <div class="print-item ${indentClass}">
                         <div class="print-title text-sm"><span class="bg-gray-200 px-1 rounded text-xs mr-2 font-mono">${titlePrefix}</span> ${node.titulo}</div>
                         <div class="print-content md-content text-sm mb-2">${mdContent}</div>
                         ${childrenHtml}
-                    </div > `;
+                    </div>`;
         }).join('');
     };
 
@@ -1237,20 +1244,20 @@ function generateResultsEngine() {
         let localContacts = DB_CONTACTOS.filter(c => (c.Ciudad === state.answers.p3_detail || c.Cobertura === 'NACIONAL') && c.Activa === 'SI');
         // Web HTML
         contactsHTML = localContacts.map(c => `
-                < li class="bg-white p-4 rounded border border-blue-100 shadow-sm mb-2" >
+                <li class="bg-white p-4 rounded border border-blue-100 shadow-sm mb-2">
                         <strong class="block text-gov-blue text-lg">${c.Nombre_Corto || c.Nombre_Largo}</strong>
                         <span class="block text-sm text-gray-700 mt-1">${c.Que_Hace_Resumen || ''}</span>
                         <div class="mt-2 text-sm text-gray-600">📞 ${c.Telefono_Principal || c.Linea_Gratuita} <br>📍 ${c.Direccion || 'Nacional'}</div>
-                    </li > `).join('');
-        if (contactsHTML) contactsHTML = `< div class="mt-4 bg-blue-50 p-6 rounded-lg border border-blue-100" > <ul class="space-y-0">${contactsHTML}</ul></div > `;
+                    </li>`).join('');
+        if (contactsHTML) contactsHTML = `<div class="mt-4 bg-blue-50 p-6 rounded-lg border border-blue-100"><ul class="space-y-0">${contactsHTML}</ul></div>`;
 
         // Print HTML
         contactsHTMLPrint = localContacts.map(c => `
-                < div class="mb-2 pb-2 border-b border-gray-100" >
+                <div class="mb-2 pb-2 border-b border-gray-100">
                         <strong class="block text-gov-blue">${c.Nombre_Corto || c.Nombre_Largo}</strong>
                         <div class="text-xs text-gray-600">📞 ${c.Telefono_Principal || c.Linea_Gratuita} | 📍 ${c.Direccion || 'Nacional'}</div>
-                    </div > `).join('');
-        if (contactsHTMLPrint) contactsHTMLPrint = `< div class="mt-4 p-4 border border-gray-300 rounded" > <h3 class="font-bold text-sm mb-2">Directorio de Apoyo Local</h3>${contactsHTMLPrint}</div > `;
+                    </div>`).join('');
+        if (contactsHTMLPrint) contactsHTMLPrint = `<div class="mt-4 p-4 border border-gray-300 rounded"><h3 class="font-bold text-sm mb-2">Directorio de Apoyo Local</h3>${contactsHTMLPrint}</div>`;
     }
 
     const lugarTexto = state.answers.p3_sub_detail ? `${state.answers.p3_sub_detail}, ${state.answers.p3_detail} ` : (state.answers.p3_detail || 'Nacional');
@@ -1258,14 +1265,14 @@ function generateResultsEngine() {
 
     // --- CONSTRUCCIÓN HTML FINAL ---
     // 1. Contenido Web
-    const contentLegal = `< div class="space-y-2" > ${renderActionList(legalActions)}</div > `;
-    const contentOwn = `< div class="space-y-2" > ${renderActionList(ownActions)}</div > `;
-    const contentSupport = `< div class="space-y-2 mb-8" > ${renderActionList(supportActions)}</div > ${contactsHTML} `;
-    const contentMaster = `< div class="space-y-2" > ${renderRouteRecursive(routeNodes)}</div > `;
+    const contentLegal = `<div class="space-y-2">${renderActionList(legalActions)}</div>`;
+    const contentOwn = `<div class="space-y-2">${renderActionList(ownActions)}</div>`;
+    const contentSupport = `<div class="space-y-2 mb-8">${renderActionList(supportActions)}</div>${contactsHTML}`;
+    const contentMaster = `<div class="space-y-2">${renderRouteRecursive(routeNodes)}</div>`;
 
     // 2. Contenido Impresión
     const printHTML = `
-                < div id = "print-area" class="hidden" >
+                <div id="print-area" class="hidden">
                 <div class="mb-8 border-b-2 border-gov-blue pb-4">
                     <img src="logoGovCO.png" class="h-12 mb-4" alt="Logo MinJusticia">
                     <h1 class="print-header">Guía de Búsqueda - Plan de Acción Personalizado</h1>
@@ -1302,11 +1309,11 @@ function generateResultsEngine() {
                     <p>Ministerio de Justicia y del Derecho - Colombia</p>
                     <p>Esta guía es informativa y no constituye un documento legal vinculante. Llame siempre a las líneas oficiales.</p>
                 </div>
-            </div > `;
+            </div>`;
 
     // Retorno Combinado
     return `
-                < div class="print:hidden" >
+                <div class="print:hidden">
                     <div class="text-center mb-6">
                         <h3 class="text-2xl font-bold text-gray-800 mb-1">Ruta de Acción Personalizada</h3>
                         <p class="text-gray-600 text-base md:text-lg font-semibold mb-2">Siga estos pasos en orden secuencial. Complete cada paso antes de avanzar al siguiente.</p>
