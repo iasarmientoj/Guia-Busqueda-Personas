@@ -99,6 +99,36 @@ const GOOGLE_FORM_CONFIG = {
     }
 };
 
+// Función para mostrar tooltips del menú superior
+// Función para mostrar tooltips del menú superior en caja fija
+// Función para mostrar tooltips del menú superior en caja fija
+window.showTooltip = function (el, text) {
+    const box = document.getElementById('navHelpBox');
+    if (!box) return;
+
+    // Usamos el texto como llave para el toggle
+    const currentKey = box.getAttribute('data-key');
+
+    // Si ya muestra este texto, lo ocultamos (toggle)
+    if (!box.classList.contains('hidden') && currentKey === text) {
+        box.classList.add('hidden');
+        return;
+    }
+
+    // Mostrar nuevo texto con botón de cierre
+    box.setAttribute('data-key', text);
+    box.innerHTML = `
+        <div class="relative pr-8 text-left">
+            <span>${text}</span>
+            <button onclick="document.getElementById('navHelpBox').classList.add('hidden')" 
+                    class="absolute -top-1 -right-1 text-gov-blue hover:text-red-500 p-1 rounded-full hover:bg-white transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+    `;
+    box.classList.remove('hidden');
+};
+
 // --- 2. ESTADO DE LA APP ---
 const state = {
     currentStep: 'intro',

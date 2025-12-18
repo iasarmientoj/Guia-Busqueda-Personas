@@ -53,7 +53,7 @@
             </a>
             <div class="text-sm font-light leading-tight">Guía de Búsqueda de Personas<br><span
                     class="font-bold">Ministerio de Justicia y del Derecho</span></div>
-            <div id="lastUpdateDate" class="ml-auto text-s font-light text-blue-100 hidden md:block"></div>
+            <div id="lastUpdateDate" class="ml-auto text-sm font-light text-blue-100 hidden md:block"></div>
         </div>
     </header>
 
@@ -62,11 +62,50 @@
         <!-- Barra de Progreso -->
         <div id="progressContainer" class="mb-8 max-w-3xl mx-auto transition-opacity duration-300">
             <div class="flex justify-between text-xs text-gray-500 mb-2 font-bold uppercase tracking-wider">
-                <span>Perfil</span><span>Tiempo</span><span>Lugar</span><span>Indicios</span>
+                <div class="flex items-center cursor-pointer hover:text-gov-blue"
+                    onclick="showTooltip(this, 'Estos datos nos ayudan a decirle a qué entidades específicas debe acudir según el caso.')">
+                    Perfil
+                    <svg class="w-3 h-3 ml-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                        </path>
+                    </svg>
+                </div>
+                <div class="flex items-center cursor-pointer hover:text-gov-blue"
+                    onclick="showTooltip(this, 'Este dato es clave para determinar si la búsqueda debe ser Operativa o Investigativa.')">
+                    Tiempo
+                    <svg class="w-3 h-3 ml-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                        </path>
+                    </svg>
+                </div>
+                <div class="flex items-center cursor-pointer hover:text-gov-blue"
+                    onclick="showTooltip(this, 'Esta información es necesaria para indicarle las entidades territoriales competentes que lo pueden ayudar.')">
+                    Lugar
+                    <svg class="w-3 h-3 ml-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                        </path>
+                    </svg>
+                </div>
+                <div class="flex items-center cursor-pointer hover:text-gov-blue"
+                    onclick="showTooltip(this, 'La suposicion que se tenga sobre el caso define la ruta legal y humanitaria a seguir.')">
+                    Situación
+                    <svg class="w-3 h-3 ml-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                        </path>
+                    </svg>
+                </div>
             </div>
             <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
                 <div id="progressBar" class="h-full bg-gov-blue transition-all duration-500 ease-out"
                     style="width: 10%"></div>
+            </div>
+            <!-- Cajita de ayuda navegación -->
+            <div id="navHelpBox"
+                class="hidden mt-3 bg-blue-50 text-gov-dark-blue p-3 rounded-md border border-blue-200 text-sm shadow-sm transition-all text-center">
             </div>
         </div>
 
