@@ -1345,7 +1345,47 @@ function generateResultsEngine() {
                     <div id="tab-maestra" class="tab-content hidden fade-in">
                         ${contentMaster}
                     </div>
-                    
+
+                    <div class="mt-8 bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-sm">
+                        <h3 class="text-xl font-bold text-gov-blue mb-4 flex items-center">
+                            <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                            Verifique si su ser querido aparece en algunas de estas bases de datos públicas
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <a href="https://siclico.medicinalegal.gov.co/consultasPublicas/Desaparecidos.xhtml" target="_blank" rel="noopener noreferrer" class="bg-white border hover:border-gov-blue hover:shadow-md p-4 rounded-lg transition-all text-center flex flex-col items-center justify-center h-full group">
+                                <span class="font-bold text-gov-blue group-hover:text-gov-dark-blue">Medicina Legal</span>
+                                <span class="text-xs text-gray-500 mt-1">Consulta de Desaparecidos</span>
+                            </a>
+                            <a href="https://unidadbusqueda.gov.co/listado-personas-desaparecidas/buscador/" target="_blank" rel="noopener noreferrer" class="bg-white border hover:border-gov-blue hover:shadow-md p-4 rounded-lg transition-all text-center flex flex-col items-center justify-center h-full group">
+                                <span class="font-bold text-gov-blue group-hover:text-gov-dark-blue">UBPD</span>
+                                <span class="text-xs text-gray-500 mt-1">Buscador de Personas</span>
+                            </a>
+                            <a href="https://www.fiscalia.gov.co/colombia/servicios-de-informacion-al-ciudadano/consultas/#1536851620255-61ce92ac-374f" target="_blank" rel="noopener noreferrer" class="bg-white border hover:border-gov-blue hover:shadow-md p-4 rounded-lg transition-all text-center flex flex-col items-center justify-center h-full group">
+                                <span class="font-bold text-gov-blue group-hover:text-gov-dark-blue">Fiscalía General</span>
+                                <span class="text-xs text-gray-500 mt-1">Consultas Ciudadanas</span>
+                            </a>
+                             <a href="https://consulta-web.fiscalia.gov.co/" target="_blank" rel="noopener noreferrer" class="bg-white border hover:border-gov-blue hover:shadow-md p-4 rounded-lg transition-all text-center flex flex-col items-center justify-center h-full group">
+                                <span class="font-bold text-gov-blue group-hover:text-gov-dark-blue">Fiscalía Web</span>
+                                <span class="text-xs text-gray-500 mt-1">Consulta de Denuncias</span>
+                            </a>
+                            <a href="https://siugj.ramajudicial.gov.co/principalPortal/consultarProceso.php" target="_blank" rel="noopener noreferrer" class="bg-white border hover:border-gov-blue hover:shadow-md p-4 rounded-lg transition-all text-center flex flex-col items-center justify-center h-full group">
+                                <span class="font-bold text-gov-blue group-hover:text-gov-dark-blue">Rama Judicial</span>
+                                <span class="text-xs text-gray-500 mt-1">Consulta de Procesos</span>
+                            </a>
+                             <a href="https://sirdec.medicinalegal.gov.co:38181/mapaDesaparecidosUBPD/" target="_blank" rel="noopener noreferrer" class="bg-white border hover:border-gov-blue hover:shadow-md p-4 rounded-lg transition-all text-center flex flex-col items-center justify-center h-full group">
+                                <span class="font-bold text-gov-blue group-hover:text-gov-dark-blue">Mapa Desaparecidos</span>
+                                <span class="text-xs text-gray-500 mt-1">UBPD / Medicina Legal</span>
+                            </a>
+                             <a href="https://www.unidadvictimas.gov.co/registro-unico-de-victimas-ruv/" target="_blank" rel="noopener noreferrer" class="bg-white border hover:border-gov-blue hover:shadow-md p-4 rounded-lg transition-all text-center flex flex-col items-center justify-center h-full group">
+                                <span class="font-bold text-gov-blue group-hover:text-gov-dark-blue">R.U.V.</span>
+                                <span class="text-xs text-gray-500 mt-1">Registro Único de Víctimas</span>
+                            </a>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-4 bg-white p-3 rounded border border-gray-100 italic">
+                             <strong class="text-gov-blue">Nota:</strong> Si encuentra información en alguna de estas bases de datos, le recomendamos hacer una solicitud directa o comunicarse con la entidad correspondiente para verificar los detalles y actualizar el estado de la búsqueda.
+                        </p>
+                    </div>
+
                     <div class="mt-12 flex flex-col items-center gap-4">
                         <div class="flex flex-wrap justify-center items-center gap-4 w-full">
                             <button onclick="goBack()" class="bg-white text-gov-blue border-2 border-gov-blue px-6 py-3 rounded-full font-bold hover:bg-blue-50 transition shadow-md flex items-center justify-center h-12">
