@@ -149,8 +149,15 @@ let MUNICIPALITIES_LIST = ['Bogotá D.C.'];
 // --- 3. DEFINICIÓN DE PASOS (UI) ---
 const steps = {
     'intro': {
-        progress: '0%', title: 'Bienvenido a la Guía de Búsqueda de Personas Desaparecidas', type: 'intro',
-        description: 'Esta herramienta le orientará para definir la ruta institucional de búsqueda de su ser querido. Es una guía informativa que le indicará paso a paso las entidades y acciones correspondientes.',
+        progress: '0%',
+        welcome: '¡Bienvenido!',
+        title: 'Guía de Información sobre Rutas para la Búsqueda de Personas Desaparecidas',
+        type: 'intro',
+        description: 'Esta herramienta le apoyará para definir la ruta institucional de búsqueda de un ser querido. El objetivo de esta guía es brindar orientación puramente informativa a cualquier persona que necesite conocer los pasos, trámites y entidades correspondientes en Colombia.',
+        importantNote: 'Nota importante: Esta herramienta es una guía de consulta y no reemplaza ninguna denuncia legal ni inicia procesos judiciales o de investigación oficial.',
+        supportText: 'No es obligatorio tener información del caso completa para utilizar esta guía.',
+        questions: '¿Busca a una persona desaparecida?',
+        //questions: '¿Busca a una persona desaparecida? ¿Desea conocer qué entidades deben atender su caso? ¿Necesita saber por dónde empezar la búsqueda?',
         disclaimer: 'Su privacidad es fundamental. Esta guía es anónima: no almacenamos, registramos ni compartimos ningún dato personal que ingrese durante la consulta.',
         btnLabel: 'Comenzar Consulta'
     },
@@ -601,17 +608,40 @@ function renderView(stepId) {
 
     if (config.type === 'intro') {
         html += `
-                    <div class="text-center py-6">
-                        <div class="mx-auto mb-6">
-                            <img src="logoMinJus.png" alt="Ministerio de Justicia y del Derecho" class="mx-auto w-24 h-24 object-contain">
+                    <div class="py-6">
+                        <div class="flex flex-col md:flex-row items-center md:items-start gap-6 mb-8 max-w-4xl mx-auto px-4">
+                            <div class="flex-shrink-0">
+                                <img src="logoMinJus.png" alt="Ministerio de Justicia y del Derecho" class="w-24 md:w-32 h-auto object-contain">
+                            </div>
+                            <div class="text-left flex-1 border-l-0 md:border-l-2 md:border-gray-200 md:pl-6">
+                                <h3 class="text-xl text-gray-500 font-medium mb-1 uppercase tracking-wide">${config.welcome || '¡Bienvenido!'}</h3>
+                                <h2 class="text-2xl md:text-3xl font-extrabold text-gov-blue leading-tight">${config.title}</h2>
+                            </div>
                         </div>
-                        <h2 class="text-3xl font-bold text-gov-blue mb-4">${config.title}</h2>
-                        <p class="text-gray-600 text-lg mb-8 leading-relaxed max-w-2xl mx-auto">${config.description}</p>
-                        <p class="text-gov-blue font-medium italic text-xl mb-4">¿Busca a una persona desaparecida?</p>
+                        
+                        <p class="text-gray-700 text-lg mb-6 leading-relaxed max-w-3xl mx-auto">${config.description}</p>
+                        
+                        ${config.importantNote ? `
+                        <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6 max-w-3xl mx-auto text-left">
+                            <p class="text-yellow-800 text-sm font-semibold">${config.importantNote}</p>
+                        </div>` : ''}
+                        
+
+                        
+                        <p class="text-gov-blue font-bold text-xl mb-6 max-w-2xl mx-auto text-center">${config.questions || '¿Busca a una persona desaparecida?'}</p>
+                        
                         <button onclick="goNext()" class="bg-gov-blue text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg hover:bg-gov-dark-blue transition-all transform hover:scale-105 flex items-center mx-auto mb-8">
                             ${config.btnLabel}
                             <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                         </button>
+                        ${config.supportText ? `
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-5 mb-8 flex items-start text-left max-w-2xl mx-auto">
+                            <svg class="w-6 h-6 mr-3 mt-1 text-gov-blue flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            <div class="text-md text-gov-dark-blue font-medium">
+                                ${config.supportText}
+                            </div>
+                        </div>` : ''}
+
                         <div class="bg-gov-bg border border-blue-100 rounded-lg p-5 mt-4 text-sm text-gray-600 flex items-start text-left max-w-2xl mx-auto">
                             <svg class="w-6 h-6 mr-3 mt-0.5 text-gov-blue flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
                             <div>
