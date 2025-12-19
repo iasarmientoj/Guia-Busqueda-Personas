@@ -95,6 +95,8 @@ const SHEETS_CONFIG = {
 
 const ROUTES_MAP = {
     '4.1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=545298463&single=true&output=csv',
+    '4.98': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=545298463&single=true&output=csv',
+    '4.99': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=545298463&single=true&output=csv',
     '4.2': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=1342244385&single=true&output=csv',
     '4.3': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=399030951&single=true&output=csv',
     '4.4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=718152538&single=true&output=csv',
@@ -194,13 +196,13 @@ const steps = {
         description: 'Estos datos nos ayudan a decirle a qué entidades específicas debe acudir según el caso.',
         type: 'profile-complex',
         options: [
-            { id: '1.8', label: 'Comunidades Indígenas' },
-            { id: '1.9', label: 'LGBTIQ+' },
-            { id: '1.6', label: 'Extranjero' },
-            { id: '1.14', label: 'Comunidades Campesinas' },
-            { id: '1.12', label: 'Comunidades Negras, Afrocolombianas, Raizales y Palenqueras' },
-            { id: '1.13', label: 'Defensor(a) de DDHH, líder o lideresa social, mujer buscadora' },
-            { id: '1.11', label: 'Ninguna de estas' }
+            { id: '1.3', label: 'LGBTIQ+' },
+            { id: '1.4', label: 'Extranjero' },
+            { id: '1.5', label: 'Comunidades Indígenas' },
+            { id: '1.6', label: 'Comunidades Campesinas' },
+            { id: '1.7', label: 'Comunidades Negras, Afrocolombianas, Raizales y Palenqueras' },
+            { id: '1.8', label: 'Defensor(a) de DDHH, líder o lideresa social, mujer buscadora' },
+            { id: '1.99', label: 'Ninguna de estas' }
         ]
     },
     'p2': {
@@ -221,74 +223,27 @@ const steps = {
         cityData: [],          // lleno dinámicamente
         contextOptions: [
             { id: '3.4.1', label: 'Mar, río o costa' },
-            { id: '3.4.3', label: 'Territorio indígena' },
-            { id: '3.4.5', label: 'Montaña, selva o bosque' },
-
             { id: '3.4.2', label: 'Frontera' },
+            { id: '3.4.3', label: 'Montaña, selva o bosque' },
             { id: '3.4.4', label: 'Parque Nacional' },
-            { id: '3.4.10', label: 'No sé' },
-            { id: '3.4.11', label: 'Otro' }
+            { id: '3.4.5', label: 'Territorio indígena' },
+            { id: '3.4.6', label: 'No sé' },
+            { id: '3.4.99', label: 'Otro (especifique el lugar)' }
         ]
     },
 
-    // 'p3.1', 'p3.2', 'p3.3' eliminados/fusionados
-    'p3.4': {
-        progress: '75%', title: 'Características del lugar', description: 'Marque todas las características especiales que tenga el lugar donde ocurrió la desaparición.', type: 'multi-choice',
-        options: [
-            { id: '3.4.1', label: 'En el agua o cerca de ella', help: 'Mar, río, costa, puerto, represa' },
-            { id: '3.4.2', label: 'Cerca de una frontera con otro país', help: 'Límite con Venezuela, Ecuador, Panamá, etc.' },
-            { id: '3.4.3', label: 'En un resguardo o territorio indígena', help: 'Territorio de un cabildo, comunidad o pueblo indígena' },
-            { id: '3.4.4', label: 'En un Parque Nacional o reserva natural', help: 'Parque Tayrona, El Cocuy, reserva forestal, etc.' },
-            { id: '3.4.5', label: 'En una montaña, selva o bosque (fuera de un parque)', help: 'Zona rural de difícil acceso, senderismo' },
-            { id: '3.4.6', label: 'En una zona de minería, petróleo u otra explotación de recursos', help: 'Cerca de una mina, un campo petrolero, zona de tala' },
-            { id: '3.4.7', label: 'En una zona de conflicto armado o con grupos ilegales', help: 'Presencia de guerrilla, paramilitares, bandas criminales' },
-            { id: '3.4.8', label: 'Dentro o cerca de una base militar, de policía o entidad del Estado', help: 'Batallón, estación de policía, CAI, instalaciones oficiales' },
-            { id: '3.4.9', label: 'Dentro o cerca de un cementerio o morgue', help: 'Fosas comunes, osarios, depósitos de cuerpos no identificados' },
-            { id: '3.4.11', label: 'Otro', help: 'Escriba el lugar específico' },
-            { id: '3.4.10', label: 'No sé' }
-        ]
-    },
     'p1': {
         progress: '90%', title: '¿Qué cree que ocurrió con su ser querido?', description: 'Esta información nos ayuda a dirigirlo a la entidad especializada.', type: 'single-choice',
         options: [
-            { id: '4.7', label: 'Reclutamiento ilícito de Niños, Niñas y Adolescentes (NNA)', help: 'Sospecha que un menor fue reclutado por un grupo armado.' },
+            { id: '4.98', label: 'Reclutamiento ilícito de Niños, Niñas y Adolescentes (NNA)', help: 'Sospecha que un menor fue reclutado por un grupo armado.' },
             { id: '4.4', label: 'Desapareció durante un accidente o desastre natural', help: 'Desapareció en un río, en el mar, en una montaña o durante una avalancha.' },
             { id: '4.5', label: 'Desapareció en un contexto de migración o estando en el exterior', help: 'Estaba en una ruta migratoria (ej. Darién) o vivía/viajaba en otro país.' },
             { id: '4.3', label: 'Salió y no regresó', help: 'Salió de casa y no regresó, puede estar desorientado/a, se fue por voluntad propia.' },
-            { id: '4.8', label: 'Otro' },
-            { id: '4.6', label: 'No sé', help: 'Simplemente no he vuelto a saber de él/ella.' }
+            { id: '4.1', label: 'Otro' },
+            { id: '4.99', label: 'No sé', help: 'Simplemente no he vuelto a saber de él/ella.' }
         ]
     },
-    'p1_conflict': {
-        progress: '95%', title: 'Detalles del Conflicto', description: 'Especifique la situación para activar rutas de búsqueda humanitaria.', type: 'single-choice',
-        options: [
-            { id: '4.1.1', label: 'Involucra grupos armados al margen de la ley' },
-            { id: '4.1.2', label: 'Sospecha de participación de agentes del Estado' },
-            { id: '4.1.3', label: 'Relacionado con reclutamiento forzado de menores' },
-            { id: '4.1.4', label: 'Muerto en combate o acto de hostilidades' },
-            { id: '4.1.5', label: 'No sé' }
-        ]
-    },
-    'p1_crime': {
-        progress: '95%', title: 'Especifique el tipo de crimen', alert: '⚠️ IMPORTANTE: Si en algún momento lo contactan para pedirle dinero por la liberación de su ser querido, no haga nada más y llame INMEDIATAMENTE a la línea 165 del GAULA.', type: 'single-choice',
-        options: [
-            { id: '4.2.1', label: 'Narcotráfico o crimen organizado' },
-            { id: '4.2.2', label: 'Trata de personas o explotación sexual' },
-            { id: '4.2.3', label: 'Violencia intrafamiliar o de pareja' },
-            { id: '4.2.4', label: 'Secuestro' },
-            { id: '4.2.5', label: 'Extorsión' },
-            { id: '4.2.6', label: 'No sé' }
-        ]
-    },
-    'p1_migration': {
-        progress: '95%', title: 'Detalle migratorio', type: 'single-choice',
-        options: [
-            { id: '4.5.1', label: 'Planeaba migrar y desapareció en el camino' },
-            { id: '4.5.2', label: 'Ya estaba en otro país y perdimos contacto' },
-            { id: '4.5.3', label: 'Fue forzada a salir del país (posible trata)' },
-            { id: '4.5.4', label: 'No sé' }
-        ]
-    },
+    // Pasos p1_conflict, p1_crime, p1_migration eliminados por simplificación
     'p_narrative': {
         progress: '98%', title: 'Detalles Adicionales (Opcional)', description: 'Escriba brevemente: ¿Cómo vestía? ¿Tenía señales particulares?', type: 'textarea', next: 'results'
     },
@@ -460,15 +415,8 @@ function sendAnalytics(eventType, data = {}) {
             // Contexto
             formData.append(f.CTX_SUSPICION, getLabel('p1', state.answers.p1));
 
-            let subId = state.answers.p1_sub;
-            let subStep = '';
-            if (state.answers.p1 === '4.1') subStep = 'p1_conflict';
-            else if (state.answers.p1 === '4.2') subStep = 'p1_crime';
-            else if (state.answers.p1 === '4.5') subStep = 'p1_migration';
-
-            if (subId && subStep) {
-                formData.append(f.CTX_DETAIL, getLabel(subStep, subId));
-            }
+            // Sub-detalles eliminados por simplificación de flujo (2025-12-19)
+            // Anteriormente aquí se enviaba p1_sub para conflict/crime/migration
         }
 
         // DEBUG: Imprimir URL generada
@@ -742,7 +690,7 @@ function renderView(stepId) {
                                     ${opt.help ? `<button onclick="event.stopPropagation(); toggleHelp('help-${opt.id}')" class="ml-2 text-gov-blue hover:bg-blue-100 rounded-full p-1 transition-colors flex-shrink-0" title="Ver ayuda"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button>` : ''}
                                 </div>
                                 ${opt.help ? `<div id="help-${opt.id}" class="hidden w-full mt-2 text-sm text-gov-dark-blue bg-blue-50 p-2 rounded border border-blue-100 text-left">${opt.help}</div>` : ''}
-                                ${(opt.id === '3.4.11') ? `
+                                ${(opt.id === '3.4.99') ? `
                                 <div id="other-input-container" class="w-full mt-2 px-1 ${isSelected ? '' : 'hidden'}" onclick="event.stopPropagation()">
                                     <input type="text" 
                                         value="${state.answers.p3_characteristics_other || ''}" 
@@ -864,7 +812,7 @@ function renderView(stepId) {
                             </div>
                             <span class="text-gray-700 font-semibold flex-1 ml-3 text-base">${opt.label}</span>
                         </div>
-                        ${(opt.id === '3.4.11') ? `
+                        ${(opt.id === '3.4.99') ? `
                         <div id="ctx-other-input-${opt.id}" class="w-full mt-2 px-1 ${isSelected ? '' : 'hidden'}" onclick="event.stopPropagation()">
                             <input type="text" 
                                 value="${state.answers.p3_characteristics_other || ''}" 
@@ -991,8 +939,8 @@ function handleChoice(val) {
         if (val === '2.1') next = 'p3_type'; else next = 'p3_type';
     }
     // else if (cur === 'p3_type') ... YA NO USA handleChoice para navegación interna, usa goNext con dropdown
-    else if (cur === 'p1') { if (val === '4.1') next = 'p1_conflict'; else if (val === '4.2') next = 'p1_crime'; else next = 'p_narrative'; }
-    else if (['p1_conflict', 'p1_crime'].includes(cur)) { next = 'p_narrative'; }
+    else if (cur === 'p1') { next = 'p_narrative'; } // Simplificación: Siempre a narrativa
+
     renderView(next);
 }
 window.toggleContextOption = function (el, id) {
@@ -1000,7 +948,7 @@ window.toggleContextOption = function (el, id) {
     const chk = el.querySelector('input[type="checkbox"]');
     if (chk) chk.checked = !chk.checked;
 
-    if (id === '3.4.11') {
+    if (id === '3.4.99') {
         const inputContainer = document.getElementById(`ctx-other-input-${id}`);
         if (inputContainer) {
             if (el.classList.contains('selected')) {
@@ -1022,10 +970,10 @@ function toggleMulti(el, val, step) {
     let arr = step === 'p3.4' ? state.answers.p3_characteristics : state.answers.p4_profile;
     if (arr.includes(val)) {
         arr.splice(arr.indexOf(val), 1);
-        if (val === '3.4.11') document.getElementById('other-input-container')?.classList.add('hidden');
+        if (val === '3.4.99') document.getElementById('other-input-container')?.classList.add('hidden');
     } else {
         arr.push(val);
-        if (val === '3.4.11') document.getElementById('other-input-container')?.classList.remove('hidden');
+        if (val === '3.4.99') document.getElementById('other-input-container')?.classList.remove('hidden');
     }
 }
 async function goNext() {
@@ -1120,12 +1068,9 @@ async function goNext() {
 
     else if (cur === 'p3_type') next = 'p1';
     else if (cur === 'p1') {
-        const val = state.answers.p1;
-        if (val === '4.1') next = 'p1_conflict';
-        else if (val === '4.2') next = 'p1_crime';
-        else next = 'results';
+        next = 'p_narrative'; // Simplificación: Siempre a narrativa
     }
-    else if (['p1_conflict', 'p1_crime'].includes(cur)) next = 'results';
+
     else if (cur === 'p_narrative') next = 'results';
 
     if (next === 'results') {
@@ -1485,7 +1430,7 @@ function generateResultsEngine() {
 }
 
 function getProfiles() {
-    const map = { '1.1': 'Menor de edad', '1.2': 'Líder/Rol Público', '1.3': 'Fuerza Pública', '1.4': 'Actor Armado', '1.5': 'Condición Especial/Mayor', '1.6': 'Migrante/Extranjero', '1.7': 'Mujer (Riesgo)', '1.8': 'Comunidad Étnica', '1.9': 'LGBTIQ+', '1.10': 'Desaparición Colectiva', '1.11': 'Ninguno', '1.12': 'NARP', '1.13': 'Líder/Defensor', '1.14': 'Campesino/a' };
+    const map = { '1.1': 'Es un/a niño/a o adolescente', '1.2': 'Es una mujer', '1.3': 'LGBTIQ+', '1.4': 'Extranjero', '1.5': 'Comunidades Indígenas', '1.6': 'Comunidades Campesinas', '1.7': 'Comunidades Negras, Afrocolombianas, Raizales y Palenqueras', '1.8': 'Defensor(a) de DDHH, líder o lideresa social, mujer buscadora', '1.99': 'Ninguna de estas' };
     return state.answers.p4_profile.map(id => map[id] || id).join(', ') || "General";
 }
 
