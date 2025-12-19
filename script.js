@@ -122,10 +122,8 @@ const GOOGLE_FORM_CONFIG = {
         LOCATION_TYPE: 'entry.206369886',    // Tipo Ubicación
         CITY: 'entry.1294800187',            // Ciudad
         MUNICIPALITY: 'entry.1915983326',    // Municipio
-        COUNTRY: 'entry.1126039543',         // País
         LOC_DETAILS: 'entry.1457032952',     // Características Lugar (Multi)
-        CTX_SUSPICION: 'entry.1153266847',   // Sospecha
-        CTX_DETAIL: 'entry.1632596329'      // Detalle Sospecha
+        CTX_SUSPICION: 'entry.1153266847'   // Sospecha
     }
 };
 
@@ -449,8 +447,9 @@ function sendAnalytics(eventType, data = {}) {
             if (state.answers.p2_date_year) formData.append(f.DATE_YEAR, state.answers.p2_date_year);
 
             // Ubicación
-            const locType = state.answers.p3_type;
-            formData.append(f.LOCATION_TYPE, getLabel('p3_type', locType));
+            const locType = state.answers.p3_type; // Internal code usage for navigation
+            // Send selected Country as LOCATION_TYPE
+            formData.append(f.LOCATION_TYPE, state.answers.p3_country || '');
 
             if (locType === '3.1') { // Ciudad Principal
                 formData.append(f.CITY, state.answers.p3_detail || '');
