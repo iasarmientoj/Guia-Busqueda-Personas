@@ -669,7 +669,11 @@ function renderView(stepId) {
                         
 
                         
-                        <p class="text-gov-blue font-bold text-xl mb-6 max-w-2xl mx-auto text-center">${config.questions || '¿Busca a una persona desaparecida?'}</p>
+                        <div class="cycling-questions-container relative h-12 mb-6 max-w-2xl mx-auto text-center">
+                            <p class="cycling-question absolute w-full left-0 top-0 text-gov-blue font-bold text-xl opacity-0" style="animation-delay: 0s;">¿Busca a una persona desaparecida?</p>
+                            <p class="cycling-question absolute w-full left-0 top-0 text-gov-blue font-bold text-xl opacity-0" style="animation-delay: 3s;">¿Desea conocer qué entidades deben atender su caso?</p>
+                            <p class="cycling-question absolute w-full left-0 top-0 text-gov-blue font-bold text-xl opacity-0" style="animation-delay: 6s;">¿Necesita saber por dónde empezar la búsqueda?</p>
+                        </div>
                         
                         <button onclick="goNext()" class="bg-gov-blue text-white px-10 py-4 rounded-full font-bold text-lg shadow-lg hover:bg-gov-dark-blue transition-all transform hover:scale-105 flex items-center mx-auto mb-8">
                             ${config.btnLabel}
