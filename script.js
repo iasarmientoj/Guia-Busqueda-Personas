@@ -163,7 +163,7 @@ const state = {
     answers: {
         p1: null, p1_sub: null,
         p2: null, p2_sub: null, p2_date_month: null, p2_date_year: null, p2_date_day: null,
-        p3_type: null, p3_detail: null, p3_sub_detail: null, p3_characteristics: [],
+        p3_type: null, p3_detail: null, p3_sub_detail: null, p3_characteristics: [], p3_characteristics_other: '',
         p4_profile: [], p4_name: '', p4_age: '', p4_sex: '',
         narrative: ''
     }
@@ -223,9 +223,11 @@ const steps = {
             { id: '3.4.1', label: 'Mar, río o costa' },
             { id: '3.4.3', label: 'Territorio indígena' },
             { id: '3.4.5', label: 'Montaña, selva o bosque' },
-            { id: '3.4.7', label: 'Zona de conflicto armado' },
+
             { id: '3.4.2', label: 'Frontera' },
-            { id: '3.4.4', label: 'Parque Nacional' }
+            { id: '3.4.4', label: 'Parque Nacional' },
+            { id: '3.4.10', label: 'No sé' },
+            { id: '3.4.11', label: 'Otro' }
         ]
     },
 
@@ -242,7 +244,8 @@ const steps = {
             { id: '3.4.7', label: 'En una zona de conflicto armado o con grupos ilegales', help: 'Presencia de guerrilla, paramilitares, bandas criminales' },
             { id: '3.4.8', label: 'Dentro o cerca de una base militar, de policía o entidad del Estado', help: 'Batallón, estación de policía, CAI, instalaciones oficiales' },
             { id: '3.4.9', label: 'Dentro o cerca de un cementerio o morgue', help: 'Fosas comunes, osarios, depósitos de cuerpos no identificados' },
-            { id: '3.4.10', label: 'Ninguna de estas' }
+            { id: '3.4.11', label: 'Otro', help: 'Escriba el lugar específico' },
+            { id: '3.4.10', label: 'No sé' }
         ]
     },
     'p1': {
@@ -736,6 +739,15 @@ function renderView(stepId) {
                                     ${opt.help ? `<button onclick="event.stopPropagation(); toggleHelp('help-${opt.id}')" class="ml-2 text-gov-blue hover:bg-blue-100 rounded-full p-1 transition-colors flex-shrink-0" title="Ver ayuda"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button>` : ''}
                                 </div>
                                 ${opt.help ? `<div id="help-${opt.id}" class="hidden w-full mt-2 text-sm text-gov-dark-blue bg-blue-50 p-2 rounded border border-blue-100 text-left">${opt.help}</div>` : ''}
+                                ${(opt.id === '3.4.11') ? `
+                                <div id="other-input-container" class="w-full mt-2 px-1 ${isSelected ? '' : 'hidden'}" onclick="event.stopPropagation()">
+                                    <input type="text" 
+                                        value="${state.answers.p3_characteristics_other || ''}" 
+                                        oninput="updateOtherLocation(this.value)"
+                                        placeholder="Escriba aquí el lugar..." 
+                                        class="w-full p-2 border border-gray-300 rounded text-sm outline-none focus:ring-2 focus:ring-gov-blue bg-white">
+                                </div>
+                                ` : ''}
                             </div>`;
                 }
             });
@@ -827,7 +839,7 @@ function renderView(stepId) {
             </div>
             
             <!-- Contexto del Lugar (Multi-select) -->
-            <h3 class="text-xl font-bold text-gov-blue mb-4">¿El lugar donde desapareció tenía alguna de estas características?</h3>
+            <h3 class="text-xl font-bold text-gov-blue mb-4">Lugar en que la persona fue vista viva por última vez</h3>
             <div class="bg-blue-50 border-2 border-gov-blue rounded-lg p-3 mb-4 flex items-center">
                 <svg class="w-5 h-5 text-gov-blue mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -839,7 +851,7 @@ function renderView(stepId) {
                 ${config.contextOptions.map(opt => {
                 const isSelected = state.answers.p3_context && state.answers.p3_context.includes(opt.id);
                 return `
-                    <div onclick="this.classList.toggle('selected'); const chk = this.querySelector('input'); chk.checked = !chk.checked;" 
+                    <div onclick="toggleContextOption(this, '${opt.id}')" 
                          class="checkbox-card ${isSelected ? 'selected' : ''} flex flex-col !items-start cursor-pointer hover:shadow-md transition-all">
                         <div class="flex items-center w-full">
                             <div class="checkbox-mark flex-shrink-0">
@@ -849,6 +861,15 @@ function renderView(stepId) {
                             </div>
                             <span class="text-gray-700 font-semibold flex-1 ml-3 text-base">${opt.label}</span>
                         </div>
+                        ${(opt.id === '3.4.11') ? `
+                        <div id="ctx-other-input-${opt.id}" class="w-full mt-2 px-1 ${isSelected ? '' : 'hidden'}" onclick="event.stopPropagation()">
+                            <input type="text" 
+                                value="${state.answers.p3_characteristics_other || ''}" 
+                                oninput="updateOtherLocation(this.value)"
+                                placeholder="Escriba aquí el lugar específico..." 
+                                class="w-full p-2 border border-gray-300 rounded text-sm outline-none focus:ring-2 focus:ring-gov-blue bg-white">
+                        </div>
+                        ` : ''}
                     </div>
                 `}).join('')}
             </div>`;
@@ -971,11 +992,38 @@ function handleChoice(val) {
     else if (['p1_conflict', 'p1_crime', 'p1_migration'].includes(cur)) { next = 'p_narrative'; }
     renderView(next);
 }
+window.toggleContextOption = function (el, id) {
+    el.classList.toggle('selected');
+    const chk = el.querySelector('input[type="checkbox"]');
+    if (chk) chk.checked = !chk.checked;
+
+    if (id === '3.4.11') {
+        const inputContainer = document.getElementById(`ctx-other-input-${id}`);
+        if (inputContainer) {
+            if (el.classList.contains('selected')) {
+                inputContainer.classList.remove('hidden');
+            } else {
+                inputContainer.classList.add('hidden');
+            }
+        }
+    }
+};
+
+window.updateOtherLocation = function (val) {
+    state.answers.p3_characteristics_other = val;
+};
+
 function toggleMulti(el, val, step) {
     el.classList.toggle('selected');
     el.querySelector('.checkbox-mark').innerHTML = el.classList.contains('selected') ? '<svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>' : '';
     let arr = step === 'p3.4' ? state.answers.p3_characteristics : state.answers.p4_profile;
-    if (arr.includes(val)) arr.splice(arr.indexOf(val), 1); else arr.push(val);
+    if (arr.includes(val)) {
+        arr.splice(arr.indexOf(val), 1);
+        if (val === '3.4.11') document.getElementById('other-input-container')?.classList.add('hidden');
+    } else {
+        arr.push(val);
+        if (val === '3.4.11') document.getElementById('other-input-container')?.classList.remove('hidden');
+    }
 }
 async function goNext() {
     const cur = state.currentStep;
@@ -1005,6 +1053,7 @@ async function goNext() {
         // Capturar checkboxes de contexto
         const selectedContexts = Array.from(document.querySelectorAll('input[id^="p3_ctx_"]:checked')).map(cb => cb.value);
         state.answers.p3_context = selectedContexts;
+        state.answers.p3_characteristics = selectedContexts; // Ensure engine compatibility
 
         if (country === 'Colombia') {
             state.answers.p3_sub_detail = muni;
