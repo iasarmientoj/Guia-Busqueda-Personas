@@ -1144,19 +1144,43 @@ function goBack() { if (state.history.length > 0) renderView(state.history.pop()
 
 // --- 7. EL MOTOR DE LÓGICA (ACTUALIZADO) ---
 function generateResultsEngine() {
-    const isReciente = state.answers.p2 === '2.1';
-    const temporalContext = isReciente ? 'URGENTE' : 'HISTORICO';
+    // Calcular userTimeTags basado en la fecha
+    const userTimeTags = [];
 
-    let conflictDateContext = null;
-    if (!isReciente && (state.answers.p1 === '4.1' || state.answers.p1_sub?.startsWith('4.1'))) {
-        const year = parseInt(state.answers.p2_date_year);
-        const monthName = state.answers.p2_date_month;
+    // Lógica por rango de fechas y Urgencia
+    const yearVal = state.answers.p2_date_year;
+    const monthVal = state.answers.p2_date_month;
+
+    if (yearVal && monthVal) {
         const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-        const monthIndex = months.indexOf(monthName);
-        const dateCutoff = new Date(2016, 11, 1);
-        const dateUser = new Date(year, monthIndex, 1);
-        conflictDateContext = (dateUser < dateCutoff) ? 'PRE_2016' : 'POST_2016';
+        const monthIndex = months.indexOf(monthVal);
+        const yInt = parseInt(yearVal);
+
+        if (!isNaN(yInt) && monthIndex !== -1) {
+            const userDate = new Date(yInt, monthIndex, 1);
+            const now = new Date();
+
+            // 1. URGENTE: Mes actual y Año actual
+            // Nota: getMonth() es 0-indexed, al igual que nuestro monthIndex
+            if (yInt === now.getFullYear() && monthIndex === now.getMonth()) {
+                userTimeTags.push('URGENTE');
+            }
+
+            // Definición de límites para etiquetas históricas
+            const date2016 = new Date(2016, 11, 1); // 1 Diciembre 2016
+            const date2000 = new Date(2000, 0, 1);  // 1 Enero 2000
+
+            if (userDate >= date2016) {
+                userTimeTags.push('POST_2016');
+            } else if (userDate >= date2000) {
+                userTimeTags.push('TO_2000_2016');
+            } else {
+                userTimeTags.push('PRE_2000');
+            }
+        }
     }
+
+    const isReciente = userTimeTags.includes('URGENTE');
 
     const userTags = new Set();
     if (state.answers.p1) userTags.add(state.answers.p1);
@@ -1168,12 +1192,20 @@ function generateResultsEngine() {
         const casoMatch = action.caso.includes('TODOS') || action.caso.some(c => userTags.has(c));
         const ubiMatch = action.ubicacion.includes('TODOS') || action.ubicacion.some(u => userTags.has(u));
         if (!casoMatch || !ubiMatch) return false;
-        const timeMatch = action.temporalidad.includes('AMBAS') || action.temporalidad.includes(temporalContext);
+
+        // Lógica Temporal Multi-valor
+        // La columna ahora puede tener "URGENTE, POST_2016", etc.
+        const rawTemp = action.temporalidad ? String(action.temporalidad) : '';
+        const actionTimeTags = rawTemp.includes(',')
+            ? rawTemp.split(',').map(t => t.trim())
+            : [rawTemp.trim()];
+
+        const timeMatch = actionTimeTags.includes('AMBAS') ||
+            actionTimeTags.includes('TODOS') ||
+            actionTimeTags.some(t => userTimeTags.includes(t));
+
         if (!timeMatch) return false;
-        if (conflictDateContext) {
-            if (conflictDateContext === 'PRE_2016' && action.temporalidad.includes('POST_2016') && !action.temporalidad.includes('PRE_2016')) return false;
-            if (conflictDateContext === 'POST_2016' && action.temporalidad.includes('PRE_2016') && !action.temporalidad.includes('POST_2016')) return false;
-        }
+
         return true;
     });
 
