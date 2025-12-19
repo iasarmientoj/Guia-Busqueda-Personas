@@ -1404,7 +1404,7 @@ function generateResultsEngine() {
                         <button id="btn-legal" onclick="switchTab('legal')" class="tab-btn active">Acciones Legales y Humanitarias</button>
                         <button id="btn-propias" onclick="switchTab('propias')" class="tab-btn">Acciones Personales</button>
                         <button id="btn-apoyos" onclick="switchTab('apoyos')" class="tab-btn">Apoyos Complementarios</button>
-                        <button id="btn-maestra" onclick="switchTab('maestra')" class="tab-btn">Ruta Completa de Búsqueda</button>
+                        <button id="btn-maestra" onclick="switchTab('maestra')" class="tab-btn">Conozca el proceso general de la búsqueda para este caso</button>
                     </div>
                     <div id="tab-legal" class="tab-content fade-in">
                         <div class="bg-blue-50 border-l-4 border-gov-blue p-4 mb-4 rounded-r-lg">
