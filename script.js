@@ -249,14 +249,13 @@ const steps = {
         ]
     },
     'p1': {
-        progress: '90%', title: '¿Tiene alguna sospecha de lo que ocurrió?', description: 'Esta información nos ayuda a dirigirlo a la entidad especializada.', type: 'single-choice',
+        progress: '90%', title: '¿Qué cree que ocurrió con su ser querido?', description: 'Esta información nos ayuda a dirigirlo a la entidad especializada.', type: 'single-choice',
         options: [
-            { id: '4.1', label: 'En un contexto de conflicto armado o violencia política', help: 'Sospecha de Guerrilla, Paramilitares, "Falsos Positivos", Grupos Armados.' },
-            { id: '4.2', label: 'A causa de un crimen o acto de delincuencia común', help: 'Sospecha de secuestro, extorsión, robo, "gota a gota", bandas, trata de personas.' },
-            { id: '4.3', label: 'Salió y no regresó', help: 'Salió de casa y no regresó, puede estar desorientado/a, se fue por voluntad propia.' },
-            { id: '4.4', label: 'Durante un accidente o desastre natural', help: 'Desapareció en un río, en el mar, en una montaña o durante una avalancha.' },
-            { id: '4.5', label: 'En un contexto de migración o estando en el exterior', help: 'Estaba en una ruta migratoria (ej. Darién) o vivía/viajaba en otro país.' },
             { id: '4.7', label: 'Reclutamiento ilícito de Niños, Niñas y Adolescentes (NNA)', help: 'Sospecha que un menor fue reclutado por un grupo armado.' },
+            { id: '4.4', label: 'Desapareció durante un accidente o desastre natural', help: 'Desapareció en un río, en el mar, en una montaña o durante una avalancha.' },
+            { id: '4.5', label: 'Desapareció en un contexto de migración o estando en el exterior', help: 'Estaba en una ruta migratoria (ej. Darién) o vivía/viajaba en otro país.' },
+            { id: '4.3', label: 'Salió y no regresó', help: 'Salió de casa y no regresó, puede estar desorientado/a, se fue por voluntad propia.' },
+            { id: '4.8', label: 'Otro' },
             { id: '4.6', label: 'No sé', help: 'Simplemente no he vuelto a saber de él/ella.' }
         ]
     },
@@ -638,6 +637,10 @@ function renderView(stepId) {
         const personName = state.answers.p4_name ? state.answers.p4_name.trim() : 'su ser querido';
         config.title = `¿Dónde cree que desapareció ${personName}?`;
         window.P2_EXTRA_HTML = '';
+    } else if (stepId === 'p1') {
+        const personName = state.answers.p4_name ? state.answers.p4_name.trim() : 'su ser querido';
+        config.title = `¿Qué cree que ocurrió con ${personName}?`;
+        window.P2_EXTRA_HTML = '';
     } else {
         window.P2_EXTRA_HTML = '';
     }
@@ -988,8 +991,8 @@ function handleChoice(val) {
         if (val === '2.1') next = 'p3_type'; else next = 'p3_type';
     }
     // else if (cur === 'p3_type') ... YA NO USA handleChoice para navegación interna, usa goNext con dropdown
-    else if (cur === 'p1') { if (val === '4.1') next = 'p1_conflict'; else if (val === '4.2') next = 'p1_crime'; else if (val === '4.5') next = 'p1_migration'; else next = 'p_narrative'; }
-    else if (['p1_conflict', 'p1_crime', 'p1_migration'].includes(cur)) { next = 'p_narrative'; }
+    else if (cur === 'p1') { if (val === '4.1') next = 'p1_conflict'; else if (val === '4.2') next = 'p1_crime'; else next = 'p_narrative'; }
+    else if (['p1_conflict', 'p1_crime'].includes(cur)) { next = 'p_narrative'; }
     renderView(next);
 }
 window.toggleContextOption = function (el, id) {
@@ -1120,10 +1123,9 @@ async function goNext() {
         const val = state.answers.p1;
         if (val === '4.1') next = 'p1_conflict';
         else if (val === '4.2') next = 'p1_crime';
-        else if (val === '4.5') next = 'p1_migration';
         else next = 'results';
     }
-    else if (['p1_conflict', 'p1_crime', 'p1_migration'].includes(cur)) next = 'results';
+    else if (['p1_conflict', 'p1_crime'].includes(cur)) next = 'results';
     else if (cur === 'p_narrative') next = 'results';
 
     if (next === 'results') {
