@@ -116,6 +116,7 @@ const GOOGLE_FORM_CONFIG = {
         EVENT_TYPE: 'entry.1552483467',      // Tipo de Evento
         PROFILE: 'entry.977357382',          // Perfil (Multi)
         TIMEFRAME: 'entry.109708931',        // Tiempo
+        DATE_DAY: 'entry.1220297104',        // Fecha Dia
         DATE_MONTH: 'entry.218389769',       // Fecha Mes
         DATE_YEAR: 'entry.1529804203',       // Fecha Año
         LOCATION_TYPE: 'entry.206369886',    // Tipo Ubicación
@@ -227,7 +228,7 @@ const steps = {
             { id: '3.4.3', label: 'Montaña, selva o bosque' },
             { id: '3.4.4', label: 'Parque Nacional' },
             { id: '3.4.5', label: 'Territorio indígena' },
-            { id: '3.4.6', label: 'No sé' },
+            { id: '3.4.98', label: 'No sé' },
             { id: '3.4.99', label: 'Otro (especifique el lugar)' }
         ]
     },
@@ -385,7 +386,65 @@ function sendAnalytics(eventType, data = {}) {
             });
 
             // Tiempo y Fecha
-            formData.append(f.TIMEFRAME, getLabel('p2', state.answers.p2));
+            const year = parseInt(state.answers.p2_date_year) || 0;
+            const monthStr = state.answers.p2_date_month || '';
+            const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+            const monthIndex = months.indexOf(monthStr); // 0-11, -1 if empty
+
+            const timeTags = [];
+            const now = new Date();
+
+            // 1. URGENTE: Mes actual y Año actual
+            if (year === now.getFullYear() && monthIndex === now.getMonth()) {
+                timeTags.push('URGENTE');
+            }
+
+            // Lógica de fechas
+            // Si falta el mes, asumimos Enero (0) para la comparación, o tratamos de ser conservadores.
+            // La instrucción dice "combinación de selectores".
+
+            if (year > 0) {
+                // Para comparar fechas, creamos un objeto Date aproximado (día 1)
+                // Nota: monthIndex puede ser -1 si no seleccionó mes. Trataremos como mes 0 (Enero) o null?
+                // Si no hay mes, solo podemos juzgar por año.
+                const checkMonth = monthIndex >= 0 ? monthIndex : 0;
+                const checkDate = new Date(year, checkMonth, 1);
+
+                // Thresholds
+                const dateDec2016 = new Date(2016, 11, 1); // Fin de 2016
+                const dateNov2016Start = new Date(2016, 9, 1);
+                const dateNov2016End = new Date(2016, 10, 31);
+
+
+                // "Más reciente que diciembre del 2016" => > 2016/12/31 => Año >= 2017
+                if (checkDate >= dateDec2016) {
+                    timeTags.push('POST_2016');
+                }
+                // "Entre 2000 y noviembre del 2016" => 2000/01/01 <= x <= 2016/11/30
+                // ¿Qué pasa con Diciembre 2016? El usuario dejó el hueco. 
+                // Asumiré < Enero 2017, > 1999
+                else if (year >= 2000) {
+                    // Si es 2016, verificar que no sea "más reciente que nov 2016" (es decir diciembre).
+                    // Pero la instruccion dice "mas reciente que diciembre 2016" para el POST.
+                    // Asi que Diciembre 2016 NO es POST.
+                    // Entonces Diciembre 2016 cae aquí ("entre 2000 y ...") bajo la interpretación laxa de "hasta fin de 2016".
+                    // O si somos estrictos:
+                    // POST: > Dec 2016.
+                    // TO_2000_2016: >= 2000 AND <= Nov 2016.
+                    // PRE_2000: < 2000
+
+                    // Ajuste: Para cubrir el hueco de Diciembre 2016, voy a incluirlo en TO_2000_2016.
+                    timeTags.push('TO_2000_2016');
+                }
+                // Mas antigua que 1999 => < 1999? O <= 1999? "Mas antigua que 1999" suele ser < 1999.
+                // Asumiré < 2000.
+                else {
+                    timeTags.push('PRE_2000');
+                }
+            }
+
+            formData.append(f.TIMEFRAME, timeTags.join(', '));
+            if (state.answers.p2_date_day) formData.append(f.DATE_DAY, state.answers.p2_date_day);
             if (state.answers.p2_date_month) formData.append(f.DATE_MONTH, state.answers.p2_date_month);
             if (state.answers.p2_date_year) formData.append(f.DATE_YEAR, state.answers.p2_date_year);
 
