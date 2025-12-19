@@ -1445,14 +1445,7 @@ function generateResultsEngine() {
                                 <span class="font-bold text-gov-blue group-hover:text-gov-dark-blue">Fiscalía General</span>
                                 <span class="text-xs text-gray-500 mt-1">Consultas Ciudadanas</span>
                             </a>
-                             <a href="https://consulta-web.fiscalia.gov.co/" target="_blank" rel="noopener noreferrer" class="bg-white border hover:border-gov-blue hover:shadow-md p-4 rounded-lg transition-all text-center flex flex-col items-center justify-center h-full group">
-                                <span class="font-bold text-gov-blue group-hover:text-gov-dark-blue">Fiscalía Web</span>
-                                <span class="text-xs text-gray-500 mt-1">Consulta de Denuncias</span>
-                            </a>
-                            <a href="https://siugj.ramajudicial.gov.co/principalPortal/consultarProceso.php" target="_blank" rel="noopener noreferrer" class="bg-white border hover:border-gov-blue hover:shadow-md p-4 rounded-lg transition-all text-center flex flex-col items-center justify-center h-full group">
-                                <span class="font-bold text-gov-blue group-hover:text-gov-dark-blue">Rama Judicial</span>
-                                <span class="text-xs text-gray-500 mt-1">Consulta de Procesos</span>
-                            </a>
+
                              <a href="https://sirdec.medicinalegal.gov.co:38181/mapaDesaparecidosUBPD/" target="_blank" rel="noopener noreferrer" class="bg-white border hover:border-gov-blue hover:shadow-md p-4 rounded-lg transition-all text-center flex flex-col items-center justify-center h-full group">
                                 <span class="font-bold text-gov-blue group-hover:text-gov-dark-blue">Mapa Desaparecidos</span>
                                 <span class="text-xs text-gray-500 mt-1">UBPD / Medicina Legal</span>
