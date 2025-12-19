@@ -1051,14 +1051,6 @@ async function goNext() {
             state.answers.p4_profile.push('1.99');
         }
 
-        // Logica para NARP (1.12) -> mapear a 1.8 si es necesario para el motor, 
-        // pero mantenemos 1.12 en los datos. El motor debería saber qué hacer con 1.12 si existe.
-        // *Nota: Como no hemos tocado el motor de acciones para 1.12, asumimos que 1.8 cubre ambos en el Excel actual 
-        // o que agregaremos 1.12 al motor.
-        // HACK: Si Excel usa solo 1.8 para todo lo étnico, agregamos 1.8 invisiblemente si selecciona 1.12
-        if (state.answers.p4_profile.includes('1.12') && !state.answers.p4_profile.includes('1.8')) {
-            state.answers.p4_profile.push('1.8');
-        }
     }
 
     if (cur === 'p3.4' && state.answers.p3_characteristics.length === 0) state.answers.p3_characteristics.push('3.4.10');
