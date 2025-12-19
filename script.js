@@ -59,6 +59,33 @@ function switchTab(tabId) {
     document.getElementById('btn-' + tabId).classList.add('active');
 }
 
+window.updateDays = function () {
+    const yInput = document.getElementById('p2_year');
+    const mInput = document.getElementById('p2_month');
+    const dInput = document.getElementById('p2_day');
+
+    if (!yInput || !mInput || !dInput) return;
+
+    const year = parseInt(yInput.value) || 2024; // Default leap year to show 29 days if year not selected
+    const monthName = mInput.value;
+    const currentDay = dInput.value;
+
+    const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    const monthIndex = months.indexOf(monthName);
+
+    let days = 31;
+    if (monthIndex > -1) {
+        // day 0 of next month is the last day of current month
+        days = new Date(year, monthIndex + 1, 0).getDate();
+    }
+
+    let html = '<option value="">Seleccione...</option>';
+    for (let i = 1; i <= days; i++) {
+        html += `<option value="${i}" ${currentDay == i ? 'selected' : ''}>${i}</option>`;
+    }
+    dInput.innerHTML = html;
+};
+
 // --- 1. CONFIGURACIÓN DE DATOS ---
 const SHEETS_CONFIG = {
     ACCIONES: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=812842567&single=true&output=csv',
@@ -135,7 +162,7 @@ const state = {
     history: [],
     answers: {
         p1: null, p1_sub: null,
-        p2: null, p2_sub: null, p2_date_month: null, p2_date_year: null,
+        p2: null, p2_sub: null, p2_date_month: null, p2_date_year: null, p2_date_day: null,
         p3_type: null, p3_detail: null, p3_sub_detail: null, p3_characteristics: [],
         p4_profile: [], p4_name: '', p4_age: '', p4_sex: '',
         narrative: ''
@@ -167,14 +194,13 @@ const steps = {
         description: 'Estos datos nos ayudan a decirle a qué entidades específicas debe acudir según el caso.',
         type: 'profile-complex',
         options: [
-            { id: '1.3', label: 'Fuerza Pública' },
-            { id: '1.4', label: 'Fue integrante de grupo armado' },
             { id: '1.8', label: 'Comunidades Indígenas' },
             { id: '1.9', label: 'LGBTIQ+' },
             { id: '1.6', label: 'Extranjero' },
-            { id: '1.2', label: 'Servidor público' },
+            { id: '1.14', label: 'Comunidades Campesinas' },
             { id: '1.12', label: 'Comunidades Negras, Afrocolombianas, Raizales y Palenqueras' },
-            { id: '1.13', label: 'Defensor(a) de DDHH, líder o lideresa social, mujer buscadora' }
+            { id: '1.13', label: 'Defensor(a) de DDHH, líder o lideresa social, mujer buscadora' },
+            { id: '1.11', label: 'Ninguna de estas' }
         ]
     },
     'p2': {
@@ -509,11 +535,13 @@ function renderView(stepId) {
                 // Validación Custom para p2
                 const yIn = document.getElementById('p2_year');
                 const mIn = document.getElementById('p2_month');
+                const dIn = document.getElementById('p2_day');
                 let isValid = true;
 
                 // Limpiar errores previos
                 yIn.classList.remove('border-red-500', 'ring-2', 'ring-red-200');
                 mIn.classList.remove('border-red-500', 'ring-2', 'ring-red-200');
+                if (dIn) dIn.classList.remove('border-red-500', 'ring-2', 'ring-red-200');
 
                 // 1. Año Obligatorio
                 if (!yIn.value) {
@@ -573,35 +601,33 @@ function renderView(stepId) {
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                     Fecha aproximada de los hechos
                 </h4>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                     <div>
+                        <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Año</label>
+                        <input type="number" id="p2_year" value="${state.answers.p2_date_year || ''}" min="1900" max="2025" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue" placeholder="Ej: 2020" oninput="if(this.value.length > 4) this.value = this.value.slice(0,4);" onchange="updateDays()">
+                        <p class="text-xs text-gray-500 italic mt-1">Aproximado</p>
+                    </div>
                     <div class="relative">
                         <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Mes <button onclick="toggleHelp('help-month')" class="ml-1 text-gov-blue hover:text-gov-dark-blue"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button></label>
-                        <select id="p2_month" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue bg-white">
+                        <select id="p2_month" onchange="updateDays()" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue bg-white">
                             <option value="">Seleccione...</option>
                             ${months.map(m => `<option value="${m}" ${state.answers.p2_date_month === m ? 'selected' : ''}>${m}</option>`).join('')}
                         </select>
                         <p class="text-xs text-gray-500 italic mt-1">Aproximado</p>
-                        <div id="help-month" class="hidden absolute top-0 left-0 mt-8 z-20 bg-blue-50 text-gov-dark-blue text-xs p-2 rounded border border-blue-200 shadow-lg w-64">Si no recuerda el mes exacto puede dejarlo vacío, a menos que sea del año 2016 (fecha clave para el proceso de paz).</div>
+                        <div id="help-month" class="hidden absolute top-0 left-0 mt-8 z-20 bg-blue-50 text-gov-dark-blue text-xs p-2 rounded border border-blue-200 shadow-lg w-64 min-w-[200px]">Si no recuerda el mes exacto puede dejarlo vacío, a menos que sea del año 2016 (fecha clave para el proceso de paz).</div>
                     </div>
                     <div>
-                        <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Año</label>
-                        <input type="number" id="p2_year" value="${state.answers.p2_date_year || ''}" min="1900" max="2025" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue" placeholder="Ej: 2020" oninput="if(this.value.length > 4) this.value = this.value.slice(0,4);">
-                        <p class="text-xs text-gray-500 italic mt-1">Aproximado</p>
+                        <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Día</label>
+                        <select id="p2_day" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue bg-white">
+                            <option value="">Seleccione...</option>
+                             ${Array.from({ length: 31 }, (_, i) => `<option value="${i + 1}" ${state.answers.p2_date_day == (i + 1) ? 'selected' : ''}>${i + 1}</option>`).join('')}
+                        </select>
+                         <p class="text-xs text-gray-500 italic mt-1">Aproximado</p>
                     </div>
                 </div>
             </div>
             
-            </div>
-            
-            </div>
-            
-            <div class="mt-8 text-center border-t border-gray-200 pt-6">
-                 <h4 class="font-bold text-gray-700 mb-4 text-lg">¿Es una urgencia o desapareció hace muy poco?</h4>
-                 <button onclick="handleChoice('2.1')" class="bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transform hover:scale-105 transition-all flex items-center justify-center mx-auto">
-                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                    ¡Es una urgencia!
-                </button>
-            </div>`;
+`;
 
         // Variable global temporal para "inyectar" esto después de renderizar las opciones normales
         window.P2_EXTRA_HTML = dateHtml;
@@ -849,7 +875,7 @@ function renderView(stepId) {
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <!-- Nombre -->
                     <div class="relative">
-                        <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Nombre <button onclick="toggleHelp('help-name')" class="ml-1 text-gov-blue hover:text-gov-dark-blue"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button></label>
+                        <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Nombres y Apellidos <button onclick="toggleHelp('help-name')" class="ml-1 text-gov-blue hover:text-gov-dark-blue"><svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></button></label>
                         <input type="text" id="p4_name" value="${state.answers.p4_name || ''}" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue" placeholder="Ej: Juan">
                             <p class="text-xs text-gray-500 italic mt-1">Opcional</p>
                             <div id="help-name" class="hidden absolute top-0 left-0 mt-8 z-20 bg-blue-50 text-gov-dark-blue text-xs p-2 rounded border border-blue-200 shadow-lg w-64">Este campo es opcional y no será usado ni almacenado, es solo para mostrar un nombre en la guía.</div>
@@ -863,7 +889,7 @@ function renderView(stepId) {
                     </div>
                     <!-- Sexo -->
                     <div>
-                        <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Sexo/Género</label>
+                        <label class="block text-gray-700 font-bold mb-2 text-sm uppercase">Sexo</label>
                         <select id="p4_sex" class="w-full p-3 border border-gray-300 rounded outline-none focus:ring-2 focus:ring-gov-blue bg-white">
                             <option value="">Seleccione...</option>
                             <option value="Mujer" ${state.answers.p4_sex === 'Mujer' ? 'selected' : ''}>Mujer</option>
@@ -915,8 +941,10 @@ function handleChoice(val) {
     if (cur === 'p2') {
         const m = document.getElementById('p2_month');
         const y = document.getElementById('p2_year');
+        const d = document.getElementById('p2_day');
         if (m && m.value) state.answers.p2_date_month = m.value;
         if (y && y.value) state.answers.p2_date_year = y.value;
+        if (d && d.value) state.answers.p2_date_day = d.value;
         state.answers.p2 = val; // Asegurar que guardamos la opción elegida (2.1 o 2.2)
     }
     else if (cur === 'p2') state.answers.p2 = val; // Fallback por si acaso (aunque el if anterior lo cubre)
@@ -931,8 +959,10 @@ function handleChoice(val) {
         // Capturar fecha en p2 también
         const m = document.getElementById('p2_month').value;
         const y = document.getElementById('p2_year').value;
+        const d = document.getElementById('p2_day').value;
         if (m) state.answers.p2_date_month = m;
         if (y) state.answers.p2_date_year = y;
+        if (d) state.answers.p2_date_day = d;
 
         if (val === '2.1') next = 'p3_type'; else next = 'p3_type';
     }
@@ -1411,7 +1441,7 @@ function generateResultsEngine() {
 }
 
 function getProfiles() {
-    const map = { '1.1': 'Menor de edad', '1.2': 'Líder/Rol Público', '1.3': 'Fuerza Pública', '1.4': 'Actor Armado', '1.5': 'Condición Especial/Mayor', '1.6': 'Migrante/Extranjero', '1.7': 'Mujer (Riesgo)', '1.8': 'Comunidad Étnica', '1.9': 'LGBTIQ+', '1.10': 'Desaparición Colectiva' };
+    const map = { '1.1': 'Menor de edad', '1.2': 'Líder/Rol Público', '1.3': 'Fuerza Pública', '1.4': 'Actor Armado', '1.5': 'Condición Especial/Mayor', '1.6': 'Migrante/Extranjero', '1.7': 'Mujer (Riesgo)', '1.8': 'Comunidad Étnica', '1.9': 'LGBTIQ+', '1.10': 'Desaparición Colectiva', '1.11': 'Ninguno', '1.12': 'NARP', '1.13': 'Líder/Defensor', '1.14': 'Campesino/a' };
     return state.answers.p4_profile.map(id => map[id] || id).join(', ') || "General";
 }
 
