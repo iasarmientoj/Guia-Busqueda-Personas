@@ -1200,9 +1200,7 @@ function generateResultsEngine() {
             ? rawTemp.split(',').map(t => t.trim())
             : [rawTemp.trim()];
 
-        const timeMatch = actionTimeTags.includes('AMBAS') ||
-            actionTimeTags.includes('TODOS') ||
-            actionTimeTags.some(t => userTimeTags.includes(t));
+        const timeMatch = actionTimeTags.some(t => userTimeTags.includes(t));
 
         if (!timeMatch) return false;
 
@@ -1253,13 +1251,25 @@ function generateResultsEngine() {
         return processMarkdownLinks(marked.parse(rawContent));
     };
 
-    // --- RENDERIZADO ACCIONES (WEB: Acordeones) ---
+    // --- RENDERIZADO ACCIONES (WEB: Agrupado por Etapas) ---
     const renderActionList = (actions) => {
         if (actions.length === 0) return '<div class="p-6 bg-gray-50 text-gray-500 rounded-lg text-center border border-gray-200">No hay acciones específicas para este criterio.</div>';
-        return actions.map((action, index) => {
+
+        // Agrupar por Etapa
+        const actionsByStage = {};
+        actions.forEach(action => {
+            const stage = action.etapa || 99; // Default to 99 if undefined
+            if (!actionsByStage[stage]) actionsByStage[stage] = [];
+            actionsByStage[stage].push(action);
+        });
+
+        const sortedStages = Object.keys(actionsByStage).sort((a, b) => parseInt(a) - parseInt(b));
+
+        // Render Function for a single action
+        const renderSingleAction = (action, index) => {
             const htmlContent = processActionContent(action);
-            const showConnector = index < actions.length - 1;
-            const displayStep = index + 1; // Numeración secuencial para mostrar al usuario
+            const showConnector = index < actions.length - 1; // Not strictly correct inside groups but visual cue
+            const displayStep = action.etapa; // Usamos el número de etapa real
             return `
                     <div class="relative">
                         <details name="guide-accordion" class="group bg-white border-2 border-gray-200 rounded-lg mb-3 shadow-sm hover:shadow-md hover:border-gov-blue transition-all">
@@ -1272,9 +1282,39 @@ function generateResultsEngine() {
                             </summary>
                             <div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-gray-100 bg-gray-50 text-base md-content">${htmlContent}</div>
                         </details>
-                        ${showConnector ? '<div class="flex justify-center mb-2"><svg class="w-6 h-6 text-gov-blue" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg></div>' : ''}
                     </div>`;
-        }).join('');
+        };
+
+        let html = '';
+
+        sortedStages.forEach((stage, idx) => {
+            const stageActions = actionsByStage[stage];
+            const isFirst = idx === 0;
+
+            if (isFirst) {
+                // Renderizar la primera etapa directamente (siempre visible o al menos no oculta dentro de otro acordeón gigante)
+                html += stageActions.map(renderSingleAction).join('');
+            } else {
+                // Etapas siguientes en acordeón contenedor
+                const innerHtml = stageActions.map(renderSingleAction).join('');
+                html += `
+                <div class="mt-4 mb-4">
+                    <details class="group bg-blue-50 border border-blue-200 rounded-lg shadow-sm">
+                        <summary class="flex items-center p-4 cursor-pointer select-none bg-blue-100 rounded-t-lg group-open:rounded-b-none transition-colors hover:bg-blue-200">
+                            <svg class="w-6 h-6 text-gov-blue mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 13l-7 7-7-7m14-8l-7 7-7-7"></path>
+                            </svg>
+                            <span class="font-bold text-gov-dark-blue text-lg">Si ya realizaste las acciones anteriores, presiona aquí para ver los siguientes pasos.</span>
+                        </summary>
+                        <div class="p-4 bg-white border-t border-blue-200 rounded-b-lg">
+                            ${innerHtml}
+                        </div>
+                    </details>
+                </div>`;
+            }
+        });
+
+        return html;
     };
 
     // --- RENDERIZADO ACCIONES (IMPRESIÓN: Bloques expandidos) ---
