@@ -375,11 +375,7 @@ function sendAnalytics(eventType, data = {}) {
         // 2. Datos de Ruta (Solo para RUTA_GENERADA)
         if (eventType === 'RUTA_GENERADA') {
             const getLabel = (stepId, optId) => {
-                if (!optId) return '';
-                const step = steps[stepId];
-                if (!step || !step.options) return optId;
-                const opt = step.options.find(o => o.id === optId);
-                return opt ? `${opt.id} ${opt.label}` : optId; // Envía "1.1 Texto..."
+                return optId || '';
             };
 
             // Perfil (Multi -> string joined)
@@ -1038,11 +1034,21 @@ async function goNext() {
             if (idx > -1) state.answers.p4_profile.splice(idx, 1);
         }
 
-        // Si no selecciona nada en poblaciones, marcar Ninguna (1.11)
+        // Validar Sexo == 'Mujer' para agregar tag '1.2' (Mujer)
+        if (state.answers.p4_sex === 'Mujer') {
+            if (!state.answers.p4_profile.includes('1.2')) {
+                state.answers.p4_profile.push('1.2');
+            }
+        } else {
+            const idx = state.answers.p4_profile.indexOf('1.2');
+            if (idx > -1) state.answers.p4_profile.splice(idx, 1);
+        }
+
+        // Si no selecciona nada en poblaciones, marcar Ninguna (1.99)
         if (state.answers.p4_profile.length === 0) {
             // Solo si tampoco es menor de edad autodetectado. 
             // Si es menor (1.1), el array ya tiene algo.
-            state.answers.p4_profile.push('1.11');
+            state.answers.p4_profile.push('1.99');
         }
 
         // Logica para NARP (1.12) -> mapear a 1.8 si es necesario para el motor, 
