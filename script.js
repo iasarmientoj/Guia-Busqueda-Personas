@@ -59,6 +59,21 @@ function switchTab(tabId) {
     document.getElementById('btn-' + tabId).classList.add('active');
 }
 
+window.toggleInfoLinks = function () {
+    const container = document.getElementById('infoLinksContainer');
+    const icon = document.getElementById('infoLinksIcon');
+    if (container) {
+        container.classList.toggle('hidden');
+        if (!container.classList.contains('hidden')) {
+            // Expandido
+            if (icon) icon.style.transform = 'rotate(180deg)';
+        } else {
+            // Colapsado
+            if (icon) icon.style.transform = 'rotate(0deg)';
+        }
+    }
+};
+
 window.updateDays = function () {
     const yInput = document.getElementById('p2_year');
     const mInput = document.getElementById('p2_month');
@@ -1542,15 +1557,6 @@ function generateResultsEngine() {
                             <a href="https://www.fiscalia.gov.co/colombia/servicios-de-informacion-al-ciudadano/consultas/#1536851620255-61ce92ac-374f" target="_blank" rel="noopener noreferrer" class="bg-white border hover:border-gov-blue hover:shadow-md p-4 rounded-lg transition-all text-center flex flex-col items-center justify-center h-full group">
                                 <span class="font-bold text-gov-blue group-hover:text-gov-dark-blue">Fiscalía General</span>
                                 <span class="text-xs text-gray-500 mt-1">Consultas Ciudadanas</span>
-                            </a>
-
-                             <a href="https://sirdec.medicinalegal.gov.co:38181/mapaDesaparecidosUBPD/" target="_blank" rel="noopener noreferrer" class="bg-white border hover:border-gov-blue hover:shadow-md p-4 rounded-lg transition-all text-center flex flex-col items-center justify-center h-full group">
-                                <span class="font-bold text-gov-blue group-hover:text-gov-dark-blue">Mapa Desaparecidos</span>
-                                <span class="text-xs text-gray-500 mt-1">UBPD / Medicina Legal</span>
-                            </a>
-                             <a href="https://www.unidadvictimas.gov.co/registro-unico-de-victimas-ruv/" target="_blank" rel="noopener noreferrer" class="bg-white border hover:border-gov-blue hover:shadow-md p-4 rounded-lg transition-all text-center flex flex-col items-center justify-center h-full group">
-                                <span class="font-bold text-gov-blue group-hover:text-gov-dark-blue">R.U.V.</span>
-                                <span class="text-xs text-gray-500 mt-1">Registro Único de Víctimas</span>
                             </a>
                         </div>
                         <p class="text-sm text-gray-600 mt-4 bg-white p-3 rounded border border-gray-100 italic">
