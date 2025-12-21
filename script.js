@@ -990,6 +990,14 @@ function renderView(stepId) {
                         Portaba los siguientes objetos/accesorios: <select id="n_accesorios" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Reloj', 'Joyas', 'Celular', 'Billetera', 'Mochila', 'Gafas', 'Ninguno'], v('n_accesorios'))}</select>.
                     </div>
                 </div>
+
+                <!-- Download Button -->
+                <div class="mt-8 flex justify-center md:justify-end border-t border-gray-100 pt-6">
+                    <button onclick="downloadForensicPDF()" class="flex items-center text-gov-blue border-2 border-gov-blue hover:bg-gov-blue hover:text-white font-bold py-3 px-6 rounded-full transition-all shadow-md transform hover:scale-105">
+                        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        Descargar Información (PDF)
+                    </button>
+                </div>
             </div>
             `;
         }
@@ -1130,6 +1138,110 @@ function toggleMulti(el, val, step) {
         if (val === '3.4.99') document.getElementById('other-input-container')?.classList.remove('hidden');
     }
 }
+window.downloadForensicPDF = function () {
+    saveNarrativeSnapshot();
+    if (!window.jspdf) {
+        alert("Error: Librería PDF no cargada.");
+        return;
+    }
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const data = state.answers.forensic;
+
+    // Header
+    doc.setFillColor(51, 102, 204); // gov-blue
+    doc.rect(0, 0, 210, 20, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text("Detalles Forenses y de Contexto", 15, 13);
+
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+
+    let y = 35;
+    const lineHeight = 7;
+    const pageHeight = 280;
+
+    const checkPage = (h) => {
+        if (y + h > pageHeight) {
+            doc.addPage();
+            y = 20;
+        }
+    };
+
+    const addLine = (label, value) => {
+        if (!value || value === 'Seleccione...') return;
+        checkPage(lineHeight);
+        doc.setFont("helvetica", "bold");
+        doc.text(label + ":", 15, y);
+        doc.setFont("helvetica", "normal");
+        const valStr = String(value);
+        const splitText = doc.splitTextToSize(valStr, 120);
+        doc.text(splitText, 70, y);
+        y += Math.max(lineHeight, splitText.length * 5);
+    };
+
+    const addSection = (title) => {
+        checkPage(15);
+        y += 5;
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(12);
+        doc.setTextColor(51, 102, 204);
+        doc.text(title.toUpperCase(), 15, y);
+        doc.setDrawColor(200, 200, 200);
+        doc.line(15, y + 2, 195, y + 2);
+        doc.setFontSize(10);
+        doc.setTextColor(0, 0, 0);
+        y += 10;
+    };
+
+    addSection("1. Perfil Físico y Morfología");
+    addLine("Estatura", data.n_estatura ? data.n_estatura + " cm" : "");
+    addLine("Contextura", data.n_contextura);
+    addLine("Piel", data.n_piel);
+    addLine("Cabello", data.n_cabello);
+    addLine("Ojos", data.n_ojos);
+
+    addSection("2. Señales Particulares y Salud");
+    addLine("Señales Distintivas", data.n_senales);
+    addLine("Antecedentes Médicos", data.n_medicos);
+    addLine("Salud Oral", data.n_oral);
+
+    addSection("3. Contexto de la Desaparición");
+    addLine("Tipo de Contexto", data.n_lugar_tipo);
+    addLine("Acompañamiento", data.n_acompanamiento);
+    addLine("Amenazas Previas", data.n_amenazas);
+
+    if (data.n_descripcion) {
+        checkPage(20);
+        y += 5;
+        doc.setFont("helvetica", "bold");
+        doc.text("Relato de los Hechos:", 15, y);
+        y += 6;
+        doc.setFont("helvetica", "italic");
+        const splitText = doc.splitTextToSize(data.n_descripcion, 180);
+        doc.text(splitText, 15, y);
+        y += splitText.length * 5 + 5;
+    }
+
+    addSection("4. Prendas de Vestir y Objetos");
+    addLine("Prenda Superior", data.n_prenda_sup);
+    addLine("Prenda Inferior", data.n_prenda_inf);
+    addLine("Calzado", data.n_calzado);
+    addLine("Objetos/Accesorios", data.n_accesorios);
+
+    // Footer
+    const dateStr = new Date().toLocaleDateString('es-CO');
+    doc.setFont("helvetica", "italic");
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    doc.text(`Generado el: ${dateStr} - Guía de Búsqueda MinJusticia`, 15, 290);
+
+    doc.save("Informacion_Forense_MinJusticia.pdf");
+};
+
 async function goNext() {
     const cur = state.currentStep;
     const currentConfig = steps[cur];
