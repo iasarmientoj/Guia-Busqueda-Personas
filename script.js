@@ -669,7 +669,7 @@ function renderView(stepId) {
                         
 
                         
-                        <div class="cycling-questions-container relative h-12 mb-6 max-w-2xl mx-auto text-center">
+                        <div class="cycling-questions-container relative h-10 mb-2 max-w-2xl mx-auto text-center">
                             <p class="cycling-question absolute w-full left-0 top-0 text-gov-blue font-bold text-xl opacity-0" style="animation-delay: 0s;">¿Busca a una persona desaparecida?</p>
                             <p class="cycling-question absolute w-full left-0 top-0 text-gov-blue font-bold text-xl opacity-0" style="animation-delay: 3s;">¿Desea conocer qué entidades deben atender su caso?</p>
                             <p class="cycling-question absolute w-full left-0 top-0 text-gov-blue font-bold text-xl opacity-0" style="animation-delay: 6s;">¿Necesita saber por dónde empezar la búsqueda?</p>
