@@ -181,7 +181,8 @@ const state = {
         p2: null, p2_sub: null, p2_date_month: null, p2_date_year: null, p2_date_day: null,
         p3_type: null, p3_detail: null, p3_sub_detail: null, p3_characteristics: [], p3_characteristics_other: '',
         p4_profile: [], p4_name: '', p4_age: '', p4_sex: '',
-        narrative: ''
+        narrative: '',
+        forensic: {} // Store raw forensic inputs here
     }
 };
 
@@ -925,8 +926,11 @@ function renderView(stepId) {
         else if (config.type === 'textarea') {
             nextBtn.classList.remove('hidden');
 
-            // Helper for options
-            const mkOpts = (opts) => opts.map(o => `<option value="${o}">${o}</option>`).join('');
+            // Helper for options with selected state
+            const mkOpts = (opts, currentVal) => opts.map(o => `<option value="${o}" ${currentVal === o ? 'selected' : ''}>${o}</option>`).join('');
+
+            // Helper to safe get value
+            const v = (key) => state.answers.forensic[key] || '';
 
             html += `
             <div class="narrative-container">
@@ -941,11 +945,11 @@ function renderView(stepId) {
                     <h3>1. Perfil Físico y Morfología</h3>
                     <p class="text-gray-600 mb-4 text-sm italic">Esta categoría contiene los datos básicos que permiten una clasificación inicial en las bases de datos forenses.</p>
                     <div class="narrative-row">
-                        Tiene una estatura aproximada de <input type="number" id="n_estatura" class="inline-input" placeholder="Ej: 170" style="width: 80px"> cm. 
-                        Su contextura es <select id="n_contextura" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Obesa', 'Robusta', 'Mediana', 'Delgada'])}</select>.
-                        Su piel es color <select id="n_piel" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Albino', 'Blanco', 'Trigueño', 'Moreno', 'Negro', 'Otro'])}</select>, 
-                        su cabello tiene forma <select id="n_cabello" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Liso', 'Ondulado', 'Crespo', 'Lanoso', 'Calvicie'])}</select> 
-                        y sus ojos son color <select id="n_ojos" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Negros', 'Cafés', 'Miel', 'Azules', 'Verdes', 'Grises'])}</select>.
+                        Tiene una estatura aproximada de <input type="number" id="n_estatura" value="${v('n_estatura')}" class="inline-input" placeholder="Ej: 170" style="width: 80px"> cm. 
+                        Su contextura es <select id="n_contextura" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Obesa', 'Robusta', 'Mediana', 'Delgada'], v('n_contextura'))}</select>.
+                        Su piel es color <select id="n_piel" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Albino', 'Blanco', 'Trigueño', 'Moreno', 'Negro', 'Otro'], v('n_piel'))}</select>, 
+                        su cabello tiene forma <select id="n_cabello" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Liso', 'Ondulado', 'Crespo', 'Lanoso', 'Calvicie'], v('n_cabello'))}</select> 
+                        y sus ojos son color <select id="n_ojos" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Negros', 'Cafés', 'Miel', 'Azules', 'Verdes', 'Grises'], v('n_ojos'))}</select>.
                     </div>
                 </div>
 
@@ -954,9 +958,9 @@ function renderView(stepId) {
                     <h3>2. Señales Particulares y Salud</h3>
                     <p class="text-gray-600 mb-4 text-sm italic">Estos datos son críticos para el cruce de información con cadáveres no identificados (NN) o registros médicos.</p>
                     <div class="narrative-row">
-                        Como señales distintivas presenta: <select id="n_senales" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Amputaciones (AM)', 'Cicatrices (C)', 'Tatuajes (T)', 'Lunares (L)', 'Manchas (M)', 'Piercing (PI)', 'Verrugas (V)', 'Ninguna'])}</select>.
-                        Sus antecedentes médicos relevantes incluyen: <select id="n_medicos" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Fracturas (F)', 'Discapacidades (DIS)', 'Implantes quirúrgicos/platinos (IQ)', 'Ninguno'])}</select>.
-                        Su salud oral se caracteriza por: <select id="n_oral" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Brackets', 'Prótesis/Caja', 'Ausencias dentales', 'Natural/Sana'])}</select>.
+                        Como señales distintivas presenta: <select id="n_senales" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Amputaciones (AM)', 'Cicatrices (C)', 'Tatuajes (T)', 'Lunares (L)', 'Manchas (M)', 'Piercing (PI)', 'Verrugas (V)', 'Ninguna'], v('n_senales'))}</select>.
+                        Sus antecedentes médicos relevantes incluyen: <select id="n_medicos" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Fracturas (F)', 'Discapacidades (DIS)', 'Implantes quirúrgicos/platinos (IQ)', 'Ninguno'], v('n_medicos'))}</select>.
+                        Su salud oral se caracteriza por: <select id="n_oral" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Brackets', 'Prótesis/Caja', 'Ausencias dentales', 'Natural/Sana'], v('n_oral'))}</select>.
                     </div>
                 </div>
 
@@ -965,12 +969,12 @@ function renderView(stepId) {
                     <h3>3. Contexto de la Desaparición</h3>
                     <p class="text-gray-600 mb-4 text-sm italic">Información vital para que las autoridades activen las rutas de búsqueda inmediata y evalúen el nivel de riesgo.</p>
                     <div class="narrative-row">
-                        El lugar específico del hecho fue en un contexto de: <select id="n_lugar_tipo" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Departamento', 'Ciudad/Municipio', 'Barrio/Vereda'])}</select>.
-                        Al momento del hecho, ¿estaba acompañado? <select id="n_acompanamiento" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Sí', 'No', 'No se sabe'])}</select>.
-                        ¿Había manifestado amenazas previas? <select id="n_amenazas" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Sí', 'No', 'Sin información'])}</select>.
+                        El lugar específico del hecho fue en un contexto de: <select id="n_lugar_tipo" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Departamento', 'Ciudad/Municipio', 'Barrio/Vereda'], v('n_lugar_tipo'))}</select>.
+                        Al momento del hecho, ¿estaba acompañado? <select id="n_acompanamiento" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Sí', 'No', 'No se sabe'], v('n_acompanamiento'))}</select>.
+                        ¿Había manifestado amenazas previas? <select id="n_amenazas" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Sí', 'No', 'Sin información'], v('n_amenazas'))}</select>.
                         <div class="mt-4">
                             Relato breve de los hechos:
-                            <input type="text" id="n_descripcion" class="inline-input" style="width: 100%; max-width: 100%; border-bottom: 2px dashed #3366CC;" placeholder="Escriba aquí lo sucedido...">
+                            <input type="text" id="n_descripcion" value="${v('n_descripcion')}" class="inline-input" style="width: 100%; max-width: 100%; border-bottom: 2px dashed #3366CC;" placeholder="Escriba aquí lo sucedido...">
                         </div>
                     </div>
                 </div>
@@ -980,10 +984,10 @@ function renderView(stepId) {
                     <h3>4. Prendas de Vestir y Objetos</h3>
                     <p class="text-gray-600 mb-4 text-sm italic">Datos de alta utilidad para las primeras horas de búsqueda en campo y revisión de cámaras.</p>
                     <div class="narrative-row">
-                        Vestía como prenda superior <select id="n_prenda_sup" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Camisa', 'Camiseta', 'Chaqueta', 'Saco', 'Buso', 'Camibuso', 'Otros'])}</select> 
-                        y prenda inferior <select id="n_prenda_inf" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Pantalón', 'Falda', 'Pantaloneta', 'Short', 'Bermuda', 'Otros'])}</select>.
-                        Calzaba <select id="n_calzado" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Tenis', 'Botas', 'Zapatos', 'Sandalias', 'Descalzo'])}</select>.
-                        Portaba los siguientes objetos/accesorios: <select id="n_accesorios" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Reloj', 'Joyas', 'Celular', 'Billetera', 'Mochila', 'Gafas', 'Ninguno'])}</select>.
+                        Vestía como prenda superior <select id="n_prenda_sup" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Camisa', 'Camiseta', 'Chaqueta', 'Saco', 'Buso', 'Camibuso', 'Otros'], v('n_prenda_sup'))}</select> 
+                        y prenda inferior <select id="n_prenda_inf" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Pantalón', 'Falda', 'Pantaloneta', 'Short', 'Bermuda', 'Otros'], v('n_prenda_inf'))}</select>.
+                        Calzaba <select id="n_calzado" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Tenis', 'Botas', 'Zapatos', 'Sandalias', 'Descalzo'], v('n_calzado'))}</select>.
+                        Portaba los siguientes objetos/accesorios: <select id="n_accesorios" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Reloj', 'Joyas', 'Celular', 'Billetera', 'Mochila', 'Gafas', 'Ninguno'], v('n_accesorios'))}</select>.
                     </div>
                 </div>
             </div>
@@ -1174,36 +1178,7 @@ async function goNext() {
     }
 
     if (currentConfig && currentConfig.type === 'textarea') {
-        const getVal = (id) => document.getElementById(id)?.value || '';
-
-        const est = getVal('n_estatura');
-        const estTxt = est ? `Estatura: ${est}cm. ` : '';
-
-        const parts = [
-            estTxt,
-            'Contextura: ' + getVal('n_contextura'),
-            'Piel: ' + getVal('n_piel'),
-            'Cabello: ' + getVal('n_cabello'),
-            'Ojos: ' + getVal('n_ojos'),
-            '|',
-            'Señales: ' + getVal('n_senales'),
-            'Antecedentes: ' + getVal('n_medicos'),
-            'Salud Oral: ' + getVal('n_oral'),
-            '|',
-            'Contexto Lugar: ' + getVal('n_lugar_tipo'),
-            'Acompañado: ' + getVal('n_acompanamiento'),
-            'Amenazas: ' + getVal('n_amenazas'),
-            '| Relato: ' + getVal('n_descripcion'),
-            '|',
-            'Ropa Superior: ' + getVal('n_prenda_sup'),
-            'Ropa Inferior: ' + getVal('n_prenda_inf'),
-            'Calzado: ' + getVal('n_calzado'),
-            'Accesorios: ' + getVal('n_accesorios')
-        ];
-
-        // Filter empty parts and join
-        const narrativeText = parts.filter(p => p && !p.endsWith(': ') && !p.endsWith(':  ') && p !== '|').join('. ').replace(/\|/g, '\n');
-        state.answers.narrative = narrativeText || 'Sin detalles adicionales.';
+        saveNarrativeSnapshot();
     }
 
     /* Paso p2_date eliminado, integrado en p2 */
@@ -1268,7 +1243,63 @@ async function goNext() {
 
     renderView(next);
 }
-function goBack() { if (state.history.length > 0) renderView(state.history.pop()); }
+function saveNarrativeSnapshot() {
+    const getVal = (id) => document.getElementById(id)?.value || '';
+    const est = getVal('n_estatura');
+
+    // Save Raw inputs for persistence
+    state.answers.forensic = {
+        n_estatura: est,
+        n_contextura: getVal('n_contextura'),
+        n_piel: getVal('n_piel'),
+        n_cabello: getVal('n_cabello'),
+        n_ojos: getVal('n_ojos'),
+        n_senales: getVal('n_senales'),
+        n_medicos: getVal('n_medicos'),
+        n_oral: getVal('n_oral'),
+        n_lugar_tipo: getVal('n_lugar_tipo'),
+        n_acompanamiento: getVal('n_acompanamiento'),
+        n_amenazas: getVal('n_amenazas'),
+        n_descripcion: getVal('n_descripcion'),
+        n_prenda_sup: getVal('n_prenda_sup'),
+        n_prenda_inf: getVal('n_prenda_inf'),
+        n_calzado: getVal('n_calzado'),
+        n_accesorios: getVal('n_accesorios')
+    };
+
+    const estTxt = est ? `Estatura: ${est}cm. ` : '';
+
+    const parts = [
+        estTxt,
+        'Contextura: ' + state.answers.forensic.n_contextura,
+        'Piel: ' + state.answers.forensic.n_piel,
+        'Cabello: ' + state.answers.forensic.n_cabello,
+        'Ojos: ' + state.answers.forensic.n_ojos,
+        '|',
+        'Señales: ' + state.answers.forensic.n_senales,
+        'Antecedentes: ' + state.answers.forensic.n_medicos,
+        'Salud Oral: ' + state.answers.forensic.n_oral,
+        '|',
+        'Contexto Lugar: ' + state.answers.forensic.n_lugar_tipo,
+        'Acompañado: ' + state.answers.forensic.n_acompanamiento,
+        'Amenazas: ' + state.answers.forensic.n_amenazas,
+        '| Relato: ' + state.answers.forensic.n_descripcion,
+        '|',
+        'Ropa Superior: ' + state.answers.forensic.n_prenda_sup,
+        'Ropa Inferior: ' + state.answers.forensic.n_prenda_inf,
+        'Calzado: ' + state.answers.forensic.n_calzado,
+        'Accesorios: ' + state.answers.forensic.n_accesorios
+    ];
+
+    // Filter empty parts and join
+    const narrativeText = parts.filter(p => p && !p.endsWith(': ') && !p.endsWith(':  ') && p !== '|').join('. ').replace(/\|/g, '\n');
+    state.answers.narrative = narrativeText || 'Sin detalles adicionales.';
+}
+
+function goBack() {
+    if (state.currentStep === 'p_narrative') saveNarrativeSnapshot();
+    if (state.history.length > 0) renderView(state.history.pop());
+}
 
 // --- 7. EL MOTOR DE LÓGICA (ACTUALIZADO) ---
 function generateResultsEngine() {
