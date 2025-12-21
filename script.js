@@ -825,6 +825,7 @@ function renderView(stepId) {
                     </div>
 
                     <!-- Contenedor para Municipio y Ciudad (solo si es Colombia) -->
+                    <!-- Contenedor para Municipio y Ciudad (solo si es Colombia) -->
                     <div class="contents ${isColombia ? '' : 'hidden'}" id="colombia-fields">
                         <!-- Ciudad Principal (Ahora DEPARTAMENTO) -->
                         <div class="relative">
@@ -833,6 +834,7 @@ function renderView(stepId) {
                                 <option value="">Seleccione...</option>
                                 ${config.cityData.map(c => `<option value="${c}" ${state.answers.p3_detail === c ? 'selected' : ''}>${c}</option>`).join('')}
                             </select>
+                            <p class="text-xs text-gray-500 italic mt-1">Opcional</p>
                         </div>
 
                         <!-- Municipio (Ahora CIUDAD/MUNICIPIO) -->
@@ -842,6 +844,7 @@ function renderView(stepId) {
                                 <option value="">Seleccione...</option>
                                 ${initMunis.map(m => `<option value="${m}" ${state.answers.p3_sub_detail === m ? 'selected' : ''}>${m}</option>`).join('')}
                             </select>
+                            <p class="text-xs text-gray-500 italic mt-1">Opcional</p>
                         </div>
                     </div>
                 </div>
@@ -1051,8 +1054,9 @@ async function goNext() {
         if (!country) { document.getElementById('p3_country').classList.add('border-red-500', 'ring-2', 'ring-red-200'); valid = false; }
 
         if (country === 'Colombia') {
-            if (!muni) { document.getElementById('p3_municipality').classList.add('border-red-500', 'ring-2', 'ring-red-200'); valid = false; }
-            if (!city) { document.getElementById('p3_city').classList.add('border-red-500', 'ring-2', 'ring-red-200'); valid = false; }
+            // Campos opcionales ahora
+            // if (!muni) { ... }
+            // if (!city) { ... }
         }
 
         if (!valid) return;
@@ -1065,8 +1069,14 @@ async function goNext() {
         state.answers.p3_characteristics = selectedContexts; // Ensure engine compatibility
 
         if (country === 'Colombia') {
-            state.answers.p3_sub_detail = muni;
-            state.answers.p3_detail = city;
+            // Si no se selecciona departamento, asumir BOGOTÁ, D.C. y BOGOTÁ, D.C.
+            if (!city) {
+                state.answers.p3_detail = "BOGOTÁ, D.C.";
+                state.answers.p3_sub_detail = "BOGOTÁ, D.C.";
+            } else {
+                state.answers.p3_detail = city;
+                state.answers.p3_sub_detail = muni || ""; // Puede ser vacío si solo selecciona departamento
+            }
             state.answers.p3_type = '3.2'; // Mantenemos compatibilidad interna (Municipio/Colombia)
         } else {
             state.answers.p3_type = '3.3'; // Extranjero
