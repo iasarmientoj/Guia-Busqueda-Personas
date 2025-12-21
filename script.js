@@ -333,7 +333,11 @@ async function loadRouteData() {
     status.innerText = "Calculando Ruta Maestra...";
 
     const routeId = state.answers.p1;
-    const url = ROUTES_MAP[routeId];
+    let useRouteId = routeId;
+    // Forzar ruta 4.1 para casos 4.98 (Reclutamiento) y 4.99 (No sé)
+    if (routeId === '4.98' || routeId === '4.99') useRouteId = '4.1';
+
+    const url = ROUTES_MAP[useRouteId];
 
     if (!url) {
         CURRENT_ROUTE_DATA = [];
@@ -535,7 +539,11 @@ function renderView(stepId) {
 
         // Comportamiento especial del botón Next
         nextBtn.onclick = () => {
-            if (stepId === 'p2') {
+            if (stepId === 'p1') {
+                state.answers.p1 = '4.99';
+                goNext();
+            }
+            else if (stepId === 'p2') {
                 // Validación Custom para p2
                 const yIn = document.getElementById('p2_year');
                 const mIn = document.getElementById('p2_month');
@@ -560,7 +568,10 @@ function renderView(stepId) {
                     isValid = false;
                 }
 
-                if (isValid) handleChoice('2.2');
+                if (isValid) {
+                    if (!mIn.value) mIn.value = 'Enero';
+                    handleChoice('2.2');
+                }
             }
             else if (stepId === 'p4') {
                 // Validación para Perfil
@@ -1461,7 +1472,7 @@ function generateResultsEngine() {
                 <h2 class="print-subheader">1. Acciones Legales y Humanitarias</h2>
                 <div class="print-section">${renderActionListPrint(legalActions)}</div>
                 
-                <h2 class="print-subheader">2. Acciones Personales</h2>
+                <h2 class="print-subheader">2. Acciones Generales</h2>
                 <div class="print-section">${renderActionListPrint(ownActions)}</div>
                 
                 <h2 class="print-subheader">3. Apoyos Complementarios</h2>
@@ -1488,7 +1499,7 @@ function generateResultsEngine() {
                     </div>
                     <div class="flex flex-wrap gap-2 mb-6">
                         <button id="btn-legal" onclick="switchTab('legal')" class="tab-btn active">Acciones Legales y Humanitarias</button>
-                        <button id="btn-propias" onclick="switchTab('propias')" class="tab-btn">Acciones Personales</button>
+                        <button id="btn-propias" onclick="switchTab('propias')" class="tab-btn">Acciones Generales</button>
                         <button id="btn-apoyos" onclick="switchTab('apoyos')" class="tab-btn">Apoyos Complementarios</button>
                         <button id="btn-maestra" onclick="switchTab('maestra')" class="tab-btn">Conozca el proceso general de la búsqueda para este caso</button>
                     </div>
