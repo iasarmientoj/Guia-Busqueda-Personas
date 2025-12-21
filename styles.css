@@ -538,3 +538,123 @@ body.high-contrast .md-content blockquote {
 body.high-contrast .cycling-question {
     color: #FFFF00 !important;
 }
+
+/* --- NARRATIVE FORM (Párrafo con Selectores) --- */
+.narrative-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.narrative-section {
+    background-color: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    margin-bottom: 24px;
+}
+
+.narrative-section h3 {
+    color: #004884;
+    font-size: 1.25rem;
+    font-weight: 800;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #eff6ff;
+    padding-bottom: 8px;
+}
+
+.narrative-row {
+    margin-bottom: 16px;
+    line-height: 2.2;
+    font-size: 1.1rem;
+    color: #374151;
+}
+
+.narrative-label {
+    font-weight: 600;
+    color: #374151;
+    margin-right: 4px;
+}
+
+/* Inline Selectors & Inputs */
+.inline-select,
+.inline-input {
+    display: inline-block;
+    border: none;
+    border-bottom: 2px solid #3366CC;
+    background-color: #F8FBFF;
+    color: #3366CC;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px 4px 0 0;
+    font-family: inherit;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 120px;
+    margin: 0 4px;
+}
+
+.inline-select:hover,
+.inline-input:hover,
+.inline-select:focus,
+.inline-input:focus {
+    background-color: #e0e7ff;
+    outline: none;
+    border-bottom-color: #004884;
+}
+
+.inline-input {
+    min-width: 80px;
+    max-width: 200px;
+}
+
+.inline-input::placeholder {
+    color: #9CA3AF;
+    font-weight: 400;
+}
+
+/* Legal Note Banner */
+.legal-banner {
+    background-color: #FFFBEB;
+    /* Yellow-50 */
+    border-left: 4px solid #F59E0B;
+    /* Amber-500 */
+    color: #92400E;
+    /* Amber-800 */
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+}
+
+/* High Contrast adjustments */
+body.high-contrast .narrative-section {
+    background-color: #000 !important;
+    border-color: #FFFF00 !important;
+}
+
+body.high-contrast .narrative-section h3 {
+    color: #FFFF00 !important;
+    border-bottom-color: #FFFF00 !important;
+}
+
+body.high-contrast .narrative-row,
+body.high-contrast .narrative-label {
+    color: #FFF !important;
+}
+
+body.high-contrast .inline-select,
+body.high-contrast .inline-input {
+    background-color: #000 !important;
+    color: #FFFF00 !important;
+    border-bottom: 2px solid #FFFF00 !important;
+}
+
+body.high-contrast .legal-banner {
+    background-color: #000 !important;
+    color: #FFFF00 !important;
+    border-color: #FFFF00 !important;
+}

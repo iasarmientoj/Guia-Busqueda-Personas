@@ -924,7 +924,70 @@ function renderView(stepId) {
         }
         else if (config.type === 'textarea') {
             nextBtn.classList.remove('hidden');
-            html += `<textarea id="narrativeInput" class="w-full p-4 border border-gray-300 rounded-lg h-40 outline-none focus:border-gov-blue text-lg" placeholder="Ej: Vestía jean azul, camisa roja. Tiene una cicatriz en la ceja..."></textarea>`;
+
+            // Helper for options
+            const mkOpts = (opts) => opts.map(o => `<option value="${o}">${o}</option>`).join('');
+
+            html += `
+            <div class="narrative-container">
+                <!-- Legal Banner -->
+                <div class="legal-banner">
+                    <svg class="w-6 h-6 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span class="font-bold">No es necesario esperar 72 horas para reportar; la búsqueda es inmediata.</span>
+                </div>
+
+                <!-- 1. Perfil Físico -->
+                <div class="narrative-section">
+                    <h3>1. Perfil Físico y Morfología</h3>
+                    <p class="text-gray-600 mb-4 text-sm italic">Esta categoría contiene los datos básicos que permiten una clasificación inicial en las bases de datos forenses.</p>
+                    <div class="narrative-row">
+                        Tiene una estatura aproximada de <input type="number" id="n_estatura" class="inline-input" placeholder="Ej: 170" style="width: 80px"> cm. 
+                        Su contextura es <select id="n_contextura" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Obesa', 'Robusta', 'Mediana', 'Delgada'])}</select>.
+                        Su piel es color <select id="n_piel" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Albino', 'Blanco', 'Trigueño', 'Moreno', 'Negro', 'Otro'])}</select>, 
+                        su cabello tiene forma <select id="n_cabello" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Liso', 'Ondulado', 'Crespo', 'Lanoso', 'Calvicie'])}</select> 
+                        y sus ojos son color <select id="n_ojos" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Negros', 'Cafés', 'Miel', 'Azules', 'Verdes', 'Grises'])}</select>.
+                    </div>
+                </div>
+
+                <!-- 2. Señales Particulares -->
+                <div class="narrative-section">
+                    <h3>2. Señales Particulares y Salud</h3>
+                    <p class="text-gray-600 mb-4 text-sm italic">Estos datos son críticos para el cruce de información con cadáveres no identificados (NN) o registros médicos.</p>
+                    <div class="narrative-row">
+                        Como señales distintivas presenta: <select id="n_senales" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Amputaciones (AM)', 'Cicatrices (C)', 'Tatuajes (T)', 'Lunares (L)', 'Manchas (M)', 'Piercing (PI)', 'Verrugas (V)', 'Ninguna'])}</select>.
+                        Sus antecedentes médicos relevantes incluyen: <select id="n_medicos" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Fracturas (F)', 'Discapacidades (DIS)', 'Implantes quirúrgicos/platinos (IQ)', 'Ninguno'])}</select>.
+                        Su salud oral se caracteriza por: <select id="n_oral" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Brackets', 'Prótesis/Caja', 'Ausencias dentales', 'Natural/Sana'])}</select>.
+                    </div>
+                </div>
+
+                <!-- 3. Contexto -->
+                <div class="narrative-section">
+                    <h3>3. Contexto de la Desaparición</h3>
+                    <p class="text-gray-600 mb-4 text-sm italic">Información vital para que las autoridades activen las rutas de búsqueda inmediata y evalúen el nivel de riesgo.</p>
+                    <div class="narrative-row">
+                        El lugar específico del hecho fue en un contexto de: <select id="n_lugar_tipo" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Departamento', 'Ciudad/Municipio', 'Barrio/Vereda'])}</select>.
+                        Al momento del hecho, ¿estaba acompañado? <select id="n_acompanamiento" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Sí', 'No', 'No se sabe'])}</select>.
+                        ¿Había manifestado amenazas previas? <select id="n_amenazas" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Sí', 'No', 'Sin información'])}</select>.
+                        <div class="mt-4">
+                            Relato breve de los hechos:
+                            <input type="text" id="n_descripcion" class="inline-input" style="width: 100%; max-width: 100%; border-bottom: 2px dashed #3366CC;" placeholder="Escriba aquí lo sucedido...">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Prendas -->
+                <div class="narrative-section">
+                    <h3>4. Prendas de Vestir y Objetos</h3>
+                    <p class="text-gray-600 mb-4 text-sm italic">Datos de alta utilidad para las primeras horas de búsqueda en campo y revisión de cámaras.</p>
+                    <div class="narrative-row">
+                        Vestía como prenda superior <select id="n_prenda_sup" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Camisa', 'Camiseta', 'Chaqueta', 'Saco', 'Buso', 'Camibuso', 'Otros'])}</select> 
+                        y prenda inferior <select id="n_prenda_inf" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Pantalón', 'Falda', 'Pantaloneta', 'Short', 'Bermuda', 'Otros'])}</select>.
+                        Calzaba <select id="n_calzado" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Tenis', 'Botas', 'Zapatos', 'Sandalias', 'Descalzo'])}</select>.
+                        Portaba los siguientes objetos/accesorios: <select id="n_accesorios" class="inline-select"><option value="">Seleccione...</option>${mkOpts(['Reloj', 'Joyas', 'Celular', 'Billetera', 'Mochila', 'Gafas', 'Ninguno'])}</select>.
+                    </div>
+                </div>
+            </div>
+            `;
         }
         else if (config.type === 'profile-complex') {
             nextBtn.classList.remove('hidden');
@@ -1111,7 +1174,36 @@ async function goNext() {
     }
 
     if (currentConfig && currentConfig.type === 'textarea') {
-        state.answers.narrative = document.getElementById('narrativeInput').value;
+        const getVal = (id) => document.getElementById(id)?.value || '';
+
+        const est = getVal('n_estatura');
+        const estTxt = est ? `Estatura: ${est}cm. ` : '';
+
+        const parts = [
+            estTxt,
+            'Contextura: ' + getVal('n_contextura'),
+            'Piel: ' + getVal('n_piel'),
+            'Cabello: ' + getVal('n_cabello'),
+            'Ojos: ' + getVal('n_ojos'),
+            '|',
+            'Señales: ' + getVal('n_senales'),
+            'Antecedentes: ' + getVal('n_medicos'),
+            'Salud Oral: ' + getVal('n_oral'),
+            '|',
+            'Contexto Lugar: ' + getVal('n_lugar_tipo'),
+            'Acompañado: ' + getVal('n_acompanamiento'),
+            'Amenazas: ' + getVal('n_amenazas'),
+            '| Relato: ' + getVal('n_descripcion'),
+            '|',
+            'Ropa Superior: ' + getVal('n_prenda_sup'),
+            'Ropa Inferior: ' + getVal('n_prenda_inf'),
+            'Calzado: ' + getVal('n_calzado'),
+            'Accesorios: ' + getVal('n_accesorios')
+        ];
+
+        // Filter empty parts and join
+        const narrativeText = parts.filter(p => p && !p.endsWith(': ') && !p.endsWith(':  ') && p !== '|').join('. ').replace(/\|/g, '\n');
+        state.answers.narrative = narrativeText || 'Sin detalles adicionales.';
     }
 
     /* Paso p2_date eliminado, integrado en p2 */
