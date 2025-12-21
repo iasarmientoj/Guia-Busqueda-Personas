@@ -495,9 +495,9 @@ function renderView(stepId) {
     const progressContainer = document.getElementById('progressContainer');
 
     if (stepId === 'intro') {
-        progressContainer.classList.add('opacity-0');
+        progressContainer.classList.add('hidden');
     } else {
-        progressContainer.classList.remove('opacity-0');
+        progressContainer.classList.remove('hidden');
         document.getElementById('progressBar').style.width = config.progress;
     }
 
