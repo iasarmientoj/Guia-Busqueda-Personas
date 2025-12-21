@@ -1577,11 +1577,13 @@ function generateResultsEngine() {
 
         const sortedStages = Object.keys(actionsByStage).sort((a, b) => parseInt(a) - parseInt(b));
 
+        let globalStepCounter = 1;
+
         // Render Function for a single action
         const renderSingleAction = (action, index) => {
             const htmlContent = processActionContent(action);
             const showConnector = index < actions.length - 1; // Not strictly correct inside groups but visual cue
-            const displayStep = action.etapa; // Usamos el número de etapa real
+            const displayStep = globalStepCounter++; // Numeración secuencial sobrescrita
             return `
                     <div class="relative">
                         <details name="guide-accordion" class="group bg-white border-2 border-gray-200 rounded-lg mb-3 shadow-sm hover:shadow-md hover:border-gov-blue transition-all">
@@ -1616,7 +1618,7 @@ function generateResultsEngine() {
                             <svg class="w-6 h-6 text-gov-blue mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 13l-7 7-7-7m14-8l-7 7-7-7"></path>
                             </svg>
-                            <span class="font-bold text-gov-dark-blue text-lg">Si ya realizaste las acciones anteriores, presiona aquí para ver los siguientes pasos.</span>
+                            <span class="font-bold text-gov-dark-blue text-lg">Si ya realizó las acciones anteriores, presione aquí para ver los siguientes pasos.</span>
                         </summary>
                         <div class="p-4 bg-white border-t border-blue-200 rounded-b-lg">
                             ${innerHtml}
