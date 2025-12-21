@@ -1,7 +1,7 @@
 tailwind.config = {
     theme: {
         extend: {
-            colors: { 'gov-blue': '#3366CC', 'gov-dark-blue': '#004884', 'gov-bg': '#F7F9FC' },
+            colors: { 'gov-blue': '#3366CC', 'gov-dark-blue': '#004884', 'gov-bg': '#F7F9FC', 'gov-orange': '#f59e0b' },
             fontFamily: { sans: ['Nunito Sans', 'sans-serif'] }
         }
     }
@@ -1311,7 +1311,7 @@ function generateResultsEngine() {
                         <details name="guide-accordion" class="group bg-white border-2 border-gray-200 rounded-lg mb-3 shadow-sm hover:shadow-md hover:border-gov-blue transition-all">
                             <summary class="flex items-center p-4 cursor-pointer select-none">
                                 <div class="flex items-center flex-1">
-                                    <span class="bg-gov-blue text-white text-sm font-bold px-3 py-1.5 rounded-lg mr-4 border-2 border-gov-dark-blue min-w-[40px] text-center shadow-sm">Paso ${displayStep}</span>
+                                    <span class="bg-gov-orange text-gov-dark-blue text-sm font-bold px-3 py-1.5 rounded-lg mr-4 border-2 border-orange-400 min-w-[40px] text-center shadow-sm">Paso ${displayStep}</span>
                                     <span class="font-bold text-gov-dark-blue text-lg">${action.titulo}</span>
                                 </div>
                                 <svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
@@ -1400,7 +1400,7 @@ function generateResultsEngine() {
                 const childrenHtml = renderRouteRecursive(node.children, `guide-accordion-${node.cleanId}`);
                 return `<details name="${groupName}" class="group bg-blue-50 border border-blue-200 rounded-lg mb-3 shadow-sm hover:shadow-md transition-all ml-0"><summary class="flex items-center p-4 cursor-pointer select-none"><div class="flex items-center flex-1"><span class="bg-gov-dark-blue text-white text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-900 min-w-[24px] text-center">Opc</span><span class="font-bold text-gov-dark-blue text-lg">${node.titulo}</span></div><svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></summary><div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-blue-100 bg-white text-base md-content">${mdContent}${childrenHtml ? `<div class="mt-4 pt-4 border-t border-gray-100 pl-4 border-l-2 border-blue-100 space-y-2">${childrenHtml}</div>` : ''}</div></details>`;
             } else {
-                return `<details name="${groupName}" class="group bg-white border border-gray-200 rounded-lg mb-2 shadow-sm hover:shadow-md transition-all"><summary class="flex items-center p-4 cursor-pointer select-none"><div class="flex items-center flex-1"><span class="bg-blue-100 text-gov-blue text-xs px-2 py-1 rounded mr-3 font-extrabold border border-blue-200 min-w-[24px] text-center">${node.paso}</span><span class="font-bold text-gov-dark-blue text-lg">${node.titulo}</span></div><svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></summary><div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-gray-100 bg-gray-50 text-base md-content">${mdContent}</div></details>`;
+                return `<details name="${groupName}" class="group bg-white border border-gray-200 rounded-lg mb-2 shadow-sm hover:shadow-md transition-all"><summary class="flex items-center p-4 cursor-pointer select-none"><div class="flex items-center flex-1"><span class="bg-orange-100 text-gov-dark-blue text-xs px-2 py-1 rounded mr-3 font-extrabold border border-orange-200 min-w-[24px] text-center">${node.paso}</span><span class="font-bold text-gov-dark-blue text-lg">${node.titulo}</span></div><svg class="chevron w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></summary><div class="p-5 pt-2 text-gray-700 leading-relaxed border-t border-gray-100 bg-gray-50 text-base md-content">${mdContent}</div></details>`;
             }
         }).join('');
     };
