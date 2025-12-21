@@ -940,6 +940,15 @@ function renderView(stepId) {
                     <span class="font-bold">No es necesario esperar 72 horas para reportar; la búsqueda es inmediata.</span>
                 </div>
 
+                <!-- Info Opcional Box -->
+                <div class="flex items-start bg-blue-50 p-4 rounded-lg border-l-4 border-gov-blue mb-6 shadow-sm">
+                    <svg class="w-6 h-6 text-gov-blue mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <div class="text-sm text-gov-dark-blue">
+                        <p class="font-bold mb-1">Información de utilidad</p>
+                        <p>Diligenciar estos detalles es <strong>opcional</strong>. Sin embargo, esta información se requiere en caso de iniciar un trámite o petición ante una entidad.</p>
+                    </div>
+                </div>
+
                 <!-- 1. Perfil Físico -->
                 <div class="narrative-section">
                     <h3>1. Perfil Físico y Morfología</h3>
