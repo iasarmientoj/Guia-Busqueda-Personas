@@ -1496,7 +1496,39 @@ function generateResultsEngine() {
     const processActionContent = (action) => {
         let rawContent = action.contenido;
         if (rawContent.includes('INFORMACIONADICIONAL')) {
-            const infoText = narrative ? `**${narrative}**` : '';
+            const f = state.answers.forensic || {};
+            const pName = state.answers.p4_name || 'Nombre no registrado';
+            const pAge = state.answers.p4_age || 'No registrada';
+            const pSex = state.answers.p4_sex || 'No registrado';
+
+            const clean = (val) => (val && val !== 'Seleccione...') ? val : 'No proporcionado';
+
+            let details = `**Recuerde mencionar los detalles de su caso:** `;
+            details += `**${pName}**, con edad **${pAge}** y sexo **${pSex}**. `;
+
+            // Perfil
+            details += `Tiene una estatura aproximada de **${f.n_estatura ? f.n_estatura + ' cm' : 'No proporcionada'}**. `;
+            details += `Su contextura es **${clean(f.n_contextura)}**. `;
+            details += `Su piel es color **${clean(f.n_piel)}**, su cabello tiene forma **${clean(f.n_cabello)}** y sus ojos son color **${clean(f.n_ojos)}**. `;
+
+            // Senales
+            details += `Como señales distintivas presenta: **${clean(f.n_senales)}**. `;
+            details += `Sus antecedentes médicos relevantes incluyen: **${clean(f.n_medicos)}**. `;
+            details += `Su salud oral se caracteriza por: **${clean(f.n_oral)}**. `;
+
+            // Contexto
+            details += `El lugar específico del hecho fue en un contexto de: **${clean(f.n_lugar_tipo)}**. `;
+            details += `Al momento del hecho, ¿estaba acompañado? **${clean(f.n_acompanamiento)}**. `;
+            details += `¿Había manifestado amenazas previas? **${clean(f.n_amenazas)}**. `;
+
+            if (f.n_descripcion) details += `Relato: **${f.n_descripcion}**. `;
+
+            // Prendas
+            details += `Vestía como prenda superior **${clean(f.n_prenda_sup)}** y prenda inferior **${clean(f.n_prenda_inf)}**. `;
+            details += `Calzaba **${clean(f.n_calzado)}**. `;
+            details += `Portaba los siguientes objetos/accesorios: **${clean(f.n_accesorios)}**.`;
+
+            const infoText = `${details}`;
             rawContent = rawContent.replace(/INFORMACIONADICIONAL/g, infoText);
         }
         if (rawContent.includes('CONTACTOINMEDIATO')) {
