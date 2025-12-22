@@ -307,7 +307,7 @@ async function loadData() {
         };
 
         COUNTRIES_LIST = getUniqueSorted(DB_CONTACTOS, 'PAIS');
-        CITIES_LIST = getUniqueSorted(DB_CONTACTOS, 'CIUDAD');
+        CITIES_LIST = getUniqueSorted(DB_CONTACTOS, 'DEPARTAMENTO');
         MUNICIPALITIES_LIST = getUniqueSorted(DB_CONTACTOS, 'MUNICIPIO');
 
         steps['p3_type'].municipalityData = MUNICIPALITIES_LIST;
@@ -816,10 +816,10 @@ function renderView(stepId) {
 
                 if (!deptName) return;
 
-                // Filtrar DB_CONTACTOS por CIUDAD (Departamento) y obtener MUNICIPIOs
+                // Filtrar DB_CONTACTOS por DEPARTAMENTO (antes CIUDAD) y obtener MUNICIPIOs
                 const validMunis = [...new Set(
                     DB_CONTACTOS
-                        .filter(r => r.CIUDAD === deptName)
+                        .filter(r => r.DEPARTAMENTO === deptName)
                         .map(r => r.MUNICIPIO)
                         .filter(Boolean)
                 )].sort();
@@ -839,7 +839,7 @@ function renderView(stepId) {
             if (state.answers.p3_detail) {
                 initMunis = [...new Set(
                     DB_CONTACTOS
-                        .filter(r => r.CIUDAD === state.answers.p3_detail)
+                        .filter(r => r.DEPARTAMENTO === state.answers.p3_detail)
                         .map(r => r.MUNICIPIO)
                         .filter(Boolean)
                 )].sort();
@@ -1571,7 +1571,7 @@ function generateResultsEngine() {
                 if (userCountry && userDept && userMuni) {
                     const matchMuni = candidates.find(c =>
                         c.PAIS === userCountry &&
-                        c.CIUDAD === userDept &&
+                        c.DEPARTAMENTO === userDept &&
                         c.MUNICIPIO === userMuni
                     );
                     if (isValid(matchMuni)) {
@@ -1589,7 +1589,7 @@ function generateResultsEngine() {
                     // Si hay varios, find() retorna el primero.
                     const matchDept = candidates.find(c =>
                         c.PAIS === userCountry &&
-                        c.CIUDAD === userDept
+                        c.DEPARTAMENTO === userDept
                         // No filtramos por municipio vacío para maximizar chance de encontrar algo en el depto
                     );
                     if (isValid(matchDept)) {
@@ -1601,7 +1601,7 @@ function generateResultsEngine() {
                 if (!bestMatch) {
                     const matchBogota = candidates.find(c =>
                         c.PAIS === 'Colombia' &&
-                        c.CIUDAD === 'BOGOTÁ, D.C.' &&
+                        c.DEPARTAMENTO === 'BOGOTÁ, D.C.' &&
                         c.MUNICIPIO === 'BOGOTÁ, D.C.'
                     );
                     // Este siempre debería retornar texto según requerimiento, pero validamos igual por seguridad
@@ -1770,7 +1770,7 @@ function generateResultsEngine() {
     let contactsHTML = '';
     let contactsHTMLPrint = '';
     if (DB_CONTACTOS.length > 0) {
-        let localContacts = DB_CONTACTOS.filter(c => (c.Ciudad === state.answers.p3_detail || c.Cobertura === 'NACIONAL') && c.Activa === 'SI');
+        let localContacts = DB_CONTACTOS.filter(c => (c.DEPARTAMENTO === state.answers.p3_detail || c.Cobertura === 'NACIONAL') && c.Activa === 'SI');
         // Web HTML
         contactsHTML = localContacts.map(c => `
                     <li class="bg-white p-4 rounded border border-blue-100 shadow-sm mb-2">
