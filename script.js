@@ -584,6 +584,13 @@ function renderView(stepId) {
                     isValid = false;
                 }
 
+                // 3. Si ingresa Día, DEBE ingresar Mes (Lógica de consistencia)
+                if (yIn.value && dIn.value && !mIn.value) {
+                    mIn.classList.add('border-red-500', 'ring-2', 'ring-red-200');
+                    alert('Si ingresa un Día específico, también debe ingresar el Mes. Si desea continuar sin fecha específica, borre la selección del Día');
+                    isValid = false;
+                }
+
                 if (isValid) {
                     if (!mIn.value) mIn.value = 'Enero';
                     handleChoice('2.2');
