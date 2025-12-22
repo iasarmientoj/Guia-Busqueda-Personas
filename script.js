@@ -1545,19 +1545,69 @@ function generateResultsEngine() {
             const contactDetails = contactIds.map(id => {
                 const cleanId = id.trim();
                 const candidates = DB_CONTACTOS.filter(c => c.ID_ENTIDAD === cleanId);
+
                 if (candidates.length === 0) return '';
 
-                const userMuni = state.answers.p3_sub_detail || '';
-                const userCity = state.answers.p3_detail || '';
+                const userCountry = state.answers.p3_country || 'Colombia';
+                const userDept = state.answers.p3_detail || '';       // Departamento/Ciudad Principal
+                const userMuni = state.answers.p3_sub_detail || '';   // Municipio
+
                 let bestMatch = null;
-                if (userMuni) bestMatch = candidates.find(c => c.MUNICIPIO === userMuni);
-                if (!bestMatch && userCity) bestMatch = candidates.find(c => c.CIUDAD === userCity);
-                if (!bestMatch) bestMatch = candidates.find(c => c.PAIS === 'Colombia' && c.CIUDAD === 'Nacional' && (!c.MUNICIPIO || c.MUNICIPIO.trim() === ''));
-                if (!bestMatch) bestMatch = candidates.find(c => c.PAIS === 'Colombia' && c.CIUDAD && c.CIUDAD.toLowerCase().startsWith('bogo') && (!c.MUNICIPIO || c.MUNICIPIO.trim() === ''));
+
+                // Helper to check if a contact is valid (has content)
+                const isValid = (c) => c && c.CONTENIDO_MD && c.CONTENIDO_MD.trim().length > 0 && c.CONTENIDO_MD.trim() !== 'vacio';
+
+                // Lógica de 3 niveles solicitada:
+
+                // 1. Intentar búsqueda exacta (País + Dept + Muni)
+                // Solo si el usuario ingresó los 3 datos
+                if (userCountry && userDept && userMuni) {
+                    const matchMuni = candidates.find(c =>
+                        c.PAIS === userCountry &&
+                        c.CIUDAD === userDept &&
+                        c.MUNICIPIO === userMuni
+                    );
+                    if (isValid(matchMuni)) {
+                        bestMatch = matchMuni;
+                    }
+                }
+
+                // 2. Si falló (o no ingresó muni), intentar búsqueda por Departamento
+                // Buscar cualquier contacto que coincida con País y Departamento.
+                // Prioridad implícita: al usar find() tomamos el primero que aparezca en la lista para ese departamento.
+                if (!bestMatch && userCountry && userDept) {
+                    // Nota: Buscamos coincidencia de departamento. 
+                    // No restringimos que Municipio sea vacío, porque a veces el contacto departamental está marcado de varias formas.
+                    // Pero idealmente debería ser el "Genérico" del departamento. 
+                    // Si hay varios, find() retorna el primero.
+                    const matchDept = candidates.find(c =>
+                        c.PAIS === userCountry &&
+                        c.CIUDAD === userDept
+                        // No filtramos por municipio vacío para maximizar chance de encontrar algo en el depto
+                    );
+                    if (isValid(matchDept)) {
+                        bestMatch = matchDept;
+                    }
+                }
+
+                // 3. Si falló todo lo anterior, buscar Bogotá (Fallback Nacional)
+                if (!bestMatch) {
+                    const matchBogota = candidates.find(c =>
+                        c.PAIS === 'Colombia' &&
+                        c.CIUDAD === 'BOGOTÁ, D.C.' &&
+                        c.MUNICIPIO === 'BOGOTÁ, D.C.'
+                    );
+                    // Este siempre debería retornar texto según requerimiento, pero validamos igual por seguridad
+                    if (isValid(matchBogota)) {
+                        bestMatch = matchBogota;
+                    }
+                }
 
                 if (!bestMatch) return '';
+
                 return `<div class="bg-blue-50 border-l-4 border-gov-blue p-4 my-3 rounded-r-lg shadow-sm text-base [&_a]:text-gov-blue [&_a]:font-semibold [&_a]:underline [&_a:hover]:text-gov-dark-blue [&_a]:transition-colors">${processMarkdownLinks(marked.parse(bestMatch.CONTENIDO_MD))}</div>`;
             }).join('');
+
             rawContent = rawContent.replace(/CONTACTOINMEDIATO/g, contactDetails);
         }
         return processMarkdownLinks(marked.parse(rawContent));
