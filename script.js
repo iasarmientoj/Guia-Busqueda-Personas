@@ -686,7 +686,9 @@ function renderView(stepId) {
                     <div class="py-6">
                         <div class="flex flex-col md:flex-row items-center md:items-start gap-6 mb-8 max-w-4xl mx-auto px-4">
                             <div class="flex-shrink-0">
-                                <img src="logoMinJus.png" alt="Ministerio de Justicia y del Derecho" class="w-24 md:w-32 h-auto object-contain">
+                                <a href="https://www.minjusticia.gov.co/" target="_blank" class="hover:opacity-90 transition-opacity">
+                                    <img src="logoMinJus.png" alt="Ministerio de Justicia y del Derecho" class="w-24 md:w-32 h-auto object-contain">
+                                </a>
                             </div>
                             <div class="text-left flex-1 border-l-0 md:border-l-2 md:border-gray-200 md:pl-6">
                                 <h3 class="text-xl text-gray-500 font-medium mb-1 uppercase tracking-wide">${config.welcome || '¡Bienvenido!'}</h3>
