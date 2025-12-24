@@ -102,27 +102,31 @@ window.updateDays = function () {
 };
 
 // --- 1. CONFIGURACIÓN DE DATOS ---
-const SHEETS_CONFIG = {
-    ACCIONES: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=812842567&single=true&output=csv',
-    CONTACTOS: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=871607364&single=true&output=csv',
-    LINKS_NOTAS: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=1731177785&single=true&output=csv'
+// --- 1. CONFIGURACIÓN DE DATOS ---
+const EXCEL_URL = 'https://psicometriaunal.sharepoint.com/_layouts/15/download.aspx?share=IQC-8om8wuFwSL_3gkSgV4SVAUz0xse4K-KiWp3r-RhUUdE';
+
+const SHEET_NAMES = {
+    ACCIONES: 'ACCIONES',
+    CONTACTOS: 'CONTACTOS',
+    LINKS_NOTAS: 'LINKS Y NOTAS'
 };
 
-const ROUTES_MAP = {
-    '4.1': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=545298463&single=true&output=csv',
-    '4.98': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=545298463&single=true&output=csv',
-    '4.99': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=545298463&single=true&output=csv',
-    '4.2': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=1342244385&single=true&output=csv',
-    '4.3': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=399030951&single=true&output=csv',
-    '4.4': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=718152538&single=true&output=csv',
-    '4.5': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=428871968&single=true&output=csv',
-    '4.6': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSVlcYT96Ei7UKp-CRqiq5Q2Yq8sAIJMHaEA-DaN8-EXdoZz8RRZmokpHqcXrTDfYdcvWKEO2j3GO6c/pub?gid=1764372827&single=true&output=csv'
+// Mapa de rutas a nombres de hoja en el Excel
+const ROUTES_SHEET_MAP = {
+    '4.1': 'RUTA MAESTRA 4.1',
+    '4.2': 'RUTA MAESTRA 4.2',
+    '4.3': 'RUTA MAESTRA 4.3',
+    '4.4': 'RUTA MAESTRA 4.4',
+    '4.5': 'RUTA MAESTRA 4.5',
+    '4.6': 'RUTA MAESTRA 4.6'
+    // 4.98 y 4.99 se manejan por lógica derivando a 4.1
 };
 
 let DB_ACCIONES = [];
 let DB_CONTACTOS = [];
 let CURRENT_ROUTE_DATA = [];
 let SURVEY_FORM_URL = '';
+let GLOBAL_WORKBOOK = null;
 
 // --- CONFIGURACIÓN GOOGLE FORMS ANALYTICS ---
 const GOOGLE_FORM_CONFIG = {
@@ -143,8 +147,6 @@ const GOOGLE_FORM_CONFIG = {
 };
 
 // Función para mostrar tooltips del menú superior
-// Función para mostrar tooltips del menú superior en caja fija
-// Función para mostrar tooltips del menú superior en caja fija
 window.showTooltip = function (el, text) {
     const box = document.getElementById('navHelpBox');
     if (!box) return;
@@ -271,38 +273,51 @@ async function loadData() {
     const errorMsg = document.getElementById('errorMsg');
 
     try {
-        const loadSheet = async (url) => {
-            const res = await fetch(url);
-            if (!res.ok) throw new Error(`Error HTTP: ${res.status}`);
-            const text = await res.text();
-            return Papa.parse(text, { header: true, skipEmptyLines: true, transformHeader: h => h.trim() }).data;
+        status.innerText = "Descargando Base de Datos...";
+
+        // 1. Descargar el archivo Excel
+        const response = await fetch(EXCEL_URL);
+        if (!response.ok) throw new Error(`Error descargando Excel: ${response.status}`);
+
+        const arrayBuffer = await response.arrayBuffer();
+
+        // 2. Parsear el Workbook
+        status.innerText = "Procesando Datos...";
+        GLOBAL_WORKBOOK = XLSX.read(arrayBuffer, { type: 'array' });
+
+        // Función helper para obtener JSON de una hoja
+        const getSheetData = (sheetName, header = true) => {
+            const worksheet = GLOBAL_WORKBOOK.Sheets[sheetName];
+            if (!worksheet) {
+                console.warn(`Hoja no encontrada: ${sheetName}`);
+                return [];
+            }
+            return XLSX.utils.sheet_to_json(worksheet, { header: header ? undefined : 1 });
         };
 
-        status.innerText = "Descargando Directorio...";
-        DB_CONTACTOS = await loadSheet(SHEETS_CONFIG.CONTACTOS);
+        // 3. Cargar CONTACTOS
+        DB_CONTACTOS = getSheetData(SHEET_NAMES.CONTACTOS);
 
-        status.innerText = "Cargando enlaces de retroalimentación...";
-        const linksNotasRaw = await fetch(SHEETS_CONFIG.LINKS_NOTAS);
-        const linksNotasText = await linksNotasRaw.text();
-        const linksNotasParsed = Papa.parse(linksNotasText, { header: false, skipEmptyLines: false });
-        if (linksNotasParsed.data && linksNotasParsed.data.length > 0) {
-            // Buscar la fila que contiene "LINK DE FORMULARIO" en la primera columna
-            const linkRow = linksNotasParsed.data.find(row => row[0] && row[0].trim().toUpperCase() === 'LINK DE FORMULARIO');
-            if (linkRow && linkRow[1] && linkRow[1].trim()) {
-                SURVEY_FORM_URL = linkRow[1].trim();
+        // 4. Cargar LINKS y NOTAS (Header false para obtener array de arrays y buscar manualmente)
+        const linksNotasData = getSheetData(SHEET_NAMES.LINKS_NOTAS, false);
+        if (linksNotasData && linksNotasData.length > 0) {
+            // Buscar "LINK DE FORMULARIO"
+            const linkRow = linksNotasData.find(row => row[0] && String(row[0]).trim().toUpperCase() === 'LINK DE FORMULARIO');
+            if (linkRow && linkRow[1]) {
+                SURVEY_FORM_URL = String(linkRow[1]).trim();
             }
 
-            // Buscar la fecha de actualización
-            const dateRow = linksNotasParsed.data.find(row => row[0] && row[0].trim().toUpperCase() === 'FECHA ACTUALIZACION INFORMACION');
-            if (dateRow && dateRow[1] && dateRow[1].trim()) {
+            // Buscar fecha actualización
+            const dateRow = linksNotasData.find(row => row[0] && String(row[0]).trim().toUpperCase() === 'FECHA ACTUALIZACION INFORMACION');
+            if (dateRow && dateRow[1]) {
                 const dateElem = document.getElementById('lastUpdateDate');
-                if (dateElem) dateElem.innerText = `Información actualizada al: ${dateRow[1].trim()}`;
+                if (dateElem) dateElem.innerText = `Información actualizada al: ${String(dateRow[1]).trim()}`;
             }
         }
 
+        // 5. Procesar Filtros de Lugares
         const getUniqueSorted = (data, key) => {
-            const unique = [...new Set(data.map(item => item[key]?.trim()).filter(Boolean))].sort();
-            // if (!unique.includes('Otro')) unique.push('Otro');
+            const unique = [...new Set(data.map(item => item[key] ? String(item[key]).trim() : null).filter(Boolean))].sort();
             return unique;
         };
 
@@ -314,20 +329,19 @@ async function loadData() {
         steps['p3_type'].cityData = CITIES_LIST;
         steps['p3_type'].countryData = COUNTRIES_LIST;
 
-        status.innerText = "Descargando Matriz de Acciones...";
-        const accionesRaw = await loadSheet(SHEETS_CONFIG.ACCIONES);
-
+        // 6. Cargar ACCIONES
+        const accionesRaw = getSheetData(SHEET_NAMES.ACCIONES);
         DB_ACCIONES = accionesRaw.map(row => ({
-            id: row.ID_ACCION ? row.ID_ACCION.trim() : '',
-            categoria: row.CATEGORIA ? row.CATEGORIA.trim().toUpperCase() : '',
-            caso: row.CASO ? row.CASO.split(',').map(s => s.trim()) : [],
-            ubicacion: row.PERFIL_UBICACION ? row.PERFIL_UBICACION.split(',').map(s => s.trim()) : [],
-            temporalidad: row.LOGICA_TEMPORAL ? row.LOGICA_TEMPORAL.split(',').map(s => s.trim().toUpperCase()) : [],
+            id: row.ID_ACCION ? String(row.ID_ACCION).trim() : '',
+            categoria: row.CATEGORIA ? String(row.CATEGORIA).trim().toUpperCase() : '',
+            caso: row.CASO ? String(row.CASO).split(',').map(s => s.trim()) : [],
+            ubicacion: row.PERFIL_UBICACION ? String(row.PERFIL_UBICACION).split(',').map(s => s.trim()) : [],
+            temporalidad: row.LOGICA_TEMPORAL ? String(row.LOGICA_TEMPORAL).split(',').map(s => s.trim().toUpperCase()) : [],
             etapa: parseInt(row.ETAPA) || 99,
             prioridad: parseInt(row.PRIORIDAD) || 0,
             titulo: row.TITULO_VISIBLE || "Acción",
             contenido: row.CONTENIDO_MD || "",
-            contactos: row.CONTACTOS ? row.CONTACTOS.split(',') : []
+            contactos: row.CONTACTOS ? String(row.CONTACTOS).split(',') : []
         })).filter(a => a.id);
 
         document.getElementById('loader').style.display = 'none';
@@ -338,7 +352,7 @@ async function loadData() {
         status.innerText = "Error de conexión";
         status.classList.add("text-red-600", "font-bold");
         errorMsg.classList.remove('hidden');
-        errorMsg.innerHTML = `<strong>Error al cargar datos.</strong><br>Verifique su conexión a internet.`;
+        errorMsg.innerHTML = `<strong>Error al cargar datos.</strong><br>Verifique su conexión a internet y recargue la página.`;
     }
 }
 
@@ -348,29 +362,35 @@ async function loadRouteData() {
     loader.style.display = 'flex';
     status.innerText = "Calculando Ruta Maestra...";
 
-    const routeId = state.answers.p1;
-    let useRouteId = routeId;
-    // Forzar ruta 4.1 para casos 4.98 (Reclutamiento) y 4.99 (No sé)
-    if (routeId === '4.98' || routeId === '4.99') useRouteId = '4.1';
-
-    const url = ROUTES_MAP[useRouteId];
-
-    if (!url) {
-        CURRENT_ROUTE_DATA = [];
-        loader.style.display = 'none';
-        return;
-    }
-
     try {
-        const res = await fetch(url);
-        const text = await res.text();
-        const data = Papa.parse(text, { header: true, skipEmptyLines: true }).data;
-        CURRENT_ROUTE_DATA = data.map(row => ({
-            paso: row.PASO ? row.PASO.trim() : '',
-            titulo: row.TITULO || '',
-            descripcion: row.DESCRIPCION || '',
-            contenido: row.CONTENIDO_MD || ''
-        }));
+        const routeId = state.answers.p1;
+        let useRouteId = routeId;
+        // Forzar ruta 4.1 para casos 4.98 (Reclutamiento) y 4.99 (No sé)
+        if (routeId === '4.98' || routeId === '4.99') useRouteId = '4.1';
+
+        const sheetName = ROUTES_SHEET_MAP[useRouteId];
+
+        if (!sheetName || !GLOBAL_WORKBOOK) {
+            console.warn(`Ruta no encontrada o Workbook no cargado: ${useRouteId}`);
+            CURRENT_ROUTE_DATA = [];
+            loader.style.display = 'none';
+            return;
+        }
+
+        const worksheet = GLOBAL_WORKBOOK.Sheets[sheetName];
+        if (!worksheet) {
+            console.warn(`Hoja de ruta no encontrada en el Excel: ${sheetName}`);
+            CURRENT_ROUTE_DATA = [];
+        } else {
+            const data = XLSX.utils.sheet_to_json(worksheet);
+            CURRENT_ROUTE_DATA = data.map(row => ({
+                paso: row.PASO ? String(row.PASO).trim() : '',
+                titulo: row.TITULO || '',
+                descripcion: row.DESCRIPCION || '',
+                contenido: row.CONTENIDO_MD || ''
+            }));
+        }
+
     } catch (e) {
         console.error("Error cargando ruta:", e);
         CURRENT_ROUTE_DATA = [];
